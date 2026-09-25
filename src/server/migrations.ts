@@ -84,6 +84,13 @@ export const MIGRATIONS: readonly Migration[] = [
       );
     `,
   },
+  {
+    version: 2,
+    name: 'daily_summary snapshot date',
+    // Cairo date on which the baseline snapshot was written. Snapshots of days
+    // before today are frozen; existing rows are kept as their snapshots.
+    sql: `ALTER TABLE daily_summary ADD COLUMN snapshot_date TEXT;`,
+  },
 ];
 
 export function runMigrations(db: DatabaseSync): number[] {

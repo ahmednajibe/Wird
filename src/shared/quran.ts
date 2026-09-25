@@ -2,7 +2,7 @@
  * Quran memorization engine: order, alternation, review selection, projection.
  * Pure functions; the state is derived from completed Quran tasks.
  */
-import { juzOfPage, QURAN_PAGES, surahLabelForPage } from './quranData.js';
+import { juzOfPage, pageContentsLabel, QURAN_PAGES } from './quranData.js';
 import type { Settings } from './settings.js';
 import type { IsoDate, QuranPageState, QuranSessionPlan, QuranSessionType, Task } from './types.js';
 
@@ -212,7 +212,7 @@ export function memorizeSessionFor(page: number, minutes: number): QuranSessionP
     pages: [page],
     minutes,
     title: `Memorize page ${page}`,
-    description: `${surahLabelForPage(page)} (Juz ${juzOfPage(page)}). Listen to a reciter, repeat line by line, then recite the whole page from memory.`,
+    description: `${pageContentsLabel(page)} (Juz ${juzOfPage(page)}). Listen to a reciter, repeat line by line, then recite the whole page from memory.`,
   };
 }
 

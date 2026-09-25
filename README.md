@@ -26,7 +26,30 @@ last 30 are kept.
 - `src/server/` Hono API over `node:sqlite`: migrations, repositories, service
   (planning lifecycle and commands), read models, routes.
 - `src/web/` reserved for the Vite React UI (Phase 2).
+- `scripts/gen-quran-data.ts` generator for the Tanzil-derived Quran data.
 - `tests/` vitest suites (engine unit tests and API smoke test).
+
+## Quran data
+
+Quran metadata: Tanzil.net (CC BY 3.0), https://tanzil.net. Exact page
+contents (surah/ayah ranges per Madani page), ayah counts and Arabic surah
+names are generated from Tanzil's `quran-data.js` into
+`src/shared/quranData.generated.ts`, which is committed; the app never fetches
+it at runtime. To regenerate:
+
+```
+curl -sSL -o scripts/.cache/quran-data.js https://tanzil.net/res/text/metadata/quran-data.js
+npm run gen:quran
+```
+
+## Streaks
+
+The daily baseline is `round(0.28 x average daily planned points of a normal
+week)` (fasting days x 0.6). It is set so that on an off day doing only the
+two core habits (the day's Quran session plus the drawing warm-up) keeps the
+streak. Each day's baseline, rest-day and fasting status are snapshotted in
+`daily_summary`; once a day is in the past its snapshot is frozen, so later
+settings or override changes can never break a streak retroactively.
 
 ## API
 
