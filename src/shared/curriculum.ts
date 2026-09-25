@@ -1,0 +1,673 @@
+/**
+ * The curriculum, encoded as typed data. Estimated hours are stored as minutes.
+ * Module order within a track/stream is the study order.
+ */
+import type { CurriculumModule, Phase, Resource, StreamId, TrackId } from './types.js';
+
+const h = (hours: number): number => Math.round(hours * 60);
+
+// ---------------------------------------------------------------- AI phases
+const A1: Phase = { id: 'A1', title: 'Foundations: Python and math' };
+const A2: Phase = { id: 'A2', title: 'Classical machine learning' };
+const A3: Phase = { id: 'A3', title: 'Deep learning' };
+const A4: Phase = { id: 'A4', title: 'LLMs and AI engineering' };
+const A5: Phase = { id: 'A5', title: 'Depth and research' };
+
+// --------------------------------------------------------------- FSD phases
+const F1: Phase = { id: 'F1', title: 'Fundamentals rebuild' };
+const F2: Phase = { id: 'F2', title: 'Front-end depth' };
+const F3: Phase = { id: 'F3', title: 'Back end and data' };
+const F4: Phase = { id: 'F4', title: 'DevOps and cloud' };
+const F5: Phase = { id: 'F5', title: 'Architecture and advanced' };
+
+// --------------------------------------------------------- Animation phases
+const ND1: Phase = { id: 'N-D1', title: 'Drawing fundamentals' };
+const ND2: Phase = { id: 'N-D2', title: 'Character design' };
+const ND3: Phase = { id: 'N-D3', title: 'Animation craft' };
+const NS1: Phase = { id: 'N-S1', title: 'Story for animation' };
+const NS2: Phase = { id: 'N-S2', title: 'Boards and pipeline' };
+
+const drawabox: Resource = { name: 'Drawabox', url: 'https://drawabox.com' };
+const pixarInABox: Resource = { name: 'Pixar in a Box (Khan Academy)', url: 'https://www.khanacademy.org/computing/pixar' };
+const kaggleLearn: Resource = { name: 'Kaggle Learn', url: 'https://www.kaggle.com/learn' };
+
+export const CURRICULUM: readonly CurriculumModule[] = [
+  // ======================================================================= AI
+  {
+    id: 'ai-py',
+    track: 'ai',
+    stream: 'main',
+    phase: A1,
+    title: 'Python for Data Science, AI & Development',
+    note: 'IBM, Coursera: course 7 of your IBM Full Stack certificate.',
+    resources: [
+      {
+        name: 'Python for Data Science, AI & Development (IBM, Coursera)',
+        url: 'https://www.coursera.org/learn/python-for-applied-data-science-ai',
+        owned: true,
+      },
+    ],
+    estMinutes: h(30),
+    kind: 'study',
+  },
+  {
+    id: 'ai-linalg',
+    track: 'ai',
+    stream: 'main',
+    phase: A1,
+    title: 'Linear algebra',
+    resources: [
+      { name: '3Blue1Brown: Essence of Linear Algebra', url: 'https://www.3blue1brown.com/topics/linear-algebra' },
+      { name: 'Khan Academy: Linear Algebra', url: 'https://www.khanacademy.org/math/linear-algebra' },
+    ],
+    estMinutes: h(25),
+    kind: 'study',
+  },
+  {
+    id: 'ai-calc',
+    track: 'ai',
+    stream: 'main',
+    phase: A1,
+    title: 'Calculus and gradients',
+    resources: [
+      { name: '3Blue1Brown: Essence of Calculus', url: 'https://www.3blue1brown.com/topics/calculus' },
+      { name: 'Khan Academy: Multivariable Calculus', url: 'https://www.khanacademy.org/math/multivariable-calculus' },
+    ],
+    estMinutes: h(25),
+    kind: 'study',
+  },
+  {
+    id: 'ai-prob',
+    track: 'ai',
+    stream: 'main',
+    phase: A1,
+    title: 'Probability and statistics',
+    resources: [
+      { name: 'Khan Academy: Statistics and Probability', url: 'https://www.khanacademy.org/math/statistics-probability' },
+      { name: 'StatQuest', url: 'https://statquest.org' },
+    ],
+    estMinutes: h(30),
+    kind: 'study',
+  },
+  {
+    id: 'ai-data',
+    track: 'ai',
+    stream: 'main',
+    phase: A1,
+    title: 'NumPy, pandas, visualization',
+    resources: [
+      kaggleLearn,
+      {
+        name: 'Udemy: Data Science A-Z (selected sections)',
+        url: 'https://www.udemy.com/course/data_science_a_to_z/',
+        owned: true,
+      },
+    ],
+    estMinutes: h(15),
+    kind: 'study',
+  },
+  {
+    id: 'ai-mlspec',
+    track: 'ai',
+    stream: 'main',
+    phase: A2,
+    title: 'Machine Learning Specialization (Andrew Ng)',
+    note: 'Check your Coursera AI Engineer program first; otherwise audit free.',
+    resources: [
+      {
+        name: 'Machine Learning Specialization (Andrew Ng, Coursera)',
+        url: 'https://www.coursera.org/specializations/machine-learning-introduction',
+      },
+      {
+        name: 'Udemy: Step-by-Step Guide to Machine Learning (supplement)',
+        url: 'https://www.udemy.com/course/step-by-step-guide-to-machine-learning-course/',
+        owned: true,
+        note: 'supplement',
+      },
+    ],
+    estMinutes: h(80),
+    kind: 'study',
+  },
+  {
+    id: 'ai-kaggle-ml',
+    track: 'ai',
+    stream: 'main',
+    phase: A2,
+    title: 'Kaggle Intro + Intermediate ML, then one full tabular project',
+    resources: [kaggleLearn],
+    estMinutes: h(25),
+    kind: 'project',
+  },
+  {
+    id: 'ai-nn',
+    track: 'ai',
+    stream: 'main',
+    phase: A3,
+    title: '3Blue1Brown Neural Networks series',
+    resources: [{ name: '3Blue1Brown: Neural Networks', url: 'https://www.3blue1brown.com/topics/neural-networks' }],
+    estMinutes: h(5),
+    kind: 'study',
+  },
+  {
+    id: 'ai-z2h',
+    track: 'ai',
+    stream: 'main',
+    phase: A3,
+    title: 'Neural Networks: Zero to Hero (Andrej Karpathy)',
+    note: 'Code along every lecture.',
+    resources: [{ name: 'Neural Networks: Zero to Hero', url: 'https://karpathy.ai/zero-to-hero.html' }],
+    estMinutes: h(60),
+    kind: 'study',
+  },
+  {
+    id: 'ai-fastai',
+    track: 'ai',
+    stream: 'main',
+    phase: A3,
+    title: 'Practical Deep Learning for Coders, Part 1',
+    resources: [{ name: 'fast.ai: Practical Deep Learning for Coders', url: 'https://course.fast.ai' }],
+    estMinutes: h(50),
+    kind: 'study',
+  },
+  {
+    id: 'ai-d2l',
+    track: 'ai',
+    stream: 'main',
+    phase: A3,
+    title: 'Dive into Deep Learning (CNNs, RNNs, attention chapters)',
+    resources: [{ name: 'Dive into Deep Learning', url: 'https://d2l.ai' }],
+    estMinutes: h(30),
+    kind: 'study',
+  },
+  {
+    id: 'ai-hf',
+    track: 'ai',
+    stream: 'main',
+    phase: A4,
+    title: 'Hugging Face LLM Course',
+    resources: [{ name: 'Hugging Face LLM Course', url: 'https://huggingface.co/learn/llm-course' }],
+    estMinutes: h(40),
+    kind: 'study',
+  },
+  {
+    id: 'ai-coursera',
+    track: 'ai',
+    stream: 'main',
+    phase: A4,
+    title: 'Coursera AI Engineer program (L1 learning path)',
+    resources: [
+      {
+        name: 'Coursera AI Engineer program (L1 learning path)',
+        url: 'https://www.coursera.org/programs/artificial-intelligence-engineer-l1-36fji/learning-path/artificial-intelligence-engineer-1-g0gik',
+        owned: true,
+      },
+    ],
+    estMinutes: h(40),
+    kind: 'study',
+    estimateUncertain: true,
+  },
+  {
+    id: 'ai-build',
+    track: 'ai',
+    stream: 'main',
+    phase: A4,
+    title: 'Build two AI-powered full-stack apps (RAG + agent)',
+    resources: [],
+    estMinutes: h(40),
+    kind: 'project',
+  },
+  {
+    id: 'ai-cs229',
+    track: 'ai',
+    stream: 'main',
+    phase: A5,
+    title: 'Stanford CS229 lectures + Mathematics for Machine Learning',
+    resources: [
+      { name: 'Stanford CS229', url: 'https://cs229.stanford.edu' },
+      { name: 'Mathematics for Machine Learning (free book)', url: 'https://mml-book.github.io' },
+    ],
+    estMinutes: h(50),
+    kind: 'study',
+  },
+  {
+    id: 'ai-papers',
+    track: 'ai',
+    stream: 'main',
+    phase: A5,
+    title: 'Read and implement key papers (Attention Is All You Need, ResNet, ...)',
+    resources: [],
+    estMinutes: h(40),
+    kind: 'study',
+  },
+  {
+    id: 'ai-capstone',
+    track: 'ai',
+    stream: 'main',
+    phase: A5,
+    title: 'Capstone: train/fine-tune and deploy a model end-to-end',
+    resources: [],
+    estMinutes: h(50),
+    kind: 'project',
+  },
+
+  // ====================================================================== FSD
+  {
+    id: 'fsd-cs50',
+    track: 'fsd',
+    stream: 'main',
+    phase: F1,
+    title: 'CS50x weeks 0-5 (C, memory, data structures, algorithms)',
+    resources: [{ name: 'CS50x', url: 'https://cs50.harvard.edu/x/' }],
+    estMinutes: h(35),
+    kind: 'study',
+  },
+  {
+    id: 'fsd-missing',
+    track: 'fsd',
+    stream: 'main',
+    phase: F1,
+    title: 'The Missing Semester (shell, git, debugging)',
+    resources: [{ name: 'The Missing Semester', url: 'https://missing.csail.mit.edu' }],
+    estMinutes: h(12),
+    kind: 'study',
+  },
+  {
+    id: 'fsd-http',
+    track: 'fsd',
+    stream: 'main',
+    phase: F1,
+    title: 'How the web works: HTTP, DNS, TLS, browsers',
+    resources: [{ name: 'MDN HTTP', url: 'https://developer.mozilla.org/en-US/docs/Web/HTTP' }],
+    estMinutes: h(8),
+    kind: 'study',
+  },
+  {
+    id: 'fsd-js',
+    track: 'fsd',
+    stream: 'main',
+    phase: F1,
+    title: 'JavaScript in depth (closures, prototypes, event loop, async)',
+    resources: [{ name: 'javascript.info', url: 'https://javascript.info' }],
+    estMinutes: h(25),
+    kind: 'study',
+  },
+  {
+    id: 'fsd-css',
+    track: 'fsd',
+    stream: 'main',
+    phase: F2,
+    title: 'Modern CSS layout and responsive design',
+    resources: [{ name: 'web.dev Learn CSS', url: 'https://web.dev/learn/css' }],
+    estMinutes: h(12),
+    kind: 'study',
+  },
+  {
+    id: 'fsd-a11y',
+    track: 'fsd',
+    stream: 'main',
+    phase: F2,
+    title: 'Accessibility',
+    resources: [{ name: 'web.dev Learn Accessibility', url: 'https://web.dev/learn/accessibility' }],
+    estMinutes: h(8),
+    kind: 'study',
+  },
+  {
+    id: 'fsd-ts',
+    track: 'fsd',
+    stream: 'main',
+    phase: F2,
+    title: 'TypeScript Handbook',
+    resources: [{ name: 'TypeScript Handbook', url: 'https://www.typescriptlang.org/docs/handbook/intro.html' }],
+    estMinutes: h(12),
+    kind: 'study',
+  },
+  {
+    id: 'fsd-react',
+    track: 'fsd',
+    stream: 'main',
+    phase: F2,
+    title: 'React in depth (react.dev Learn incl. escape hatches)',
+    resources: [{ name: 'react.dev Learn', url: 'https://react.dev/learn' }],
+    estMinutes: h(15),
+    kind: 'study',
+  },
+  {
+    id: 'fsd-seo',
+    track: 'fsd',
+    stream: 'main',
+    phase: F2,
+    title: 'Technical SEO essentials',
+    resources: [
+      { name: 'Udemy: SEO Strategy (selected sections)', url: 'https://www.udemy.com/course/seo-strategy/learn', owned: true },
+    ],
+    estMinutes: h(6),
+    kind: 'study',
+  },
+  {
+    id: 'fsd-fso',
+    track: 'fsd',
+    stream: 'main',
+    phase: F3,
+    title: 'Full Stack Open parts 3-5 (Node/Express, testing, auth)',
+    resources: [{ name: 'Full Stack Open', url: 'https://fullstackopen.com/en/' }],
+    estMinutes: h(30),
+    kind: 'study',
+  },
+  {
+    id: 'fsd-sql',
+    track: 'fsd',
+    stream: 'main',
+    phase: F3,
+    title: 'SQL and PostgreSQL in depth (indexes, transactions, query plans)',
+    resources: [
+      { name: 'SQLBolt', url: 'https://sqlbolt.com' },
+      { name: 'PostgreSQL tutorial', url: 'https://www.postgresql.org/docs/current/tutorial.html' },
+    ],
+    estMinutes: h(20),
+    kind: 'study',
+  },
+  {
+    id: 'fsd-sec',
+    track: 'fsd',
+    stream: 'main',
+    phase: F3,
+    title: 'Web security: OWASP Top 10 + PortSwigger Web Security Academy',
+    resources: [
+      { name: 'OWASP Top 10', url: 'https://owasp.org/www-project-top-ten/' },
+      { name: 'PortSwigger Web Security Academy', url: 'https://portswigger.net/web-security' },
+    ],
+    estMinutes: h(15),
+    kind: 'study',
+  },
+  {
+    id: 'fsd-ddia',
+    track: 'fsd',
+    stream: 'main',
+    phase: F3,
+    title: 'Designing Data-Intensive Applications (Kleppmann)',
+    resources: [{ name: 'Designing Data-Intensive Applications (book)', paid: true }],
+    estMinutes: h(30),
+    kind: 'study',
+  },
+  {
+    id: 'fsd-devops',
+    track: 'fsd',
+    stream: 'main',
+    phase: F4,
+    title: 'Udemy Professional Certificate in DevOps',
+    resources: [
+      {
+        name: 'Udemy: Professional Certificate in DevOps',
+        url: 'https://www.udemy.com/course/professional-certificate-in-devops/',
+        owned: true,
+      },
+    ],
+    estMinutes: h(25),
+    kind: 'study',
+    estimateUncertain: true,
+  },
+  {
+    id: 'fsd-ibm-cloud',
+    track: 'fsd',
+    stream: 'main',
+    phase: F4,
+    title: 'IBM courses 10-11: Containers w/ Docker, Kubernetes & OpenShift + Microservices and Serverless',
+    resources: [
+      {
+        name: 'IBM Full Stack Cloud Developer (Coursera), courses 10-11',
+        url: 'https://www.coursera.org/professional-certificates/ibm-full-stack-cloud-developer',
+        owned: true,
+      },
+    ],
+    estMinutes: h(33),
+    kind: 'study',
+  },
+  {
+    id: 'fsd-ci',
+    track: 'fsd',
+    stream: 'main',
+    phase: F4,
+    title: 'CI/CD with GitHub Actions',
+    resources: [{ name: 'GitHub Actions docs', url: 'https://docs.github.com/en/actions' }],
+    estMinutes: h(6),
+    kind: 'study',
+  },
+  {
+    id: 'fsd-sysdesign',
+    track: 'fsd',
+    stream: 'main',
+    phase: F5,
+    title: 'System Design Primer',
+    resources: [{ name: 'System Design Primer', url: 'https://github.com/donnemartin/system-design-primer' }],
+    estMinutes: h(25),
+    kind: 'study',
+  },
+  {
+    id: 'fsd-perf',
+    track: 'fsd',
+    stream: 'main',
+    phase: F5,
+    title: 'Testing strategy and web performance (Core Web Vitals)',
+    resources: [{ name: 'web.dev Core Web Vitals', url: 'https://web.dev/articles/vitals' }],
+    estMinutes: h(10),
+    kind: 'study',
+  },
+  {
+    id: 'fsd-capstone',
+    track: 'fsd',
+    stream: 'main',
+    phase: F5,
+    title: 'Capstone: production-grade full-stack app (auth, tests, CI, deploy, monitoring)',
+    resources: [],
+    estMinutes: h(40),
+    kind: 'project',
+  },
+
+  // ========================================================= Animation: draw
+  {
+    id: 'an-dab1',
+    track: 'animation',
+    stream: 'draw',
+    phase: ND1,
+    title: 'Drawabox Lessons 0-1 (lines, ellipses, boxes)',
+    resources: [drawabox],
+    estMinutes: h(20),
+    kind: 'study',
+  },
+  {
+    id: 'an-box250',
+    track: 'animation',
+    stream: 'draw',
+    phase: ND1,
+    title: 'Drawabox 250 Box Challenge',
+    resources: [drawabox],
+    estMinutes: h(25),
+    kind: 'study',
+  },
+  {
+    id: 'an-figure',
+    track: 'animation',
+    stream: 'draw',
+    phase: ND1,
+    title: 'Figure drawing: gesture and structure',
+    resources: [
+      { name: 'Proko (YouTube)', url: 'https://www.youtube.com/results?search_query=proko+figure+drawing+fundamentals' },
+      { name: 'Line of Action timed practice', url: 'https://line-of-action.com' },
+    ],
+    estMinutes: h(35),
+    kind: 'study',
+  },
+  {
+    id: 'an-dab23',
+    track: 'animation',
+    stream: 'draw',
+    phase: ND1,
+    title: 'Drawabox Lessons 2-3 (form, organic forms)',
+    resources: [drawabox],
+    estMinutes: h(25),
+    kind: 'study',
+  },
+  {
+    id: 'an-chardesign',
+    track: 'animation',
+    stream: 'draw',
+    phase: ND2,
+    title: 'Shape language, silhouettes, expressions, turnarounds',
+    resources: [
+      { name: 'Sinix Design (YouTube)', url: 'https://www.youtube.com/results?search_query=sinix+design+character+design' },
+      { name: 'Marc Brunet (YouTube)', url: 'https://www.youtube.com/results?search_query=marc+brunet+character+design' },
+    ],
+    estMinutes: h(40),
+    kind: 'study',
+  },
+  {
+    id: 'an-principles',
+    track: 'animation',
+    stream: 'draw',
+    phase: ND3,
+    title: '12 principles + 2D exercises (bouncing ball, pendulum, flour sack, walk cycle)',
+    resources: [
+      {
+        name: 'Alan Becker: 12 Principles of Animation',
+        url: 'https://www.youtube.com/results?search_query=alan+becker+12+principles+of+animation',
+      },
+      { name: 'Krita (tool)', url: 'https://krita.org' },
+      { name: 'OpenToonz (tool)', url: 'https://opentoonz.github.io' },
+      { name: "The Animator's Survival Kit (optional book)", paid: true },
+    ],
+    estMinutes: h(60),
+    kind: 'study',
+  },
+  {
+    id: 'an-color',
+    track: 'animation',
+    stream: 'draw',
+    phase: ND3,
+    title: 'Color and light',
+    resources: [{ name: 'Ctrl+Paint', url: 'https://www.ctrlpaint.com' }],
+    estMinutes: h(20),
+    kind: 'study',
+  },
+
+  // ======================================================== Animation: story
+  {
+    id: 'an-pixar-story',
+    track: 'animation',
+    stream: 'story',
+    phase: NS1,
+    title: 'Pixar in a Box: The Art of Storytelling',
+    resources: [pixarInABox],
+    estMinutes: h(12),
+    kind: 'study',
+  },
+  {
+    id: 'an-structure',
+    track: 'animation',
+    stream: 'story',
+    phase: NS1,
+    title: "Story structure: Pixar's 22 Rules, Save the Cat; write 5 loglines + a 1-page short script",
+    resources: [
+      { name: "Pixar's 22 Rules of Storytelling (Emma Coats)" },
+      { name: 'Save the Cat beat sheet', url: 'https://savethecat.com' },
+    ],
+    estMinutes: h(20),
+    kind: 'project',
+  },
+  {
+    id: 'an-visual',
+    track: 'animation',
+    stream: 'story',
+    phase: NS1,
+    title: 'Visual storytelling: shot types, staging, continuity',
+    resources: [{ name: 'StudioBinder blog', url: 'https://www.studiobinder.com/blog/' }],
+    estMinutes: h(15),
+    kind: 'study',
+  },
+  {
+    id: 'an-boards',
+    track: 'animation',
+    stream: 'story',
+    phase: NS2,
+    title: 'Storyboarding and animatics: board your script and cut an animatic',
+    resources: [{ name: 'Storyboarder (free)', url: 'https://wonderunit.com/storyboarder/' }],
+    estMinutes: h(30),
+    kind: 'project',
+  },
+  {
+    id: 'an-pipeline',
+    track: 'animation',
+    stream: 'story',
+    phase: NS2,
+    title: 'Production pipeline tour: Pixar in a Box lessons + studio roles',
+    resources: [pixarInABox],
+    estMinutes: h(15),
+    kind: 'study',
+  },
+  {
+    id: 'an-blender',
+    track: 'animation',
+    stream: 'story',
+    phase: NS2,
+    title: '3D basics for the pipeline (Blender)',
+    resources: [{ name: 'Blender tutorials', url: 'https://www.blender.org/support/tutorials/' }],
+    estMinutes: h(30),
+    kind: 'study',
+  },
+  {
+    id: 'an-short',
+    track: 'animation',
+    stream: 'story',
+    phase: NS2,
+    title: 'Capstone: 20-30 s animated short (script, boards, animatic, animation) + portfolio',
+    resources: [],
+    estMinutes: h(60),
+    kind: 'project',
+  },
+];
+
+/** Reference resources that are intentionally not scheduled. */
+export const UNSCHEDULED_RESOURCES: readonly (Resource & { track: TrackId; stream: StreamId })[] = [
+  {
+    track: 'fsd',
+    stream: 'main',
+    name: 'Udemy: The Complete Web Development Bootcamp',
+    url: 'https://www.udemy.com/course/the-complete-web-development-bootcamp/',
+    owned: true,
+    note: 'gap reference only',
+  },
+  {
+    track: 'fsd',
+    stream: 'main',
+    name: 'Udemy: Learn Web Design HTML/CSS/Photoshop',
+    url: 'https://www.udemy.com/course/learn-web-design-html-css-adobe-photoshop/',
+    owned: true,
+    note: 'not scheduled: overlaps fundamentals',
+  },
+];
+
+const byId = new Map(CURRICULUM.map((m) => [m.id, m]));
+
+export function getModule(id: string): CurriculumModule | undefined {
+  return byId.get(id);
+}
+
+export function modulesFor(track: TrackId, stream: StreamId): CurriculumModule[] {
+  return CURRICULUM.filter((m) => m.track === track && m.stream === stream);
+}
+
+export function streamKey(track: TrackId, stream: StreamId): string {
+  return `${track}/${stream}`;
+}
+
+/** Warm-up descriptions keyed by the current draw module. */
+export const WARMUP_DESCRIPTIONS: Record<string, string> = {
+  'an-dab1': 'Lines and ellipses: ghosted lines, superimposed lines, ellipse tables, a few rotated boxes (Drawabox Lessons 0-1).',
+  'an-box250': 'Warm up with ghosted lines, then draw 5-10 boxes toward the 250 Box Challenge, checking convergence.',
+  'an-figure': 'Gesture drawing with Line of Action timed poses (30 s to 2 min), focus on the line of action.',
+  'an-dab23': 'Organic forms and contour lines: sausages with contour ellipses, arrows (Drawabox Lessons 2-3).',
+  'an-chardesign': 'Silhouette thumbnails and quick expression sketches using simple shape language.',
+  'an-principles': 'Bouncing-ball and arc drills: quick thumbnails of timing and spacing.',
+  'an-color': 'Quick value studies and color swatches (Ctrl+Paint exercises).',
+};
+
+export const DEFAULT_WARMUP_DESCRIPTION = 'Loose gesture sketches and line-confidence drills.';
