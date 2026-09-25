@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { getModule } from '../src/shared/curriculum.js';
 import {
+  CONSOLIDATE_MIN_CREDIT,
   distributeSlots,
   normalWeekPlan,
   planDay,
@@ -51,21 +52,44 @@ describe('normal week', () => {
     }
   });
 
-  it('fasting days: light review for focus tasks, warm-up stays practice; normal days deep learn', () => {
+  it('fasting days: drawing is light practice; unstarted modules get light study; started ones are consolidated', () => {
     const mon = week[1];
     expect(mon?.isFasting).toBe(true);
     const warm = mon?.tasks.find((t) => t.slotKey === 'animation/draw/warmup');
     expect(warm?.type).toBe('practice');
+    expect(warm?.intensity).toBe('light');
     expect(warm?.plannedMinutes).toBe(15);
-    const focus = mon?.tasks.find((t) => t.track === 'fsd');
-    expect(focus?.type).toBe('review');
-    expect(focus?.intensity).toBe('light');
-    expect(focus?.title).toMatch(/^Light review: notes\/flashcards for /);
+    expect(warm?.title).toBe('Light drawing practice: Drawabox Lessons 0-1 (lines, ellipses, boxes)');
+    // fsd-cs50 has 0 credited minutes on Monday of a fresh curriculum -> light study (learn).
+    const monFsd = mon?.tasks.find((t) => t.track === 'fsd');
+    expect(monFsd?.type).toBe('learn');
+    expect(monFsd?.intensity).toBe('light');
+    expect(monFsd?.title).toMatch(/^Light study: CS50x/);
+    // By Thursday ai-py has 60 (Sun) + 85 (Wed) simulated minutes -> consolidate (review).
+    const thuAi = week[4]?.tasks.find((t) => t.track === 'ai');
+    expect(thuAi?.type).toBe('review');
+    expect(thuAi?.intensity).toBe('light');
+    expect(thuAi?.title).toMatch(/^Consolidate: Python for Data Science/);
+    // Normal days: deep learn and a normal warm-up.
     const tue = week[2];
     const deep = tue?.tasks.find((t) => t.track === 'fsd');
     expect(deep?.type).toBe('learn');
     expect(deep?.intensity).toBe('deep');
-    expect(tue?.tasks.find((t) => t.slotKey === 'animation/draw/warmup')?.plannedMinutes).toBe(20);
+    const tueWarm = tue?.tasks.find((t) => t.slotKey === 'animation/draw/warmup');
+    expect(tueWarm?.plannedMinutes).toBe(20);
+    expect(tueWarm?.title).toBe('Drawing warm-up (20 min)');
+    // No task on any day reviews drawing.
+    for (const d of week) {
+      for (const t of d.tasks) if (t.track === 'animation' && t.stream === 'draw') expect(t.type).not.toBe('review');
+    }
+  });
+
+  it('fasting Friday: the drawing study block is light practice too', () => {
+    const tasks = planDay({ date: '2026-09-25', isFasting: true, totalMinutes: 108, quran: memorize, kept: [] }, S, new ModuleLedger());
+    const draw = tasks.filter((t) => t.stream === 'draw');
+    expect(draw.map((t) => [t.type, t.intensity, t.plannedMinutes])).toEqual([['practice', 'light', 35]]);
+    expect(draw[0]?.title).toMatch(/^Light drawing practice: /);
+    expect(tasks.find((t) => t.track === 'ai')?.title).toMatch(/^Light study: /);
   });
 });
 
@@ -133,13 +157,34 @@ describe('simulated module consumption', () => {
     expect(ledger.creditedOf('ai-linalg')).toBe(30 + 85);
   });
 
-  it('review minutes on fasting days count 50%', () => {
-    const ledger = new ModuleLedger();
-    planDay({ date: '2026-09-28', isFasting: true, totalMinutes: 72, quran: review, kept: [] }, S, ledger);
-    // Monday fasting: warm-up 15 practice (100%), fsd 42 review (50%).
-    expect(ledger.creditedOf('an-dab1')).toBe(15);
-    expect(ledger.creditedOf('fsd-cs50')).toBe(21);
+  it('fasting-day credit: drawing practice and light study 100%, consolidation 50%', () => {
+    const fresh = new ModuleLedger();
+    planDay({ date: '2026-09-28', isFasting: true, totalMinutes: 72, quran: review, kept: [] }, S, fresh);
+    // Monday fasting: warm-up 15 practice, fsd 42 light study (module not started).
+    expect(fresh.creditedOf('an-dab1')).toBe(15);
+    expect(fresh.creditedOf('fsd-cs50')).toBe(42);
+
+    const started = new ModuleLedger();
+    started.apply('fsd-cs50', CONSOLIDATE_MIN_CREDIT);
+    const tasks = planDay({ date: '2026-09-28', isFasting: true, totalMinutes: 72, quran: review, kept: [] }, S, started);
+    expect(tasks.find((t) => t.track === 'fsd')?.type).toBe('review');
+    expect(started.creditedOf('fsd-cs50')).toBe(CONSOLIDATE_MIN_CREDIT + 21);
   });
+
+  it('no-module fallback is open practice (light on fasting days)', () => {
+    const ledger = new ModuleLedger();
+    for (const id of ['fsd-cs50', 'fsd-missing', 'fsd-http', 'fsd-js', 'fsd-css', 'fsd-a11y', 'fsd-ts', 'fsd-react', 'fsd-seo', 'fsd-fso', 'fsd-sql', 'fsd-sec', 'fsd-ddia', 'fsd-devops', 'fsd-ibm-cloud', 'fsd-ci', 'fsd-sysdesign', 'fsd-perf', 'fsd-capstone']) {
+      ledger.apply(id, 100_000);
+    }
+    expect(ledger.current('fsd', 'main')).toBeNull();
+    const fasting = planDay({ date: '2026-09-28', isFasting: true, totalMinutes: 72, quran: review, kept: [] }, S, ledger);
+    const f = fasting.find((t) => t.track === 'fsd');
+    expect([f?.type, f?.intensity, f?.moduleId]).toEqual(['practice', 'light', null]);
+    expect(f?.title).toBe('Open practice (light): Full Stack Development');
+    const normal = planDay({ date: '2026-09-29', isFasting: false, totalMinutes: 120, quran: review, kept: [] }, S, ledger);
+    expect(normal.find((t) => t.track === 'fsd')?.title).toMatch(/^Open practice: Full Stack Development/);
+  });
+
 
   it('kept (completed/skipped) generated tasks reduce the re-planned slots', () => {
     const day = planDay(

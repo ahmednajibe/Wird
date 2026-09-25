@@ -12,7 +12,8 @@
     "build": "tsc -p tsconfig.build.json",
     "start": "node --no-warnings=ExperimentalWarning dist/server/index.js",
     "test": "vitest run",
-    "typecheck": "tsc --noEmit -p tsconfig.json"
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "gen:quran": "tsx scripts/gen-quran-data.ts"
   },
   "dependencies": {
     "@hono/node-server": "1.19.17",

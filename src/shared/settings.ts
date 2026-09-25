@@ -129,7 +129,7 @@ export const DEFAULT_SETTINGS: Settings = {
     rollingMinSessions: 3,
   },
   baseline: {
-    factor: 0.35,
+    factor: 0.28,
     fastingFactor: 0.6,
   },
 };

@@ -17,6 +17,7 @@ export interface BaselineExplanation {
   restDay: 0;
   perDay: { dow: number; day: string; isFasting: boolean; capacity: number; plannedPoints: number }[];
   text: string;
+  rationale: string;
 }
 
 export function computeBaseline(settings: Settings): BaselineExplanation {
@@ -50,7 +51,11 @@ export function computeBaseline(settings: Settings): BaselineExplanation {
     text:
       `A normal week (Mon/Thu fasting) plans ${total} points, ${avg.toFixed(2)} per day. ` +
       `Daily baseline = round(${factor} x ${avg.toFixed(2)}) = ${normal}. ` +
-      `Fasting-day baseline = round(${normal} x ${fastingFactor}) = ${fasting}. Rest days (capacity 0) have no baseline and are skipped by the streak.`,
+      `Fasting-day baseline = round(${normal} x ${fastingFactor}) = ${fasting}. Rest days (capacity 0) have no baseline and are skipped by the streak. ` +
+      `Why this factor: on an off day, doing only the two daily core habits (the day's Quran session plus the drawing warm-up) must keep the streak. ` +
+      `Past days keep the baseline that was in effect for them; later settings changes never affect them.`,
+    rationale:
+      "On an off day, doing only the two daily core habits (the day's Quran session plus the drawing warm-up) must keep the streak.",
   };
 }
 

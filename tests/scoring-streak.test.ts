@@ -54,37 +54,34 @@ describe('scoring', () => {
 describe('baseline', () => {
   const b = computeBaseline(DEFAULT_SETTINGS);
 
-  it('is derived from the normal-week plan', () => {
+  it('is derived from the normal-week plan with factor 0.28', () => {
     console.log('Baseline:', JSON.stringify({ avg: b.avgDailyPlannedPoints, week: b.normalWeekPlannedPoints, normal: b.normal, fasting: b.fasting, perDay: b.perDay.map((d) => d.plannedPoints) }));
-    expect(b.normalWeekPlannedPoints).toBe(1137);
-    expect(b.avgDailyPlannedPoints).toBeCloseTo(162.43, 2);
-    expect(b.normal).toBe(57);
-    expect(b.fasting).toBe(34);
+    expect(b.factor).toBe(0.28);
+    expect(b.normalWeekPlannedPoints).toBe(1149);
+    expect(b.avgDailyPlannedPoints).toBeCloseTo(164.14, 2);
+    expect(b.normal).toBe(46); // round(0.28 x 164.14) = round(45.96)
+    expect(b.fasting).toBe(28); // round(46 x 0.6) = round(27.6)
     expect(baselineFor(b, { isFasting: false, isRestDay: true })).toBe(0);
+    expect(b.text).toMatch(/two daily core habits/);
   });
 
-  it('fasting day: Quran memorize (40 min) alone meets the fasting baseline', () => {
-    expect(quranMemorize40).toBeGreaterThanOrEqual(b.fasting);
-  });
-
-  it('normal day: Quran memorize alone meets the normal baseline', () => {
-    expect(quranMemorize40).toBeGreaterThanOrEqual(b.normal);
-  });
-
-  it('normal review day: Quran review alone is not enough (actual numbers reported)', () => {
-    expect(quranReview15).toBeLessThan(b.normal);
-    // Spec expectation was that review (15) + warm-up (20) meets the normal
-    // baseline. With the formula as specified it does NOT: 24 + 22 = 46 < 57.
-    const reviewPlusWarmup = quranReview15 + warmup20;
-    console.log(`Normal review day: review ${quranReview15} + warm-up ${warmup20} = ${reviewPlusWarmup} vs baseline ${b.normal}`);
-    expect(reviewPlusWarmup).toBe(46);
-    expect(reviewPlusWarmup).toBeLessThan(b.normal);
-    // What does meet it: review + warm-up + at least 10 minutes of the planned deep session.
-    const tenMinLearn = plannedPoints(gen({ track: 'ai', type: 'learn', plannedMinutes: 10 }), ctx).points;
-    expect(reviewPlusWarmup + tenMinLearn).toBeGreaterThanOrEqual(b.normal);
-    // On a fasting review day, review + warm-up (15 min) does meet the fasting baseline.
+  describe('off day: only the two core habits (Quran session + drawing warm-up) keep the streak', () => {
     const warmup15 = plannedPoints(gen({ track: 'animation', type: 'practice', plannedMinutes: 15 }), ctx).points;
-    expect(quranReview15 + warmup15).toBeGreaterThanOrEqual(b.fasting);
+    const cases = [
+      { name: 'normal memorize day: Quran memorize (40) only', points: quranMemorize40, baseline: b.normal },
+      { name: 'normal review day: Quran review (15) + warm-up (20)', points: quranReview15 + warmup20, baseline: b.normal },
+      { name: 'fasting memorize day: Quran memorize (40) only', points: quranMemorize40, baseline: b.fasting },
+      { name: 'fasting review day: Quran review (15) + warm-up (15)', points: quranReview15 + warmup15, baseline: b.fasting },
+    ];
+    for (const c of cases) {
+      it(c.name, () => {
+        console.log(`${c.name}: ${c.points} points vs baseline ${c.baseline}`);
+        expect(c.points).toBeGreaterThanOrEqual(c.baseline);
+      });
+    }
+    it('Quran review alone is not enough on a normal day', () => {
+      expect(quranReview15).toBeLessThan(b.normal);
+    });
   });
 });
 

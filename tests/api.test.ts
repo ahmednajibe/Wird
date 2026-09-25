@@ -28,8 +28,8 @@ describe('API smoke test', () => {
     expect(json.tasks[0].track).toBe('quran');
     expect(json.tasks[0].title).toBe('Memorize page 604');
     expect(json.tasks.reduce((a: number, t: Json) => a + t.plannedMinutes, 0)).toBe(120);
-    expect(json.baseline.value).toBe(57);
-    expect(json.baseline.explanation.avgDailyPlannedPoints).toBeCloseTo(162.43, 2);
+    expect(json.baseline.value).toBe(46);
+    expect(json.baseline.explanation.avgDailyPlannedPoints).toBeCloseTo(164.14, 2);
     expect(json.weekSummary).toHaveLength(7);
     expect(json.streak).toEqual({ current: 0, longest: 0, todayCounts: false });
     const week = await call('GET', '/api/week?start=2026-09-27');
@@ -120,6 +120,9 @@ describe('API smoke test', () => {
     expect(quran.json.pages).toHaveLength(604);
     expect(quran.json.memorized).toBe(1);
     expect(quran.json.surahs).toHaveLength(114);
+    expect(quran.json.attribution).toBe('Quran metadata: Tanzil.net (CC BY 3.0)');
+    expect(quran.json.pages[582].label).toBe("An-Naba 31-40, An-Nazi'at 1-15");
+    expect(quran.json.pages[603].segments).toHaveLength(3);
     const stats = await call('GET', '/api/stats');
     expect(stats.json.daily).toHaveLength(365);
     expect(stats.json.daily[364].points).toBe(75);

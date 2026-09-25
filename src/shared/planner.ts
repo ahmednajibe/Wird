@@ -182,6 +182,21 @@ interface TaskShape {
   description: string;
 }
 
+/**
+ * On fasting days a non-drawing module is only consolidated (review, 50%
+ * credit) once at least this many minutes have been credited to it;
+ * otherwise it is studied at a relaxed pace (learn, 100% credit).
+ */
+export const CONSOLIDATE_MIN_CREDIT = 60;
+
+function isDrawSlot(slot: PlanSlot): boolean {
+  return slot.track === 'animation' && slot.stream === 'draw';
+}
+
+function drillsFor(module: CurriculumModule | null): string {
+  return (module && WARMUP_DESCRIPTIONS[module.id]) ?? DEFAULT_WARMUP_DESCRIPTION;
+}
+
 function shapeTask(
   slot: PlanSlot,
   chunk: number,
@@ -191,43 +206,60 @@ function shapeTask(
   ledger: ModuleLedger,
 ): TaskShape {
   const partSuffix = part.count > 1 ? ` (part ${part.index}/${part.count})` : '';
-  if (slot.role === 'warmup') {
-    const desc = (module && WARMUP_DESCRIPTIONS[module.id]) ?? DEFAULT_WARMUP_DESCRIPTION;
+
+  // Drawing is a motor skill: it is always practised, never "reviewed".
+  if (isDrawSlot(slot) && isFasting) {
     return {
       type: 'practice',
-      intensity: isFasting ? 'light' : 'normal',
+      intensity: 'light',
+      title: `Light drawing practice: ${module ? module.title : 'open practice'}${partSuffix}`,
+      description: `Fasting day: short, relaxed drills. ${drillsFor(module)}${module ? ` Counts toward: ${module.title}.` : ''}`,
+    };
+  }
+  if (slot.role === 'warmup') {
+    return {
+      type: 'practice',
+      intensity: 'normal',
       title: `Drawing warm-up (${chunk} min)`,
-      description: `${desc}${module ? ` Counts toward: ${module.title}.` : ''}`,
+      description: `${drillsFor(module)}${module ? ` Counts toward: ${module.title}.` : ''}`,
     };
   }
   if (!module) {
     return {
-      type: isFasting ? 'review' : 'practice',
+      type: 'practice',
       intensity: isFasting ? 'light' : 'normal',
-      title: `Open practice: ${TRACK_LABELS[slot.track]}${partSuffix}`,
+      title: `Open practice${isFasting ? ' (light)' : ''}: ${TRACK_LABELS[slot.track]}${partSuffix}`,
       description: 'All scheduled modules in this stream are complete. Consolidate, polish portfolio pieces, or pick a new resource.',
     };
   }
+
   const remaining = ledger.remainingOf(module.id);
-  const type: TaskType = isFasting ? 'review' : module.kind === 'project' ? 'build' : 'learn';
+  const consolidate = isFasting && ledger.creditedOf(module.id) >= CONSOLIDATE_MIN_CREDIT;
+  const type: TaskType = consolidate ? 'review' : isFasting ? 'learn' : module.kind === 'project' ? 'build' : 'learn';
   const credit = creditMinutes(type, chunk);
   const next = ledger.nextAfter(module.id);
   const finishing = credit >= remaining && next ? ` Expected to finish this module in this session, then start: ${next.title}.` : '';
   const phase = `${module.phase.id} ${module.phase.title}.`;
   const remainingLine = ` Remaining before this session: about ${formatDuration(remaining)}.`;
   const note = module.note ? ` Note: ${module.note}` : '';
-  const warmupHint =
-    slot.track === 'animation' && slot.stream === 'draw' && !isFasting
-      ? ` Start with 10 minutes of warm-up: ${WARMUP_DESCRIPTIONS[module.id] ?? DEFAULT_WARMUP_DESCRIPTION}`
-      : '';
+
+  if (consolidate) {
+    return {
+      type,
+      intensity: 'light',
+      title: `Consolidate: ${module.title}${partSuffix}`,
+      description: `Fasting day: re-read your notes and redo one small exercise. ${phase}${remainingLine}`,
+    };
+  }
   if (isFasting) {
     return {
       type,
       intensity: 'light',
-      title: `Light review: notes/flashcards for ${module.title}${partSuffix}`,
-      description: `Fasting day: keep it light. Re-read notes, flashcards, and redo one small exercise. ${phase}${remainingLine}${finishing}`,
+      title: `Light study: ${module.title}${partSuffix}`,
+      description: `Fasting day: relaxed pace. Watch or read and take notes; skip heavy exercises. ${phase}${resourceLine(module)}${remainingLine}${finishing}${note}`,
     };
   }
+  const warmupHint = isDrawSlot(slot) ? ` Start with 10 minutes of warm-up: ${drillsFor(module)}` : '';
   return {
     type,
     intensity: 'deep',

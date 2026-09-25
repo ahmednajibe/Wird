@@ -33,7 +33,7 @@ import type {
 } from '../shared/types.js';
 import { transaction, type Db } from './db.js';
 import { badRequest, conflict, notFound } from './errors.js';
-import { DayOverrideRepo, MetaRepo, ModuleStateRepo, SettingsRepo, SummaryRepo } from './repoMisc.js';
+import { DayOverrideRepo, type DaySnapshot, MetaRepo, ModuleStateRepo, SettingsRepo, SummaryRepo } from './repoMisc.js';
 import { PlannedDaysRepo, TaskRepo } from './repoTasks.js';
 
 export interface Clock {
@@ -66,6 +66,8 @@ export interface DayView {
   plannedPoints: number;
   earnedPoints: number;
   baseline: number;
+  /** Baseline snapshot used for the day (frozen for past days). */
+  baselineSnapshot: DaySnapshot & { frozen: boolean };
   counts: boolean;
 }
 
@@ -499,11 +501,14 @@ export class LearningService {
     const next = parsed.data;
     const changed = PLANNING_KEYS.some((k) => JSON.stringify(current[k]) !== JSON.stringify(next[k]));
     return transaction(this.db, () => {
+      // Freeze past days under the settings that were in effect for them.
+      this.freezePastDays();
       this.settingsRepo.save(next, this.nowIso());
       if (changed) {
         const t = this.today();
         this.regenerate(t, maxDate(weekEnd(t), this.plannedDays.maxPlanned() ?? t));
       }
+      this.freezePastDays();
       return { settings: next, regenerated: changed };
     });
   }
@@ -511,11 +516,13 @@ export class LearningService {
   updateDay(date: IsoDate, body: { fasting: boolean | null; capacityOverride: number | null; note: string | null }): DayView {
     const t = this.today();
     transaction(this.db, () => {
+      this.freezePastDays();
       this.overrides.upsert({ date, ...body });
       if (date >= t) {
         this.assertPlannable(date);
         this.regenerate(date);
       }
+      this.freezePastDays();
     });
     return this.dayView(date);
   }
@@ -542,20 +549,62 @@ export class LearningService {
     return map;
   }
 
+  /**
+   * Baseline snapshots per day. Streaks must never be lost retroactively, so:
+   * - past days (date < today) use the snapshot stored in daily_summary,
+   *   which is written the first time the day is evaluated and never updated
+   *   once the day is past;
+   * - a past day without a snapshot (never evaluated) is frozen now;
+   * - today and future days use the current settings (today's snapshot is
+   *   refreshed on every evaluation).
+   * Snapshots are persisted only for days from the first activity to today.
+   */
+  daySnapshots(from: IsoDate, to: IsoDate): Map<IsoDate, DaySnapshot & { frozen: boolean }> {
+    const t = this.today();
+    const first = this.tasks.firstActivityDate() ?? t;
+    const settings = this.settings();
+    const expl = this.baseline(settings);
+    const overrides = this.overrides.range(from, to);
+    const stored = this.summary.range(from, to);
+    const nowIso = this.nowIso();
+    const out = new Map<IsoDate, DaySnapshot & { frozen: boolean }>();
+    for (const d of dateRange(from, to)) {
+      const row = stored.get(d);
+      if (d < t && row) {
+        out.set(d, { baseline: row.baseline, isRestDay: row.isRestDay, isFasting: row.isFasting, frozen: true });
+        continue;
+      }
+      const cap = dayCapacity(d, settings, overrides.get(d));
+      const snap: DaySnapshot = { baseline: baselineFor(expl, cap), isRestDay: cap.isRestDay, isFasting: cap.isFasting };
+      const persist = d >= first && d <= t;
+      if (persist && d < t) this.summary.insertSnapshotIfMissing(d, snap, t, nowIso);
+      if (persist && d === t) this.summary.upsertSnapshot(d, snap, t, nowIso);
+      out.set(d, { ...snap, frozen: persist && d < t });
+    }
+    return out;
+  }
+
+  /** Freezes every past day since the first activity that has no snapshot yet. */
+  freezePastDays(): void {
+    const t = this.today();
+    const first = this.tasks.firstActivityDate();
+    if (first && first <= t) this.daySnapshots(first, t);
+  }
+
   dayViews(from: IsoDate, to: IsoDate): DayView[] {
     const t = this.today();
     const settings = this.settings();
-    const expl = this.baseline(settings);
     const ctx = this.scoringContext(settings);
     const overrides = this.overrides.range(from, to);
     const tasks = this.tasks.byDateRange(from, to);
     const earned = this.earnedByDate();
+    const snapshots = this.daySnapshots(from, to);
     return dateRange(from, to).map((d) => {
       const ov = overrides.get(d) ?? null;
       const fasting = fastingInfo(d, settings, ov);
       const capacity = dayCapacity(d, settings, ov);
       const views = tasks.filter((x) => x.date === d).map((x) => this.taskView(x, ctx, t));
-      const baseline = baselineFor(expl, capacity);
+      const snap = snapshots.get(d) as DaySnapshot & { frozen: boolean };
       const earnedPoints = earned.get(d) ?? 0;
       return {
         date: d,
@@ -571,8 +620,9 @@ export class LearningService {
         plannedMinutes: views.filter((x) => x.source === 'generated').reduce((a, x) => a + x.plannedMinutes, 0),
         plannedPoints: views.filter((x) => x.source === 'generated').reduce((a, x) => a + x.plannedPoints, 0),
         earnedPoints,
-        baseline,
-        counts: dayCounts({ date: d, earned: earnedPoints, baseline, isRestDay: capacity.isRestDay }),
+        baseline: snap.baseline,
+        baselineSnapshot: snap,
+        counts: dayCounts({ date: d, earned: earnedPoints, baseline: snap.baseline, isRestDay: snap.isRestDay }),
       };
     });
   }
@@ -583,33 +633,32 @@ export class LearningService {
     return v;
   }
 
-  /** Streak records from the first activity until `asOf`; also refreshes the daily_summary cache. */
+  /**
+   * Streak records from the first activity until `asOf`, using frozen
+   * snapshots for past days. Earned points are always computed from tasks
+   * completed on each date. Also refreshes the cached totals.
+   */
   streakRecords(asOf: IsoDate): DayRecord[] {
     const first = this.tasks.firstActivityDate();
     const from = first && first < asOf ? first : asOf;
-    const settings = this.settings();
-    const expl = this.baseline(settings);
-    const overrides = this.overrides.range(from, asOf);
+    const snapshots = this.daySnapshots(from, asOf);
     const earned = this.earnedByDate();
     const records: DayRecord[] = dateRange(from, asOf).map((d) => {
-      const cap = dayCapacity(d, settings, overrides.get(d));
-      return { date: d, earned: earned.get(d) ?? 0, baseline: baselineFor(expl, cap), isRestDay: cap.isRestDay };
+      const snap = snapshots.get(d) as DaySnapshot;
+      return { date: d, earned: earned.get(d) ?? 0, baseline: snap.baseline, isRestDay: snap.isRestDay };
     });
-    const ctx = this.scoringContext(settings);
+    const ctx = this.scoringContext();
     const plannedByDate = new Map<IsoDate, number>();
     for (const task of this.tasks.byDateRange(from, asOf)) {
       if (task.source !== 'generated') continue;
       plannedByDate.set(task.date, (plannedByDate.get(task.date) ?? 0) + plannedPoints(task, ctx).points);
     }
-    this.summary.upsertMany(
+    this.summary.updateTotals(
       records.map((r) => ({
         date: r.date,
         earnedPoints: r.earned,
         plannedPoints: plannedByDate.get(r.date) ?? 0,
-        baseline: r.baseline,
         counts: dayCounts(r),
-        isRestDay: r.isRestDay,
-        isFasting: dayCapacity(r.date, settings, overrides.get(r.date)).isFasting,
       })),
       this.nowIso(),
     );

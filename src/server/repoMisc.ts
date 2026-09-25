@@ -127,29 +127,78 @@ export interface DailySummaryRow {
   isFasting: boolean;
 }
 
+export interface DaySnapshot {
+  baseline: number;
+  isRestDay: boolean;
+  isFasting: boolean;
+}
+
+interface SummaryDbRow {
+  date: string;
+  earned_points: number;
+  planned_points: number;
+  baseline: number;
+  counts: number;
+  is_rest_day: number;
+  is_fasting: number;
+}
+
+/**
+ * daily_summary holds the per-day baseline snapshot (baseline, rest day,
+ * fasting) plus cached totals. Snapshots of past days are frozen: they are
+ * only ever inserted, never updated (see LearningService.daySnapshots).
+ */
 export class SummaryRepo {
   constructor(private readonly db: Db) {}
 
-  upsertMany(rows: readonly DailySummaryRow[], nowIso: string): void {
-    const stmt = this.db.prepare(
-      `INSERT INTO daily_summary (date, earned_points, planned_points, baseline, counts, is_rest_day, is_fasting, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-       ON CONFLICT(date) DO UPDATE SET earned_points = excluded.earned_points, planned_points = excluded.planned_points,
-         baseline = excluded.baseline, counts = excluded.counts, is_rest_day = excluded.is_rest_day,
-         is_fasting = excluded.is_fasting, updated_at = excluded.updated_at`,
-    );
-    for (const r of rows) {
-      stmt.run(
+  range(from: IsoDate, to: IsoDate): Map<IsoDate, DailySummaryRow> {
+    const rows = this.db
+      .prepare('SELECT * FROM daily_summary WHERE date BETWEEN ? AND ?')
+      .all(from, to) as unknown as SummaryDbRow[];
+    return new Map(
+      rows.map((r) => [
         r.date,
-        r.earnedPoints,
-        r.plannedPoints,
-        r.baseline,
-        r.counts ? 1 : 0,
-        r.isRestDay ? 1 : 0,
-        r.isFasting ? 1 : 0,
-        nowIso,
-      );
-    }
+        {
+          date: r.date,
+          earnedPoints: r.earned_points,
+          plannedPoints: r.planned_points,
+          baseline: r.baseline,
+          counts: r.counts === 1,
+          isRestDay: r.is_rest_day === 1,
+          isFasting: r.is_fasting === 1,
+        },
+      ]),
+    );
+  }
+
+  /** Inserts a snapshot only if the day has none yet (used to freeze past days). */
+  insertSnapshotIfMissing(date: IsoDate, s: DaySnapshot, snapshotDate: IsoDate, nowIso: string): void {
+    this.db
+      .prepare(
+        `INSERT INTO daily_summary (date, earned_points, planned_points, baseline, counts, is_rest_day, is_fasting, updated_at, snapshot_date)
+         VALUES (?, 0, 0, ?, 0, ?, ?, ?, ?) ON CONFLICT(date) DO NOTHING`,
+      )
+      .run(date, s.baseline, s.isRestDay ? 1 : 0, s.isFasting ? 1 : 0, nowIso, snapshotDate);
+  }
+
+  /** Inserts or refreshes a snapshot (only ever called for today). */
+  upsertSnapshot(date: IsoDate, s: DaySnapshot, snapshotDate: IsoDate, nowIso: string): void {
+    this.db
+      .prepare(
+        `INSERT INTO daily_summary (date, earned_points, planned_points, baseline, counts, is_rest_day, is_fasting, updated_at, snapshot_date)
+         VALUES (?, 0, 0, ?, 0, ?, ?, ?, ?)
+         ON CONFLICT(date) DO UPDATE SET baseline = excluded.baseline, is_rest_day = excluded.is_rest_day,
+           is_fasting = excluded.is_fasting, updated_at = excluded.updated_at, snapshot_date = excluded.snapshot_date`,
+      )
+      .run(date, s.baseline, s.isRestDay ? 1 : 0, s.isFasting ? 1 : 0, nowIso, snapshotDate);
+  }
+
+  /** Updates cached totals of existing rows; never touches the snapshot columns. */
+  updateTotals(rows: readonly { date: IsoDate; earnedPoints: number; plannedPoints: number; counts: boolean }[], nowIso: string): void {
+    const stmt = this.db.prepare(
+      'UPDATE daily_summary SET earned_points = ?, planned_points = ?, counts = ?, updated_at = ? WHERE date = ?',
+    );
+    for (const r of rows) stmt.run(r.earnedPoints, r.plannedPoints, r.counts ? 1 : 0, nowIso, r.date);
   }
 }
 

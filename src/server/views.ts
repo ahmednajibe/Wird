@@ -15,7 +15,7 @@ import {
   plannedMemorizeMinutes,
   selectReviewPages,
 } from '../shared/quran.js';
-import { JUZ, juzOfPage, QURAN_PAGES, SURAHS, surahLabelForPage, surahsOnPage } from '../shared/quranData.js';
+import { JUZ, juzOfPage, pageContents, pageContentsLabel, QURAN_ATTRIBUTION, QURAN_PAGES, SURAHS, surahLabelForPage } from '../shared/quranData.js';
 import { computeStreak, dayCounts, levelFor } from '../shared/streak.js';
 import type { IsoDate } from '../shared/types.js';
 import { STREAM_LABELS, STUDY_TRACK_STREAMS, TRACK_LABELS } from '../shared/types.js';
@@ -31,6 +31,7 @@ function quranSummary(service: LearningService) {
     remaining: QURAN_PAGES - memorizedCount(state),
     nextPage: next,
     nextPageSurahs: next ? surahLabelForPage(next) : null,
+    nextPageContents: next ? pageContentsLabel(next) : null,
     nextPageJuz: next ? juzOfPage(next) : null,
     nextSessionType: nextSessionType(state),
     lastCompletedSessionType: state.lastCompletedSessionType,
@@ -83,8 +84,9 @@ export function dashboard(service: LearningService, date: IsoDate) {
       earnedPoints: d.earnedPoints,
       baseline: d.baseline,
       counts: d.counts,
-      fasting: d.fasting.isFasting,
-      isRestDay: d.capacity.isRestDay,
+      fasting: d.baselineSnapshot.isFasting,
+      isRestDay: d.baselineSnapshot.isRestDay,
+      baselineFrozen: d.baselineSnapshot.frozen,
       capacity: d.capacity.total,
       isPast: d.isPast,
       isToday: d.isToday,
@@ -163,6 +165,7 @@ export function quran(service: LearningService) {
   const activeDays = settings.capacityByDow.filter((c) => c > 0).length;
   return {
     today: t,
+    attribution: QURAN_ATTRIBUTION,
     settings: settings.quran,
     pages: state.pages.map((p) => ({
       page: p.page,
@@ -170,7 +173,9 @@ export function quran(service: LearningService) {
       memorizedDate: p.memorizedDate,
       lastReviewed: p.lastReviewed,
       juz: juzOfPage(p.page),
-      surahs: surahsOnPage(p.page).map((s) => s.number),
+      surahs: pageContents(p.page).map((seg) => seg.surah),
+      segments: pageContents(p.page),
+      label: pageContentsLabel(p.page),
     })),
     memorized: memorizedCount(state),
     nextPage: nextPage(state, settings.quran.memorizationOrder),
@@ -198,15 +203,17 @@ export function stats(service: LearningService) {
   const from = addDays(t, -364);
   const records = service.streakRecords(t);
   const byDate = new Map(records.map((r) => [r.date, r]));
-  const settings = service.settings();
-  const overrides = service.overrides.range(from, t);
-  const expl = service.baseline(settings);
+  const snapshots = service.daySnapshots(from, t);
   const daily = dateRange(from, t).map((d) => {
     const r = byDate.get(d);
-    const cap = dayCapacity(d, settings, overrides.get(d));
-    const baseline = r?.baseline ?? (cap.isRestDay ? 0 : cap.isFasting ? expl.fasting : expl.normal);
-    const points = r?.earned ?? 0;
-    return { date: d, points, baseline, counts: r ? dayCounts(r) : false, isRestDay: cap.isRestDay };
+    const snap = snapshots.get(d);
+    return {
+      date: d,
+      points: r?.earned ?? 0,
+      baseline: r?.baseline ?? snap?.baseline ?? 0,
+      counts: r ? dayCounts(r) : false,
+      isRestDay: r?.isRestDay ?? snap?.isRestDay ?? false,
+    };
   });
   const completed = service.tasks.completedBetween(from, t);
   const weeklyMap = new Map<IsoDate, { weekStart: IsoDate; points: number; minutes: number; tasks: number }>();

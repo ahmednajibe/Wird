@@ -5,6 +5,7 @@ import {
   buildSession,
   deriveQuranState,
   emptyQuranState,
+  memorizeSessionFor,
   memorizationOrder,
   memorizedCount,
   nextSessionType,
@@ -13,7 +14,19 @@ import {
   selectReviewPages,
   type QuranState,
 } from '../src/shared/quran.js';
-import { juzOfPage, juzStartPage, SURAHS, surahsOnPage } from '../src/shared/quranData.js';
+import {
+  juzOfPage,
+  juzStartPage,
+  pageContents,
+  pageContentsLabel,
+  pageOfAyah,
+  QURAN_ATTRIBUTION,
+  QURAN_AYAHS,
+  SURAH_START_PAGES,
+  SURAHS,
+  surahsOnPage,
+} from '../src/shared/quranData.js';
+import { JUZ_STARTS, PAGE_STARTS, SURAH_AYAH_COUNTS, SURAH_NAMES_AR } from '../src/shared/quranData.generated.js';
 import { DEFAULT_SETTINGS } from '../src/shared/settings.js';
 import type { Task } from '../src/shared/types.js';
 
@@ -199,5 +212,94 @@ describe('review selection', () => {
       }
       expect(seen2.size).toBe(n);
     }
+  });
+});
+
+describe('exact page data (Tanzil)', () => {
+  const key = (s: number, a: number): number => s * 1000 + a;
+  const pageOfStart = (s: number, a: number): number => {
+    let page = 1;
+    PAGE_STARTS.forEach(([ps, pa], i) => {
+      if (key(ps, pa) <= key(s, a)) page = i + 1;
+    });
+    return page;
+  };
+
+  it('has 604 pages, 114 surahs and 30 juz', () => {
+    expect(PAGE_STARTS).toHaveLength(604);
+    expect(SURAH_AYAH_COUNTS).toHaveLength(114);
+    expect(JUZ_STARTS).toHaveLength(30);
+  });
+
+  it('surah start pages derived from Tanzil equal the given 114-entry list', () => {
+    const derived = SURAHS.map((s) => pageOfStart(s.number, 1));
+    expect(derived).toEqual([...SURAH_START_PAGES]);
+    expect(SURAH_START_PAGES).toHaveLength(114);
+  });
+
+  it('pageContents(604) = Al-Ikhlas 1-4, Al-Falaq 1-5, An-Nas 1-6', () => {
+    expect(pageContents(604)).toEqual([
+      { surah: 112, fromAyah: 1, toAyah: 4 },
+      { surah: 113, fromAyah: 1, toAyah: 5 },
+      { surah: 114, fromAyah: 1, toAyah: 6 },
+    ]);
+    expect(pageContentsLabel(604)).toBe('Al-Ikhlas 1-4, Al-Falaq 1-5, An-Nas 1-6');
+  });
+
+  it('pageContents(1) = Al-Fatihah 1-7', () => {
+    expect(pageContents(1)).toEqual([{ surah: 1, fromAyah: 1, toAyah: 7 }]);
+  });
+
+  it('page 583 content and the memorize task description', () => {
+    console.log('Page 583:', pageContentsLabel(583));
+    expect(pageContentsLabel(583)).toBe("An-Naba 31-40, An-Nazi'at 1-15");
+    const s = memorizeSessionFor(583, 40);
+    expect(s.title).toBe('Memorize page 583');
+    expect(s.description.startsWith("An-Naba 31-40, An-Nazi'at 1-15 (Juz 30)")).toBe(true);
+  });
+
+  it('all pages together cover every ayah exactly once (6236)', () => {
+    let total = 0;
+    const perSurah = new Array<number>(115).fill(0);
+    for (let p = 1; p <= 604; p++) {
+      for (const seg of pageContents(p)) {
+        expect(seg.toAyah).toBeGreaterThanOrEqual(seg.fromAyah);
+        const n = seg.toAyah - seg.fromAyah + 1;
+        total += n;
+        perSurah[seg.surah] = (perSurah[seg.surah] ?? 0) + n;
+      }
+    }
+    expect(total).toBe(6236);
+    expect(total).toBe(QURAN_AYAHS);
+    SURAHS.forEach((s) => expect(perSurah[s.number]).toBe(s.ayahCount));
+  });
+
+  it('juz starts from Tanzil match juzOfPage / juzStartPage', () => {
+    // Page-level juz numbering uses 20*(n-1)+2. Tanzil's juz start ayah lies on
+    // that page (sometimes mid-page, e.g. juz 4 at 3:93), except for juz 7 (5:82) and juz 11 (9:93) whose first ayah is
+    // the last ayah of the preceding page.
+    const lastAyahExceptions: number[] = [];
+    JUZ_STARTS.forEach(([s, a], i) => {
+      const juz = i + 1;
+      const startPage = juzStartPage(juz);
+      const page = pageOfAyah(s, a);
+      expect(page).toBe(pageOfStart(s, a));
+      expect(juzOfPage(startPage), `juz ${juz}`).toBe(juz);
+      if (startPage > 1) expect(juzOfPage(startPage - 1)).toBe(juz - 1);
+      if (page !== startPage) {
+        expect(page).toBe(startPage - 1);
+        const segs = pageContents(page);
+        expect(segs[segs.length - 1]).toMatchObject({ surah: s, toAyah: a });
+        lastAyahExceptions.push(juz);
+      }
+    });
+    expect(lastAyahExceptions).toEqual([7, 11]);
+  });
+
+
+  it('Arabic names come from Tanzil', () => {
+    expect(SURAHS.map((s) => s.nameAr)).toEqual([...SURAH_NAMES_AR]);
+    expect(SURAHS[0]?.nameAr).toBe('الفاتحة');
+    expect(QURAN_ATTRIBUTION).toBe('Quran metadata: Tanzil.net (CC BY 3.0)');
   });
 });
