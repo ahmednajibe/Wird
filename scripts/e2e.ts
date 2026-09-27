@@ -126,7 +126,12 @@ async function run(): Promise<void> {
       assert(first === 'quran', `first task track is ${first}`);
       assert(await page.locator('[data-testid="goal-card"]').isVisible(), 'goal ring visible');
       assert(await page.locator('[data-testid="streak-card"]').isVisible(), 'streak card visible');
-      assert((await page.locator('[data-testid="week-strip"] button').count()) === 7, 'week strip has 7 days');
+      assert((await page.locator('[data-testid="week-strip"] > *').count()) === 7, 'week strip has 7 days');
+      const dash = (await (await fetch(`${base}/api/dashboard`)).json()) as { trackingStartDate: string; today: string; weekSummary: { beforeStart: boolean }[] };
+      assert(dash.trackingStartDate === dash.today, `fresh database starts tracking today (${dash.trackingStartDate})`);
+      const notStarted = await page.locator('[data-testid="week-day-not-started"]').count();
+      const expected = dash.weekSummary.filter((d) => d.beforeStart).length;
+      assert(notStarted === expected, `${notStarted} not-started days shown, API says ${expected}`);
     });
 
     let points = 0;
@@ -158,6 +163,25 @@ async function run(): Promise<void> {
       await page.locator('[data-testid="add-task-form"]').waitFor({ state: 'detached' });
       await page.waitForFunction(`${POINTS_JS} === ${points + preview}`, undefined, { timeout: 10_000 });
       points += preview;
+    });
+
+    await check('Skip moves a study session forward in its own track', async () => {
+      await page.goto(`${base}/`);
+      await settle(page);
+      const card = page.locator('[data-testid="task-card"][data-status="pending"]:not([data-track="quran"])').first();
+      const title = await card.locator('h3').innerText();
+      const before = (await (await fetch(`${base}/api/dashboard`)).json()) as { tasks: { id: number; title: string; track: string; stream: string; plannedMinutes: number }[] };
+      const task = before.tasks.find((t) => t.title === title);
+      assert(task, `task "${title}" found in the API`);
+      await card.locator('[data-testid="task-skip"]').click();
+      await page.locator('[data-testid="task-card"][data-status="rolled"] [data-testid="task-rolled"]').first().waitFor();
+      await page.waitForLoadState('networkidle');
+      const rolledCard = page.locator('[data-testid="task-card"][data-status="rolled"]').first();
+      assert((await rolledCard.locator('[data-testid="task-complete"]').count()) === 0, 'rolled task has no Complete button');
+      const after = (await (await fetch(`${base}/api/dashboard`)).json()) as { tasks: { id: number; status: string }[] };
+      assert(after.tasks.find((t) => t.id === task.id)?.status === 'rolled', 'API reports the task as rolled');
+      const pts = await numberAttr(page, '[data-testid="points-today"]');
+      assert(pts === points, `points unchanged by the move (${pts} vs ${points})`);
     });
 
     await check('Plan shows 7 day cards', async () => {

@@ -3,7 +3,7 @@
  */
 import { dayCapacity, fastingInfo, toHijri } from '../shared/calendar.js';
 import { CURRICULUM, UNSCHEDULED_RESOURCES, modulesFor } from '../shared/curriculum.js';
-import { addDays, dateRange, dayOfWeek, DOW_NAMES, minDate, weekStart } from '../shared/dates.js';
+import { addDays, dateRange, dayOfWeek, DOW_NAMES, maxDate, minDate, weekStart } from '../shared/dates.js';
 import { normalWeekPlan, weeklyMinutesByStream } from '../shared/planner.js';
 import { quranProjection, streamProjections } from '../shared/projections.js';
 import {
@@ -42,6 +42,8 @@ function quranSummary(service: LearningService) {
 
 export function dashboard(service: LearningService, date: IsoDate) {
   const t = service.today();
+  const trackingStartDate = service.trackingStartDate();
+  service.rollForward();
   service.syncQuranTasks();
   service.ensureWeek(t);
   if (date >= t) service.ensureWeek(date);
@@ -61,6 +63,9 @@ export function dashboard(service: LearningService, date: IsoDate) {
   return {
     date,
     today: t,
+    trackingStartDate,
+    beforeStart: day.beforeStart,
+    bufferMinutes: day.bufferMinutes,
     dayName: day.dayName,
     hijri: day.hijri,
     fasting: { isFasting: day.fasting.isFasting, reasons: day.fasting.reasons, codes: day.fasting.codes },
@@ -88,6 +93,8 @@ export function dashboard(service: LearningService, date: IsoDate) {
       isRestDay: d.baselineSnapshot.isRestDay,
       baselineFrozen: d.baselineSnapshot.frozen,
       capacity: d.capacity.total,
+      bufferMinutes: d.bufferMinutes,
+      beforeStart: d.beforeStart,
       isPast: d.isPast,
       isToday: d.isToday,
     })),
@@ -97,14 +104,18 @@ export function dashboard(service: LearningService, date: IsoDate) {
 
 export function week(service: LearningService, start: IsoDate) {
   const s = weekStart(start);
+  const trackingStartDate = service.trackingStartDate();
+  service.rollForward();
   service.syncQuranTasks();
   service.ensureWeek(s);
   const days = service.dayViews(s, addDays(s, 6));
   return {
     start: s,
     end: addDays(s, 6),
+    trackingStartDate,
     totals: {
       plannedMinutes: days.reduce((a, d) => a + d.plannedMinutes, 0),
+      bufferMinutes: days.reduce((a, d) => a + d.bufferMinutes, 0),
       capacity: days.reduce((a, d) => a + d.capacity.total, 0),
       plannedPoints: days.reduce((a, d) => a + d.plannedPoints, 0),
       earnedPoints: days.reduce((a, d) => a + d.earnedPoints, 0),
@@ -148,6 +159,13 @@ export function tracks(service: LearningService) {
   return {
     today: t,
     normalWeekMinutes: weekly,
+    normalWeek: {
+      capacity: normal.reduce((a, d) => a + d.capacity, 0),
+      quranReserveMinutes: normal.reduce((a, d) => a + d.quranReserve, 0),
+      quranPlannedMinutes: quranWeekly?.plannedMinutes ?? 0,
+      bufferMinutes: normal.reduce((a, d) => a + d.bufferMinutes, 0),
+      studyMinutes: weekly.filter((w) => w.track !== 'quran').reduce((a, w) => a + w.plannedMinutes, 0),
+    },
     streams: groups,
     quran: { ...quranSummary(service), weeklyPlannedMinutes: quranWeekly?.plannedMinutes ?? 0 },
     totals: {
@@ -200,6 +218,7 @@ export function quran(service: LearningService) {
 
 export function stats(service: LearningService) {
   const t = service.today();
+  const trackingStartDate = service.trackingStartDate();
   const from = addDays(t, -364);
   const records = service.streakRecords(t);
   const byDate = new Map(records.map((r) => [r.date, r]));
@@ -207,15 +226,17 @@ export function stats(service: LearningService) {
   const daily = dateRange(from, t).map((d) => {
     const r = byDate.get(d);
     const snap = snapshots.get(d);
+    const beforeStart = d < trackingStartDate;
     return {
       date: d,
-      points: r?.earned ?? 0,
-      baseline: r?.baseline ?? snap?.baseline ?? 0,
-      counts: r ? dayCounts(r) : false,
-      isRestDay: r?.isRestDay ?? snap?.isRestDay ?? false,
+      points: beforeStart ? 0 : (r?.earned ?? 0),
+      baseline: beforeStart ? 0 : (r?.baseline ?? snap?.baseline ?? 0),
+      counts: !beforeStart && r ? dayCounts(r) : false,
+      isRestDay: beforeStart ? false : (r?.isRestDay ?? snap?.isRestDay ?? false),
+      beforeStart,
     };
   });
-  const completed = service.tasks.completedBetween(from, t);
+  const completed = service.tasks.completedBetween(maxDate(from, trackingStartDate), t);
   const weeklyMap = new Map<IsoDate, { weekStart: IsoDate; points: number; minutes: number; tasks: number }>();
   const trackMap = new Map<string, { track: string; stream: string; points: number; minutes: number; tasks: number }>();
   for (const task of completed) {
@@ -237,6 +258,7 @@ export function stats(service: LearningService) {
   const streak = computeStreak(records, t);
   return {
     today: t,
+    trackingStartDate,
     daily,
     weekly: [...weeklyMap.values()].sort((a, b) => (a.weekStart < b.weekStart ? -1 : 1)),
     perTrack: [...trackMap.values()],

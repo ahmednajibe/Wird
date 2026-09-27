@@ -12,6 +12,7 @@ import { metaByKey, trackKey, TRACK_ORDER, type TrackKey } from '../lib/tracks';
 type Day = StatsResponse['daily'][number];
 
 function level(d: Day): { cls: string; label: string } {
+  if (d.beforeStart) return { cls: 'bg-transparent border border-line opacity-40', label: 'not started' };
   if (d.isRestDay) return { cls: 'border border-dashed border-line-strong bg-transparent', label: 'rest day' };
   if (d.points <= 0) return { cls: 'bg-[var(--grid-empty)]', label: 'no points' };
   const ratio = d.baseline > 0 ? d.points / d.baseline : 2;
@@ -63,7 +64,12 @@ function Heatmap({ daily }: { daily: Day[] }) {
                   <span
                     key={j}
                     data-testid="heat-cell"
-                    title={`${formatMediumDate(d.date)}: ${d.points} points${d.isRestDay ? ', rest day' : `, goal ${d.baseline}`}${d.counts ? ', counted' : ''}`}
+                    data-before-start={d.beforeStart ? 'true' : undefined}
+                    title={
+                      d.beforeStart
+                        ? `${formatMediumDate(d.date)}: not started`
+                        : `${formatMediumDate(d.date)}: ${d.points} points${d.isRestDay ? ', rest day' : `, goal ${d.baseline}`}${d.counts ? ', counted' : ''}`
+                    }
                     className={cn('size-3 rounded-[3px] lg:size-[14px]', level(d).cls)}
                   />
                 ) : (
@@ -85,6 +91,7 @@ function HeatLegend() {
     { cls: 'bg-accent-fill/55', label: 'Goal reached' },
     { cls: 'bg-accent-fill', label: '2.5x goal or more' },
     { cls: 'border border-dashed border-line-strong', label: 'Rest day' },
+    { cls: 'border border-line opacity-40', label: 'Not started' },
   ];
   return (
     <ul className="flex flex-wrap gap-x-4 gap-y-2 text-xs text-muted">
@@ -216,7 +223,9 @@ export function StatsPage() {
         <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <h2 className="text-lg font-semibold tracking-tight">Last 365 days</h2>
-            <p className="text-sm text-muted">Green days reached their goal. Grey days had some points but fell short.</p>
+            <p className="text-sm text-muted">
+              Green days reached their goal. Grey days had some points but fell short. Tracking started on {formatMediumDate(d.trackingStartDate)}.
+            </p>
           </div>
           <HeatLegend />
         </div>

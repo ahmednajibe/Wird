@@ -66,6 +66,10 @@ export interface DayView {
   plannedMinutes: number;
   plannedPoints: number;
   earnedPoints: number;
+  /** Optional buffer: Quran reservation minus the day's Quran session (never scored). */
+  bufferMinutes: number;
+  /** Before the tracking start date: "Not started". */
+  beforeStart: boolean;
   baseline: number;
   baselineSnapshot: { baseline: number; isRestDay: boolean; isFasting: boolean; frozen: boolean };
   counts: boolean;
@@ -82,6 +86,8 @@ export interface WeekSummaryDay {
   isRestDay: boolean;
   baselineFrozen: boolean;
   capacity: number;
+  bufferMinutes: number;
+  beforeStart: boolean;
   isPast: boolean;
   isToday: boolean;
 }
@@ -102,6 +108,9 @@ export interface QuranSummary {
 export interface Dashboard {
   date: IsoDate;
   today: IsoDate;
+  trackingStartDate: IsoDate;
+  beforeStart: boolean;
+  bufferMinutes: number;
   dayName: string;
   hijri: HijriDate;
   fasting: { isFasting: boolean; reasons: string[]; codes: FastingCode[] };
@@ -120,7 +129,8 @@ export interface Dashboard {
 export interface WeekResponse {
   start: IsoDate;
   end: IsoDate;
-  totals: { plannedMinutes: number; capacity: number; plannedPoints: number; earnedPoints: number };
+  trackingStartDate: IsoDate;
+  totals: { plannedMinutes: number; bufferMinutes: number; capacity: number; plannedPoints: number; earnedPoints: number };
   days: DayView[];
 }
 
@@ -153,6 +163,7 @@ export interface TrackStreamGroup {
 export interface TracksResponse {
   today: IsoDate;
   normalWeekMinutes: StreamWeekly[];
+  normalWeek: { capacity: number; quranReserveMinutes: number; quranPlannedMinutes: number; bufferMinutes: number; studyMinutes: number };
   streams: TrackStreamGroup[];
   quran: QuranSummary & { weeklyPlannedMinutes: number };
   totals: { modules: number; completedModules: number };
@@ -196,7 +207,8 @@ export interface QuranResponse {
 
 export interface StatsResponse {
   today: IsoDate;
-  daily: { date: IsoDate; points: number; baseline: number; counts: boolean; isRestDay: boolean }[];
+  trackingStartDate: IsoDate;
+  daily: { date: IsoDate; points: number; baseline: number; counts: boolean; isRestDay: boolean; beforeStart: boolean }[];
   weekly: { weekStart: IsoDate; points: number; minutes: number; tasks: number }[];
   perTrack: { track: TrackId; stream: StreamId; points: number; minutes: number; tasks: number }[];
   totals: { points: number; daysCounted: number };

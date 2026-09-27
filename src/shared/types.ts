@@ -40,8 +40,12 @@ export type TaskType = StudyTaskType | QuranTaskType;
 
 export type Intensity = 'deep' | 'normal' | 'light';
 export type TaskSource = 'generated' | 'manual';
-/** Stored status. 'missed' is derived for past pending tasks. */
-export type StoredTaskStatus = 'pending' | 'completed' | 'skipped';
+/**
+ * Stored status. 'missed' is derived for past pending tasks. 'rolled' marks a
+ * generated study session whose content moved forward to the next slot of
+ * its own stream (missed or skipped); it earns no points and is not missed.
+ */
+export type StoredTaskStatus = 'pending' | 'completed' | 'skipped' | 'rolled';
 export type TaskStatus = StoredTaskStatus | 'missed';
 
 export type SlotRole = 'quran' | 'warmup' | 'focus';
@@ -93,6 +97,8 @@ export interface Task {
   moduleId: string | null;
   slotKey: string | null;
   sortOrder: number;
+  /** Position in the stream's session queue (generated study tasks only). */
+  sessionNo: number | null;
   quranPages: number[];
   pagesCount: number | null;
   offCurriculum: boolean;
@@ -113,6 +119,8 @@ export interface PlannedTask {
   moduleId: string | null;
   slotKey: string;
   sortOrder: number;
+  /** Position in the stream's session queue (null for Quran). */
+  sessionNo: number | null;
   quranPages: number[];
 }
 

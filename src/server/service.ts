@@ -5,7 +5,15 @@
 import { dayCapacity, fastingInfo, toHijri, type DayCapacity } from '../shared/calendar.js';
 import { getModule } from '../shared/curriculum.js';
 import { addDays, dateRange, dayOfWeek, DOW_NAMES, maxDate, today as cairoToday, weekEnd } from '../shared/dates.js';
-import { planDays, type KeptMinutes, type PlanDayInput } from '../shared/planner.js';
+import {
+  planDays,
+  replanStream,
+  streamKeyOf,
+  type KeptMinutes,
+  type PlanDayInput,
+  type SessionCounters,
+  type StreamSlotItem,
+} from '../shared/planner.js';
 import { buildLedger, creditMinutes, type CreditEvent, type ModuleLedger } from '../shared/progress.js';
 import {
   applySession,
@@ -13,6 +21,7 @@ import {
   deriveQuranState,
   nextPages,
   plannedMemorizeMinutes,
+  quranReserveMinutes,
   selectReviewPages,
   type QuranState,
 } from '../shared/quran.js';
@@ -31,6 +40,7 @@ import type {
   TaskType,
   TrackId,
 } from '../shared/types.js';
+import { STUDY_TRACK_STREAMS } from '../shared/types.js';
 import { transaction, type Db } from './db.js';
 import { badRequest, conflict, notFound } from './errors.js';
 import { DayOverrideRepo, type DaySnapshot, MetaRepo, ModuleStateRepo, SettingsRepo, SummaryRepo } from './repoMisc.js';
@@ -44,6 +54,9 @@ export const systemClock: Clock = { now: () => new Date() };
 
 /** How far ahead weeks may be planned and persisted. */
 export const MAX_WEEKS_AHEAD = 26;
+
+/** meta key: first Cairo date that is tracked (planned, scored, streaked). */
+export const TRACKING_START_KEY = 'tracking_start_date';
 
 export interface TaskView extends Omit<Task, 'status'> {
   status: TaskStatus;
@@ -65,6 +78,13 @@ export interface DayView {
   plannedMinutes: number;
   plannedPoints: number;
   earnedPoints: number;
+  /**
+   * Optional buffer: the day's Quran reservation minus its Quran session.
+   * Never planned as tasks and never scored.
+   */
+  bufferMinutes: number;
+  /** The day is before the tracking start date ("Not started"). */
+  beforeStart: boolean;
   baseline: number;
   /** Baseline snapshot used for the day (frozen for past days). */
   baselineSnapshot: DaySnapshot & { frozen: boolean };
@@ -148,6 +168,28 @@ export class LearningService {
     return computeBaseline(settings);
   }
 
+  /**
+   * First tracked date. Set to today (Cairo) the first time it is needed;
+   * never hardcoded. Dates before it are never planned, scored or streaked.
+   */
+  trackingStartDate(): IsoDate {
+    const stored = this.meta.get(TRACKING_START_KEY);
+    if (stored) return stored;
+    const t = this.today();
+    this.meta.set(TRACKING_START_KEY, t);
+    return t;
+  }
+
+  /** First date that may be planned: max(today, tracking start). */
+  private planFloor(): IsoDate {
+    return maxDate(this.today(), this.trackingStartDate());
+  }
+
+  /** Daily Quran reservation R from the real Quran state. */
+  quranReserve(settings: Settings = this.settings(), state: QuranState = this.quranState()): number {
+    return quranReserveMinutes(state, settings.quran);
+  }
+
   // ----------------------------------------------------------- planning
 
   private assertPlannable(date: IsoDate): void {
@@ -157,7 +199,7 @@ export class LearningService {
 
   /** Plans every not-yet-planned day in [today, end of the week of `date`]. */
   ensureWeek(date: IsoDate): number {
-    const t = this.today();
+    const t = this.planFloor();
     const end = weekEnd(date);
     if (end < t) return 0;
     this.assertPlannable(end);
@@ -173,7 +215,7 @@ export class LearningService {
    * manual tasks are never touched. `to` defaults to the end of from's week.
    */
   regenerate(from: IsoDate = this.today(), to?: IsoDate): { from: IsoDate; to: IsoDate; deleted: number; created: number } {
-    const t = this.today();
+    const t = this.planFloor();
     const start = maxDate(from, t);
     const end = to ?? weekEnd(from);
     if (start > end) return { from: start, to: end, deleted: 0, created: 0 };
@@ -191,7 +233,7 @@ export class LearningService {
   /** Core planner call for a sorted list of dates (all >= today). Returns tasks created. */
   private planDates(dates: IsoDate[]): number {
     if (dates.length === 0) return 0;
-    const t = this.today();
+    const t = this.planFloor();
     const sorted = [...new Set(dates)].filter((d) => d >= t).sort();
     if (sorted.length === 0) return 0;
     const first = sorted[0] as IsoDate;
@@ -208,17 +250,25 @@ export class LearningService {
       tasksByDate.set(task.date, list);
     }
 
-    // Simulate pending generated work that happens before the first target day.
+    // Simulate pending generated work that happens before the first target
+    // day, and continue each stream's session numbering after it.
     const ledger = this.ledger();
+    const sessions: SessionCounters = new Map();
+    for (const { track, stream } of STUDY_TRACK_STREAMS) {
+      sessions.set(streamKeyOf(track, stream), this.tasks.countCompletedGenerated(track, stream) + 1);
+    }
     for (const task of rangeTasks) {
       if (task.date >= first || target.has(task.date)) continue;
-      if (task.source !== 'generated' || task.status !== 'pending' || !task.moduleId) continue;
-      ledger.apply(task.moduleId, creditMinutes(task.type, task.plannedMinutes));
+      if (task.source !== 'generated' || task.status !== 'pending' || task.track === 'quran') continue;
+      const key = streamKeyOf(task.track, task.stream);
+      sessions.set(key, (sessions.get(key) ?? 1) + 1);
+      if (task.moduleId) ledger.apply(task.moduleId, creditMinutes(task.type, task.plannedMinutes));
     }
 
     // Project Quran sessions from today, assuming completion.
     let qState = this.quranState();
-    const sessions = new Map<IsoDate, QuranSessionPlan>();
+    const reserve = this.quranReserve(settings, qState);
+    const quranSessions = new Map<IsoDate, QuranSessionPlan>();
     for (const d of dateRange(t, last)) {
       const dayTasks = tasksByDate.get(d) ?? [];
       const quranTask = dayTasks.find((x) => x.track === 'quran' && x.source === 'generated');
@@ -231,7 +281,7 @@ export class LearningService {
       }
       if (!active) continue;
       const session = buildSession(qState, settings);
-      sessions.set(d, session);
+      quranSessions.set(d, session);
       qState = applySession(qState, session, d, { affectsAlternation: true });
     }
 
@@ -245,12 +295,13 @@ export class LearningService {
         date: d,
         isFasting: cap.isFasting,
         totalMinutes: cap.total,
-        quran: sessions.get(d) ?? null,
+        quranReserve: reserve,
+        quran: quranSessions.get(d) ?? null,
         kept,
       };
     });
 
-    const plan = planDays(inputs, settings, ledger);
+    const plan = planDays(inputs, settings, ledger, sessions);
     const nowIso = this.nowIso();
     let created = 0;
     for (const d of sorted) {
@@ -258,28 +309,39 @@ export class LearningService {
         this.tasks.insertPlanned(task, nowIso);
         created++;
       }
-      this.plannedDays.mark(d, nowIso);
+      this.plannedDays.mark(d, nowIso, reserve);
     }
     return created;
   }
 
   /**
-   * Re-derives type/content of today's and future uncompleted generated Quran
-   * tasks from the real Quran state. If a session's length changes, the
-   * affected days are re-planned so the day's capacity stays consistent.
+   * Re-derives type/content/length of today's and future uncompleted
+   * generated Quran tasks from the real Quran state. Study caps do not depend
+   * on the Quran session (only on the fixed reservation R), so a changed
+   * session is updated in place and the rest of the day is untouched; only
+   * when R itself changes (the rolling memorize average moved) are the
+   * affected days re-planned.
    */
   syncQuranTasks(): { updated: number; replanned: boolean } {
-    const t = this.today();
-    const pending = this.tasks.pendingGeneratedFrom(t).filter((x) => x.track === 'quran');
-    if (pending.length === 0) return { updated: 0, replanned: false };
+    const t = this.planFloor();
     const settings = this.settings();
-    const byDate = new Map(pending.map((x) => [x.date, x]));
-    const last = pending[pending.length - 1]?.date ?? t;
     let state = this.quranState();
-    let updated = 0;
-    let replanFrom: IsoDate | null = null;
+    const reserve = this.quranReserve(settings, state);
+    const maxPlanned = this.plannedDays.maxPlanned();
+    if (!maxPlanned || maxPlanned < t) return { updated: 0, replanned: false };
     return transaction(this.db, () => {
-      for (const d of dateRange(t, last)) {
+      const stale = [...this.plannedDays.reservesIn(t, maxPlanned)]
+        .filter(([, r]) => r !== reserve)
+        .map(([d]) => d)
+        .sort();
+      if (stale.length > 0) {
+        this.regenerate(stale[0] as IsoDate, maxPlanned);
+        return { updated: 0, replanned: true };
+      }
+      const pending = this.tasks.pendingGeneratedFrom(t).filter((x) => x.track === 'quran');
+      const byDate = new Map(pending.map((x) => [x.date, x]));
+      let updated = 0;
+      for (const d of dateRange(t, pending[pending.length - 1]?.date ?? t)) {
         const task = byDate.get(d);
         if (!task) continue;
         const session = buildSession(state, settings);
@@ -292,10 +354,6 @@ export class LearningService {
           task.plannedMinutes === session.minutes &&
           JSON.stringify(task.quranPages) === JSON.stringify(session.pages);
         if (same) continue;
-        if (task.plannedMinutes !== session.minutes) {
-          replanFrom ??= d;
-          continue;
-        }
         this.tasks.updateQuranContent(task.id, {
           type,
           title: session.title,
@@ -305,13 +363,66 @@ export class LearningService {
         });
         updated++;
       }
-      if (replanFrom) {
-        const end = maxDate(this.plannedDays.maxPlanned() ?? last, last);
-        this.regenerate(replanFrom, end);
-        return { updated, replanned: true };
-      }
       return { updated, replanned: false };
     });
+  }
+
+  // ------------------------------------------------------- roll-forward
+
+  /**
+   * Rolls missed (past pending) and skipped generated study tasks forward:
+   * they become 'rolled', then each affected stream's pending queue from
+   * today on is re-planned in place (same dates, slots and minutes; content,
+   * module and session numbers from real progress). Other streams and Quran
+   * are never touched.
+   */
+  rollForward(): { rolled: number; streams: string[] } {
+    const t = this.today();
+    const start = this.trackingStartDate();
+    return transaction(this.db, () => {
+      const candidates = this.tasks.rollCandidates(start, t);
+      if (candidates.length === 0) return { rolled: 0, streams: [] };
+      const streams = new Map<string, { track: TrackId; stream: StreamId }>();
+      for (const c of candidates) {
+        this.tasks.markRolled(c.id);
+        streams.set(streamKeyOf(c.track, c.stream), { track: c.track, stream: c.stream });
+      }
+      for (const { track, stream } of streams.values()) this.replanStreamQueue(track, stream);
+      return { rolled: candidates.length, streams: [...streams.keys()] };
+    });
+  }
+
+  /** Re-plans one stream's pending generated tasks from today, keeping every slot. */
+  private replanStreamQueue(track: TrackId, stream: StreamId): number {
+    const t = this.planFloor();
+    const queue = this.tasks.pendingGeneratedFrom(t).filter((x) => x.track === track && x.stream === stream && x.slotKey);
+    if (queue.length === 0) return 0;
+    const settings = this.settings();
+    const last = queue[queue.length - 1]?.date ?? t;
+    const overrides = this.overrides.range(t, last);
+    const items: StreamSlotItem[] = queue.map((x) => ({
+      date: x.date,
+      slotKey: x.slotKey as string,
+      plannedMinutes: x.plannedMinutes,
+      isFasting: dayCapacity(x.date, settings, overrides.get(x.date)).isFasting,
+    }));
+    const contents = replanStream(items, this.ledger(), this.tasks.countCompletedGenerated(track, stream) + 1);
+    let updated = 0;
+    queue.forEach((task, i) => {
+      const c = contents[i];
+      if (!c) return;
+      const same =
+        task.type === c.type &&
+        task.intensity === c.intensity &&
+        task.title === c.title &&
+        task.description === c.description &&
+        task.moduleId === c.moduleId &&
+        task.sessionNo === c.sessionNo;
+      if (same) return;
+      this.tasks.updateStudyContent(task.id, c);
+      updated++;
+    });
+    return updated;
   }
 
   // -------------------------------------------------------------- tasks
@@ -370,6 +481,8 @@ export class LearningService {
     const t = this.today();
     const date = input.date ?? t;
     if (date > t) throw badRequest('Manual tasks log work already done; the date cannot be in the future');
+    const start = this.trackingStartDate();
+    if (date < start) throw badRequest(`Tracking started on ${start}; tasks cannot be logged before that date`);
     const built = this.buildManual(input, this.ledger());
     const id = transaction(this.db, () => {
       const newId = this.tasks.insertManual(
@@ -401,6 +514,7 @@ export class LearningService {
     return transaction(this.db, () => {
       const task = this.requireTask(id);
       if (task.status === 'completed') return this.taskView(task);
+      if (task.status === 'rolled') throw badRequest('This session moved forward to the next slot of its stream; complete it there');
       if (task.date > t) throw badRequest('Cannot complete a task planned for a future date');
       if (actualMinutes !== null && (!Number.isInteger(actualMinutes) || actualMinutes < 1 || actualMinutes > 600)) {
         throw badRequest('actualMinutes must be an integer between 1 and 600');
@@ -441,6 +555,7 @@ export class LearningService {
     return transaction(this.db, () => {
       const task = this.requireTask(id);
       if (task.status === 'pending') return this.taskView(task);
+      if (task.status === 'rolled') throw badRequest('A session that moved forward cannot be undone');
       const clearPages = task.track === 'quran' && task.type === 'quran-memorize' && task.source === 'manual';
       this.tasks.markPending(id, clearPages);
       if (task.track === 'quran') this.syncQuranTasks();
@@ -453,8 +568,14 @@ export class LearningService {
       const task = this.requireTask(id);
       if (task.source !== 'generated') throw badRequest('Only generated tasks can be skipped; delete manual tasks instead');
       if (task.status !== 'pending') throw conflict(`Task is already ${task.status}`);
-      this.tasks.markSkipped(id);
-      if (task.track === 'quran') this.syncQuranTasks();
+      if (task.track === 'quran') {
+        this.tasks.markSkipped(id);
+        this.syncQuranTasks();
+      } else {
+        // Skip = move this session to the next slot of the same stream.
+        this.tasks.markRolled(id);
+        this.replanStreamQueue(task.track, task.stream);
+      }
       return this.taskView(this.requireTask(id));
     });
   }
@@ -534,16 +655,17 @@ export class LearningService {
     return {
       ...task,
       status,
-      plannedPoints: plannedPoints(task, ctx).points,
+      plannedPoints: task.status === 'rolled' ? 0 : plannedPoints(task, ctx).points,
       earnedPoints: task.status === 'completed' ? task.points : null,
     };
   }
 
   /** Earned points per completion date. */
   earnedByDate(): Map<IsoDate, number> {
+    const start = this.trackingStartDate();
     const map = new Map<IsoDate, number>();
     for (const task of this.tasks.completed()) {
-      if (!task.completedDate) continue;
+      if (!task.completedDate || task.completedDate < start) continue;
       map.set(task.completedDate, (map.get(task.completedDate) ?? 0) + (task.points ?? 0));
     }
     return map;
@@ -557,11 +679,14 @@ export class LearningService {
    * - a past day without a snapshot (never evaluated) is frozen now;
    * - today and future days use the current settings (today's snapshot is
    *   refreshed on every evaluation).
-   * Snapshots are persisted only for days from the first activity to today.
+   * Snapshots are persisted only for days from the first activity (and the
+   * tracking start) to today. Days before the tracking start get an empty,
+   * never-persisted snapshot (baseline 0).
    */
   daySnapshots(from: IsoDate, to: IsoDate): Map<IsoDate, DaySnapshot & { frozen: boolean }> {
     const t = this.today();
-    const first = this.tasks.firstActivityDate() ?? t;
+    const start = this.trackingStartDate();
+    const first = maxDate(this.tasks.firstActivityDate() ?? t, start);
     const settings = this.settings();
     const expl = this.baseline(settings);
     const overrides = this.overrides.range(from, to);
@@ -569,6 +694,10 @@ export class LearningService {
     const nowIso = this.nowIso();
     const out = new Map<IsoDate, DaySnapshot & { frozen: boolean }>();
     for (const d of dateRange(from, to)) {
+      if (d < start) {
+        out.set(d, { baseline: 0, isRestDay: false, isFasting: false, frozen: false });
+        continue;
+      }
       const row = stored.get(d);
       if (d < t && row) {
         out.set(d, { baseline: row.baseline, isRestDay: row.isRestDay, isFasting: row.isFasting, frozen: true });
@@ -587,25 +716,39 @@ export class LearningService {
   /** Freezes every past day since the first activity that has no snapshot yet. */
   freezePastDays(): void {
     const t = this.today();
-    const first = this.tasks.firstActivityDate();
-    if (first && first <= t) this.daySnapshots(first, t);
+    const activity = this.tasks.firstActivityDate();
+    if (!activity) return;
+    const first = maxDate(activity, this.trackingStartDate());
+    if (first <= t) this.daySnapshots(first, t);
   }
 
   dayViews(from: IsoDate, to: IsoDate): DayView[] {
     const t = this.today();
+    const start = this.trackingStartDate();
     const settings = this.settings();
-    const ctx = this.scoringContext(settings);
+    const state = this.quranState();
+    const ctx = this.scoringContext(settings, state);
+    const currentReserve = this.quranReserve(settings, state);
     const overrides = this.overrides.range(from, to);
     const tasks = this.tasks.byDateRange(from, to);
+    const reserves = this.plannedDays.reservesIn(from, to);
     const earned = this.earnedByDate();
     const snapshots = this.daySnapshots(from, to);
     return dateRange(from, to).map((d) => {
       const ov = overrides.get(d) ?? null;
       const fasting = fastingInfo(d, settings, ov);
       const capacity = dayCapacity(d, settings, ov);
-      const views = tasks.filter((x) => x.date === d).map((x) => this.taskView(x, ctx, t));
+      const beforeStart = d < start;
+      const views = beforeStart ? [] : tasks.filter((x) => x.date === d).map((x) => this.taskView(x, ctx, t));
       const snap = snapshots.get(d) as DaySnapshot & { frozen: boolean };
-      const earnedPoints = earned.get(d) ?? 0;
+      const earnedPoints = beforeStart ? 0 : (earned.get(d) ?? 0);
+      const scheduled = views.filter((x) => x.source === 'generated' && x.status !== 'rolled');
+      let bufferMinutes = 0;
+      if (!beforeStart && capacity.total > 0 && reserves.has(d)) {
+        const dayReserve = Math.min(reserves.get(d) ?? currentReserve, capacity.total);
+        const quranMinutes = views.filter((x) => x.source === 'generated' && x.track === 'quran').reduce((a, x) => a + x.plannedMinutes, 0);
+        bufferMinutes = Math.max(0, dayReserve - quranMinutes);
+      }
       return {
         date: d,
         dow: dayOfWeek(d),
@@ -617,12 +760,14 @@ export class LearningService {
         isPast: d < t,
         isToday: d === t,
         tasks: views,
-        plannedMinutes: views.filter((x) => x.source === 'generated').reduce((a, x) => a + x.plannedMinutes, 0),
-        plannedPoints: views.filter((x) => x.source === 'generated').reduce((a, x) => a + x.plannedPoints, 0),
+        plannedMinutes: scheduled.reduce((a, x) => a + x.plannedMinutes, 0),
+        plannedPoints: scheduled.reduce((a, x) => a + x.plannedPoints, 0),
         earnedPoints,
+        bufferMinutes,
+        beforeStart,
         baseline: snap.baseline,
         baselineSnapshot: snap,
-        counts: dayCounts({ date: d, earned: earnedPoints, baseline: snap.baseline, isRestDay: snap.isRestDay }),
+        counts: !beforeStart && dayCounts({ date: d, earned: earnedPoints, baseline: snap.baseline, isRestDay: snap.isRestDay }),
       };
     });
   }
@@ -639,8 +784,10 @@ export class LearningService {
    * completed on each date. Also refreshes the cached totals.
    */
   streakRecords(asOf: IsoDate): DayRecord[] {
+    const start = this.trackingStartDate();
+    if (asOf < start) return [];
     const first = this.tasks.firstActivityDate();
-    const from = first && first < asOf ? first : asOf;
+    const from = maxDate(first && first < asOf ? first : asOf, start);
     const snapshots = this.daySnapshots(from, asOf);
     const earned = this.earnedByDate();
     const records: DayRecord[] = dateRange(from, asOf).map((d) => {
@@ -650,7 +797,7 @@ export class LearningService {
     const ctx = this.scoringContext();
     const plannedByDate = new Map<IsoDate, number>();
     for (const task of this.tasks.byDateRange(from, asOf)) {
-      if (task.source !== 'generated') continue;
+      if (task.source !== 'generated' || task.status === 'rolled') continue;
       plannedByDate.set(task.date, (plannedByDate.get(task.date) ?? 0) + plannedPoints(task, ctx).points);
     }
     this.summary.updateTotals(

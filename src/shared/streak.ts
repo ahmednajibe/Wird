@@ -3,11 +3,18 @@
  */
 import { DOW_NAMES } from './dates.js';
 import { normalWeekPlan } from './planner.js';
+import { effectiveReviewCapMinutes, quranReserveMinutes } from './quran.js';
 import { plannedPoints, type ScoringContext } from './scoring.js';
 import type { Settings } from './settings.js';
 import type { IsoDate } from './types.js';
 
 export interface BaselineExplanation {
+  /** Daily Quran reservation R (planned memorize session length). */
+  quranReserveMinutes: number;
+  /** min(reviewCapMinutes, R). */
+  effectiveReviewCapMinutes: number;
+  /** Sum of the normal week's daily buffers (reservation minus Quran session). */
+  normalWeekBufferMinutes: number;
   normalWeekPlannedPoints: number;
   avgDailyPlannedPoints: number;
   factor: number;
@@ -39,7 +46,13 @@ export function computeBaseline(settings: Settings): BaselineExplanation {
   const { factor, fastingFactor } = settings.baseline;
   const normal = Math.round(factor * avg);
   const fasting = Math.round(normal * fastingFactor);
+  const reserve = quranReserveMinutes(null, settings.quran);
+  const reviewCap = effectiveReviewCapMinutes(settings.quran, reserve);
+  const bufferWeek = week.reduce((a, d) => a + d.bufferMinutes, 0);
   return {
+    quranReserveMinutes: reserve,
+    effectiveReviewCapMinutes: reviewCap,
+    normalWeekBufferMinutes: bufferWeek,
     normalWeekPlannedPoints: total,
     avgDailyPlannedPoints: Math.round(avg * 100) / 100,
     factor,
@@ -53,6 +66,8 @@ export function computeBaseline(settings: Settings): BaselineExplanation {
       `Daily baseline = round(${factor} x ${avg.toFixed(2)}) = ${normal}. ` +
       `Fasting-day baseline = round(${normal} x ${fastingFactor}) = ${fasting}. Rest days (capacity 0) have no baseline and are skipped by the streak. ` +
       `Why this factor: on an off day, doing only the two daily core habits (the day's Quran session plus the drawing warm-up) must keep the streak. ` +
+      `Every day reserves ${reserve} min for Quran (the memorize session length), and study tracks share the rest, so a track's time never depends on the day's Quran session. ` +
+      `Review sessions are capped at ${reviewCap} min (the review cap, never more than the reservation); the unused part of the reservation is an optional buffer and is never planned or scored. ` +
       `Past days keep the baseline that was in effect for them; later settings changes never affect them.`,
     rationale:
       "On an off day, doing only the two daily core habits (the day's Quran session plus the drawing warm-up) must keep the streak.",

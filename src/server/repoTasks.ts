@@ -23,6 +23,7 @@ interface TaskRow {
   module_id: string | null;
   slot_key: string | null;
   sort_order: number;
+  session_no: number | null;
   quran_pages: string;
   pages_count: number | null;
   off_curriculum: number;
@@ -57,6 +58,7 @@ export function rowToTask(r: TaskRow): Task {
     moduleId: r.module_id,
     slotKey: r.slot_key,
     sortOrder: r.sort_order,
+    sessionNo: r.session_no,
     quranPages: parsePages(r.quran_pages),
     pagesCount: r.pages_count,
     offCurriculum: r.off_curriculum === 1,
@@ -134,8 +136,8 @@ export class TaskRepo {
     const res = this.db
       .prepare(
         `INSERT INTO tasks (date, track, stream, type, intensity, title, description, planned_minutes, source, status,
-           module_id, slot_key, sort_order, quran_pages, off_curriculum, created_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'generated', 'pending', ?, ?, ?, ?, 0, ?)`,
+           module_id, slot_key, sort_order, session_no, quran_pages, off_curriculum, created_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'generated', 'pending', ?, ?, ?, ?, ?, 0, ?)`,
       )
       .run(
         t.date,
@@ -149,6 +151,7 @@ export class TaskRepo {
         t.moduleId,
         t.slotKey,
         t.sortOrder,
+        t.sessionNo,
         JSON.stringify(t.quranPages),
         nowIso,
       );
@@ -156,7 +159,7 @@ export class TaskRepo {
   }
 
   insertManual(
-    t: Omit<PlannedTask, 'slotKey'> & { pagesCount: number | null; offCurriculum: boolean },
+    t: Omit<PlannedTask, 'slotKey' | 'sessionNo'> & { pagesCount: number | null; offCurriculum: boolean },
     nowIso: string,
   ): number {
     const res = this.db
@@ -218,6 +221,45 @@ export class TaskRepo {
     this.db.prepare("UPDATE tasks SET status = 'skipped' WHERE id = ?").run(id);
   }
 
+  markRolled(id: number): void {
+    this.db.prepare("UPDATE tasks SET status = 'rolled' WHERE id = ? AND status <> 'completed'").run(id);
+  }
+
+  /**
+   * Generated study (non-Quran) tasks to roll forward: pending ones dated in
+   * [from, before) and skipped ones from `from` on (skip used to leave them).
+   */
+  rollCandidates(from: IsoDate, before: IsoDate): Task[] {
+    return this.all(
+      `SELECT * FROM tasks WHERE source = 'generated' AND track <> 'quran' AND date >= ?
+         AND ((status = 'pending' AND date < ?) OR status = 'skipped')
+       ORDER BY date, sort_order, id`,
+      from,
+      before,
+    );
+  }
+
+  countCompletedGenerated(track: string, stream: string): number {
+    const row = this.db
+      .prepare("SELECT COUNT(*) AS n FROM tasks WHERE source = 'generated' AND status = 'completed' AND track = ? AND stream = ?")
+      .get(track, stream) as { n: number } | undefined;
+    return Number(row?.n ?? 0);
+  }
+
+  updateStudyContent(
+    id: number,
+    c: { type: TaskType; intensity: string; title: string; description: string; moduleId: string | null; sessionNo: number },
+  ): void {
+    this.db
+      .prepare('UPDATE tasks SET type = ?, intensity = ?, title = ?, description = ?, module_id = ?, session_no = ? WHERE id = ?')
+      .run(c.type, c.intensity, c.title, c.description, c.moduleId, c.sessionNo, id);
+  }
+
+  count(): number {
+    const row = this.db.prepare('SELECT COUNT(*) AS n FROM tasks').get() as { n: number } | undefined;
+    return Number(row?.n ?? 0);
+  }
+
   delete(id: number): void {
     this.db.prepare('DELETE FROM tasks WHERE id = ?').run(id);
   }
@@ -238,10 +280,22 @@ export class PlannedDaysRepo {
     return new Set(rows.map((r) => r.date));
   }
 
-  mark(date: IsoDate, nowIso: string): void {
+  mark(date: IsoDate, nowIso: string, quranReserve: number | null = null): void {
     this.db
-      .prepare('INSERT INTO planned_days (date, generated_at) VALUES (?, ?) ON CONFLICT(date) DO UPDATE SET generated_at = excluded.generated_at')
-      .run(date, nowIso);
+      .prepare(
+        `INSERT INTO planned_days (date, generated_at, quran_reserve) VALUES (?, ?, ?)
+         ON CONFLICT(date) DO UPDATE SET generated_at = excluded.generated_at, quran_reserve = excluded.quran_reserve`,
+      )
+      .run(date, nowIso, quranReserve);
+  }
+
+  /** Quran reservation R each planned day was planned with (null if unknown). */
+  reservesIn(from: IsoDate, to: IsoDate): Map<IsoDate, number | null> {
+    const rows = this.db.prepare('SELECT date, quran_reserve FROM planned_days WHERE date BETWEEN ? AND ?').all(from, to) as {
+      date: string;
+      quran_reserve: number | null;
+    }[];
+    return new Map(rows.map((r) => [r.date, r.quran_reserve]));
   }
 
   maxPlanned(): IsoDate | null {

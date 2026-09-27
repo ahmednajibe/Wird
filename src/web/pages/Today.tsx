@@ -1,4 +1,4 @@
-import { Check, Clock, Coffee, Fire, Lightning, ListChecks, Moon, Plus, SealCheck, Trophy } from '@phosphor-icons/react';
+import { Check, Clock, Coffee, Fire, Hourglass, Lightning, ListChecks, Moon, Plus, SealCheck, Trophy } from '@phosphor-icons/react';
 import { motion } from 'motion/react';
 import { useNavigate } from 'react-router';
 import { errorMessage } from '../client/client';
@@ -155,9 +155,19 @@ function LevelCard({ d }: { d: Dashboard }) {
   );
 }
 
+export function BufferLine({ minutes, className }: { minutes: number; className?: string }) {
+  if (minutes <= 0) return null;
+  return (
+    <span className={cn('inline-flex items-center gap-1.5 text-sm text-muted', className)} data-testid="buffer-line">
+      <Hourglass size={15} aria-hidden />
+      Buffer: <span className="num text-ink">{minutes}</span> min (optional catch-up or rest)
+    </span>
+  );
+}
+
 function CapacityLine({ d }: { d: Dashboard }) {
   const c = d.capacity;
-  const planned = d.tasks.filter((t) => t.source === 'generated').reduce((a, t) => a + t.plannedMinutes, 0);
+  const planned = d.tasks.filter((t) => t.source === 'generated' && t.status !== 'rolled').reduce((a, t) => a + t.plannedMinutes, 0);
   const source = c.override ?? c.base;
   const pct = Math.round((1 - c.total / Math.max(1, source)) * 100);
   return (
@@ -186,6 +196,7 @@ function CapacityLine({ d }: { d: Dashboard }) {
           Planned <Duration minutes={planned} className="text-ink" />
         </span>
       )}
+      <BufferLine minutes={d.bufferMinutes} />
     </div>
   );
 }
@@ -201,6 +212,21 @@ function WeekStrip({ days }: { days: WeekSummaryDay[] }) {
       <div className="grid grid-cols-7 gap-1.5 sm:gap-2.5" data-testid="week-strip">
         {days.map((w, i) => {
           const pct = w.plannedPoints > 0 ? Math.min(1, w.earnedPoints / w.plannedPoints) : 0;
+          if (w.beforeStart) {
+            return (
+              <div
+                key={w.date}
+                data-testid="week-day-not-started"
+                title="Not started: tracking began after this day"
+                aria-label={`${w.dayName} ${w.date}: not started`}
+                className="flex flex-col items-center gap-1.5 rounded-2xl border border-dashed border-line px-1 py-2.5 opacity-55 sm:py-3"
+              >
+                <span className="text-[11px] font-semibold text-muted uppercase">{w.dayName.slice(0, 3)}</span>
+                <span className="num text-base font-semibold text-muted sm:text-lg">{dayOfMonth(w.date)}</span>
+                <span className="text-[10px] leading-tight text-subtle">Not started</span>
+              </div>
+            );
+          }
           return (
             <motion.button
               key={w.date}
@@ -282,6 +308,7 @@ export function TodayPage() {
     onDelete: (task) => remove.mutate(task),
   };
   const doneCount = d.tasks.filter((t) => t.status === 'completed').length;
+  const countable = d.tasks.filter((t) => t.status !== 'rolled').length;
 
   return (
     <div className="flex flex-col gap-6">
@@ -317,7 +344,7 @@ export function TodayPage() {
               Today&apos;s tasks
             </h2>
             <p className="text-sm text-muted">
-              {d.tasks.length === 0 ? 'Nothing planned yet.' : `${doneCount} of ${plural(d.tasks.length, 'task')} done`}
+              {d.tasks.length === 0 ? 'Nothing planned yet.' : `${doneCount} of ${plural(countable, 'task')} done`}
             </p>
           </div>
           <div className="hidden md:block">

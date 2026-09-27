@@ -122,7 +122,8 @@ export const DEFAULT_SETTINGS: Settings = {
     memorizationOrder: 'juz30-29-then-forward',
     memorizeMinutes: 40,
     minutesPerReviewPage: 3,
-    reviewCapMinutes: 45,
+    /** Effective cap is min(reviewCapMinutes, daily Quran reservation). */
+    reviewCapMinutes: 40,
     reviewMinMinutes: 10,
     nearPages: 5,
     rollingWindow: 10,

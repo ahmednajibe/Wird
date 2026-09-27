@@ -61,6 +61,7 @@ function quranTask(p: Partial<Task> & Pick<Task, 'type' | 'completedDate'>): Tas
     moduleId: null,
     slotKey: 'quran',
     sortOrder: 0,
+    sessionNo: null,
     quranPages: [],
     pagesCount: null,
     offCurriculum: false,
@@ -167,35 +168,48 @@ describe('alternation', () => {
 });
 
 describe('review selection', () => {
-  it('reviews all memorized pages when count <= 15', () => {
-    const s = memorizeN(15);
+  it('reviews all memorized pages when count <= 13 (40 min cap / 3 min per page)', () => {
+    const s = memorizeN(13);
     const sel = selectReviewPages(s, Q);
     expect(sel.reviewAll).toBe(true);
-    expect(sel.pages).toHaveLength(15);
-    expect(sel.minutes).toBe(45);
+    expect(sel.pages).toHaveLength(13);
+    expect(sel.minutes).toBe(39);
     const small = selectReviewPages(memorizeN(2), Q);
     expect(small.pages).toHaveLength(2);
     expect(small.minutes).toBe(10); // clamped to the 10-minute minimum
   });
 
-  it('uses 5 near pages + 10 far pages (oldest reviewed first) when count > 15', () => {
+  it('uses 5 near pages + 8 far pages (oldest reviewed first) when count > 13', () => {
     const s = memorizeN(20);
     const order = memorizationOrder(Q.memorizationOrder);
     const sel = selectReviewPages(s, Q);
     expect(sel.reviewAll).toBe(false);
-    expect(sel.capPages).toBe(15);
+    expect(sel.capPages).toBe(13);
     expect(sel.near).toEqual(order.slice(15, 20).reverse());
-    expect(sel.far).toHaveLength(10);
-    expect(sel.far).toEqual(order.slice(0, 10)); // never reviewed, earliest memorized first
-    expect(sel.minutes).toBe(45);
-    expect(sel.cycleLength).toBe(2); // ceil((20 - 5) / 10)
+    expect(sel.far).toHaveLength(8);
+    expect(sel.far).toEqual(order.slice(0, 8)); // never reviewed, earliest memorized first
+    expect(sel.minutes).toBe(39);
+    expect(sel.cycleLength).toBe(2); // ceil((20 - 5) / 8)
+  });
+
+  it('review sessions never exceed the daily Quran reservation R (memorize session length)', () => {
+    const s = memorizeN(40);
+    // A larger review cap setting is clamped to R = 40.
+    const wide = selectReviewPages(s, { ...Q, reviewCapMinutes: 90 });
+    expect(wide.capPages).toBe(13);
+    expect(wide.minutes).toBeLessThanOrEqual(40);
+    // A shorter memorize session (R = 30) shrinks the review too.
+    const short = selectReviewPages(s, { ...Q, memorizeMinutes: 30, reviewCapMinutes: 90 });
+    expect(short.capPages).toBe(10);
+    expect(short.minutes).toBe(30);
+    expect(buildSession(applySession(s, { type: 'memorize', pages: [] }, '2026-06-01'), { ...S, quran: { ...Q, memorizeMinutes: 30 } }).minutes).toBeLessThanOrEqual(30);
   });
 
   it('repeated reviews cover every memorized page within the cycle length', () => {
     for (const n of [16, 23, 40, 77]) {
       let s = memorizeN(n);
       const cycle = selectReviewPages(s, Q).cycleLength;
-      expect(cycle).toBe(Math.ceil((n - 5) / 10));
+      expect(cycle).toBe(Math.ceil((n - 5) / 8));
       const seen = new Set<number>();
       for (let i = 0; i < cycle; i++) {
         const sel = selectReviewPages(s, Q);

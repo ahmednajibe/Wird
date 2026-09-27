@@ -43,9 +43,9 @@ describe('streak integrity: past baselines are frozen', () => {
     ctx.clock.setCairoMorning(TODAY);
     const before = await call('GET', '/api/dashboard');
     expect(before.json.streak).toEqual({ current: 3, longest: 3, todayCounts: false });
-    expect(await pastBaselines()).toEqual([46, 28, 46]);
+    expect(await pastBaselines()).toEqual([42, 25, 42]);
     const snapsBefore = storedSnapshots();
-    expect(snapsBefore.map((r) => r.baseline)).toEqual([46, 28, 46]);
+    expect(snapsBefore.map((r) => r.baseline)).toEqual([42, 25, 42]);
 
     const put = await call('PUT', '/api/settings', { capacityByDow: [300, 300, 300, 300, 300, 300, 300] });
     expect(put.status).toBe(200);
@@ -54,7 +54,7 @@ describe('streak integrity: past baselines are frozen', () => {
     expect(after.json.baseline.value).toBeGreaterThan(72);
     expect(after.json.streak.current).toBe(3);
     expect(after.json.streak.longest).toBe(3);
-    expect(await pastBaselines()).toEqual([46, 28, 46]);
+    expect(await pastBaselines()).toEqual([42, 25, 42]);
     expect(storedSnapshots()).toEqual(snapsBefore);
     const stats = await call('GET', '/api/stats');
     expect(stats.json.streak.current).toBe(3);
@@ -62,8 +62,8 @@ describe('streak integrity: past baselines are frozen', () => {
     // Editing a past day's override does not change its frozen snapshot either.
     const day = await call('PUT', '/api/days/2026-09-28', { fasting: false, capacityOverride: 0, note: 'edited later' });
     expect(day.status).toBe(200);
-    expect(day.json.baseline).toBe(28);
-    expect(day.json.baselineSnapshot).toEqual({ baseline: 28, isRestDay: false, isFasting: true, frozen: true });
+    expect(day.json.baseline).toBe(25);
+    expect(day.json.baselineSnapshot).toEqual({ baseline: 25, isRestDay: false, isFasting: true, frozen: true });
     expect((await call('GET', '/api/dashboard')).json.streak.current).toBe(3);
     expect(storedSnapshots()).toEqual(snapsBefore);
 
@@ -87,19 +87,19 @@ describe('streak integrity: past baselines are frozen', () => {
     const put = await call('PUT', '/api/settings', { baseline: { factor: 0.9 } });
     expect(put.status).toBe(200);
     // Past days were frozen under the settings in effect for them (factor 0.28).
-    expect(storedSnapshots().map((r) => r.baseline)).toEqual([46, 28, 46]);
+    expect(storedSnapshots().map((r) => r.baseline)).toEqual([42, 25, 42]);
     const dash = await call('GET', '/api/dashboard');
-    expect(dash.json.baseline.value).toBe(148); // round(0.9 x 164.14), today uses current settings
+    expect(dash.json.baseline.value).toBe(136); // round(0.9 x 151.29), today uses current settings
     expect(dash.json.baseline.explanation.factor).toBe(0.9);
     expect(dash.json.streak.current).toBe(3);
-    expect(await pastBaselines()).toEqual([46, 28, 46]);
+    expect(await pastBaselines()).toEqual([42, 25, 42]);
     const week = await call('GET', '/api/week?start=2026-09-27');
     expect(week.json.days.slice(0, 3).map((d: Json) => d.counts)).toEqual([true, true, true]);
-    expect(week.json.days[3].baseline).toBe(148);
+    expect(week.json.days[3].baseline).toBe(136);
 
     // Changing it back and forth never touches the past.
     await call('PUT', '/api/settings', { baseline: { factor: 0.1 } });
-    expect(await pastBaselines()).toEqual([46, 28, 46]);
+    expect(await pastBaselines()).toEqual([42, 25, 42]);
     expect((await call('GET', '/api/dashboard')).json.streak.current).toBe(3);
   });
 });

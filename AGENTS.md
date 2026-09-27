@@ -43,6 +43,12 @@ screenshots to `screenshots/`. Never point tests or scripts at
   in `daily_summary`. Never recompute or overwrite them.
 - Never regenerate plans for past dates. Regeneration only affects today
   onward.
+- Study-track caps are fixed per date: each day reserves R (planned memorize
+  minutes) for Quran and the tracks share the rest. Kept tasks only reduce
+  their own slot. Missed or skipped study sessions roll forward within their
+  own stream only (status `rolled`); never touch other streams or Quran.
+- Dates before `meta.tracking_start_date` are never planned, scored or
+  streaked. `npm run reset-plan` must never be run against `data/` by agents.
 - Points are always computed by the scoring engine. They are never user-set,
   in the API or the UI.
 - UI copy contains no em dashes or en dashes. Use commas, colons, parentheses
