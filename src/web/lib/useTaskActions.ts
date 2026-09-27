@@ -118,7 +118,8 @@ export function useTaskActions() {
     mutationFn: (task: TaskView) => api.skip(task.id),
     onMutate: async (task) => {
       const prev = await snapshot();
-      if (prev) qc.setQueryData(qk.dashboard, patchTask(prev, task.id, { status: 'skipped' }));
+      // Quran skip marks the session skipped; a study session moves forward in its own track.
+      if (prev) qc.setQueryData(qk.dashboard, patchTask(prev, task.id, task.track === 'quran' ? { status: 'skipped' } : { status: 'rolled', plannedPoints: 0 }));
       return { prev };
     },
     onError: (err, _v, ctx) => {

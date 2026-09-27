@@ -1,9 +1,11 @@
 import {
+  ArrowBendUpRight,
   ArrowClockwise,
   CaretLeft,
   CaretRight,
   Check,
   Coffee,
+  Hourglass,
   Info,
   Lightning,
   Lock,
@@ -37,14 +39,42 @@ function StatusIcon({ t }: { t: TaskView }) {
       </span>
     );
   if (t.status === 'skipped') return <SkipForward size={16} className="shrink-0 text-muted" aria-label="Skipped" />;
+  if (t.status === 'rolled') return <ArrowBendUpRight size={16} className="shrink-0 text-subtle" aria-label="Moved forward" />;
   if (t.status === 'missed') return <WarningCircle size={16} className="shrink-0 text-warn" aria-label="Missed" />;
   const m = trackMeta(t.track, t.stream);
   return <span className="inline-flex size-5 shrink-0 items-center justify-center rounded-full border-2" style={{ borderColor: m.cssVar }} aria-label="Pending" />;
 }
 
+function NotStartedCard({ day, index }: { day: DayView; index: number }) {
+  return (
+    <motion.div
+      id={day.date}
+      data-testid="day-card"
+      data-before-start="true"
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.04, type: 'spring', stiffness: 380, damping: 32 }}
+      className="card flex scroll-mt-20 flex-col border-dashed p-4 opacity-60 sm:p-5"
+    >
+      <div className="flex items-center gap-2">
+        <h3 className="text-base font-semibold tracking-tight text-muted">{day.dayName}</h3>
+        <Chip>Not started</Chip>
+      </div>
+      <p className="mt-0.5 text-sm text-muted">
+        {formatMediumDate(day.date)}
+        <span className="mx-1.5 text-subtle">/</span>
+        {day.hijri.label}
+      </p>
+      <p className="mt-3 text-sm text-muted">Tracking started after this day. Nothing was planned and nothing counts as missed.</p>
+    </motion.div>
+  );
+}
+
 function DayCard({ day, onEdit, index }: { day: DayView; onEdit: (d: DayView) => void; index: number }) {
   const cap = day.capacity;
   const done = day.tasks.filter((t) => t.status === 'completed').length;
+  const countable = day.tasks.filter((t) => t.status !== 'rolled').length;
+  if (day.beforeStart) return <NotStartedCard day={day} index={index} />;
   return (
     <motion.div
       id={day.date}
@@ -101,6 +131,12 @@ function DayCard({ day, onEdit, index }: { day: DayView; onEdit: (d: DayView) =>
           {cap.override !== null && !cap.isRestDay && <span>Custom capacity</span>}
         </div>
         <ProgressBar value={day.plannedMinutes} max={Math.max(cap.total, 1)} height={6} color="var(--muted)" label="Planned minutes vs capacity" />
+        {day.bufferMinutes > 0 && (
+          <p className="mt-1.5 flex items-center gap-1 text-xs text-muted" data-testid="day-buffer">
+            <Hourglass size={13} aria-hidden />
+            Buffer: <span className="num text-ink">{day.bufferMinutes}</span> min (optional catch-up or rest)
+          </p>
+        )}
       </div>
 
       {day.override?.note && (
@@ -118,7 +154,14 @@ function DayCard({ day, onEdit, index }: { day: DayView; onEdit: (d: DayView) =>
             <li key={t.id} className="flex items-center gap-2.5 py-2.5">
               <StatusIcon t={t} />
               <div className="min-w-0 flex-1">
-                <p className={cn('truncate text-sm font-medium text-ink', (t.status === 'completed' || t.status === 'skipped') && 'text-muted line-through decoration-1')} title={t.title}>
+                <p
+                  className={cn(
+                    'truncate text-sm font-medium text-ink',
+                    (t.status === 'completed' || t.status === 'skipped') && 'text-muted line-through decoration-1',
+                    t.status === 'rolled' && 'text-subtle',
+                  )}
+                  title={t.title}
+                >
                   {t.title}
                 </p>
                 <p className="text-xs">
@@ -127,11 +170,14 @@ function DayCard({ day, onEdit, index }: { day: DayView; onEdit: (d: DayView) =>
                     {' '}
                     <span className="num">{t.actualMinutes ?? t.plannedMinutes}</span> min
                   </span>
+                  {t.status === 'rolled' && <span className="text-subtle"> / Moved forward</span>}
                 </p>
               </div>
-              <span className={cn('num shrink-0 text-xs font-semibold', t.status === 'completed' ? 'text-accent-ink' : 'text-muted')}>
-                {t.status === 'completed' ? `+${t.earnedPoints ?? 0}` : t.plannedPoints}
-              </span>
+              {t.status !== 'rolled' && (
+                <span className={cn('num shrink-0 text-xs font-semibold', t.status === 'completed' ? 'text-accent-ink' : 'text-muted')}>
+                  {t.status === 'completed' ? `+${t.earnedPoints ?? 0}` : t.plannedPoints}
+                </span>
+              )}
             </li>
           );
         })}
@@ -139,7 +185,7 @@ function DayCard({ day, onEdit, index }: { day: DayView; onEdit: (d: DayView) =>
 
       <div className="mt-3 flex items-center justify-between border-t border-line pt-3 text-xs text-muted">
         <span>
-          {done}/{day.tasks.length} done
+          {done}/{countable} done
         </span>
         <span className="inline-flex items-center gap-1">
           <Lightning size={13} weight="fill" className="text-accent-ink" aria-hidden />
@@ -298,7 +344,9 @@ function WhyPanel() {
   const weekly = [...tracks.data.normalWeekMinutes].sort(
     (a, b) => TRACK_ORDER.indexOf(trackKey(a.track, a.stream)) - TRACK_ORDER.indexOf(trackKey(b.track, b.stream)),
   );
-  const totalWeekly = weekly.reduce((a, w) => a + w.plannedMinutes, 0);
+  const nw = tracks.data.normalWeek;
+  const rows = weekly.map((w) => (w.track === 'quran' ? { ...w, plannedMinutes: nw.quranReserveMinutes } : w));
+  const totalWeekly = nw.capacity;
   return (
     <Card className="p-5 sm:p-6" data-testid="why-panel">
       <div className="flex items-start gap-3">
@@ -339,24 +387,28 @@ function WhyPanel() {
         <div>
           <h3 className="label mb-3">Normal week, minutes per track</h3>
           <ul className="flex flex-col gap-2.5">
-            {weekly.map((w) => {
+            {rows.map((w) => {
               const m = metaByKey(trackKey(w.track, w.stream));
               return (
                 <li key={`${w.track}-${w.stream}`} className="text-sm">
                   <div className="mb-1 flex justify-between">
-                    <span className={m.text}>{m.label}</span>
+                    <span className={m.text}>{w.track === 'quran' ? `${m.label} (reserved)` : m.label}</span>
                     <span className="text-ink">
                       <span className="num">{w.plannedMinutes}</span> min
                       <span className="ml-1 text-muted">{totalWeekly > 0 ? Math.round((w.plannedMinutes / totalWeekly) * 100) : 0}%</span>
                     </span>
                   </div>
-                  <ProgressBar value={w.plannedMinutes} max={Math.max(...weekly.map((x) => x.plannedMinutes), 1)} height={6} color={m.cssVar} animateOnMount={false} />
+                  <ProgressBar value={w.plannedMinutes} max={Math.max(...rows.map((x) => x.plannedMinutes), 1)} height={6} color={m.cssVar} animateOnMount={false} />
                 </li>
               );
             })}
           </ul>
           <p className="mt-3 text-xs text-muted">
-            Total <Duration minutes={totalWeekly} className="text-ink" /> a week. Quran comes first every day, then the drawing warm-up, then the focus track of the day.
+            Total <Duration minutes={totalWeekly} className="text-ink" /> a week. Every day reserves <span className="num text-ink">{expl.quranReserveMinutes}</span> min for Quran
+            (the memorize session); study tracks share the rest, so their time never depends on the day&apos;s Quran session. Reviews are capped at{' '}
+            <span className="num text-ink">{expl.effectiveReviewCapMinutes}</span> min, and the unused part of the reservation (
+            <span className="num text-ink">{nw.bufferMinutes}</span> min in a normal week) is an optional buffer, never planned or scored. A missed or skipped
+            session moves to the next slot of its own track.
           </p>
         </div>
         <div>
@@ -490,8 +542,8 @@ export function PlanPage() {
         body={
           <>
             Pending generated tasks from <strong className="text-ink">{formatShortDate(regenFrom)}</strong> to{' '}
-            <strong className="text-ink">{formatShortDate(addDays(start, 6))}</strong> are planned again from your real progress. Completed, skipped and manual
-            tasks are kept.
+            <strong className="text-ink">{formatShortDate(addDays(start, 6))}</strong> are planned again from your real progress. Completed, skipped, moved forward and
+            manual tasks are kept.
           </>
         }
       />

@@ -128,17 +128,36 @@ function bySeqDesc(a: QuranPageState, b: QuranPageState): number {
   return (b.memorizedSeq ?? 0) - (a.memorizedSeq ?? 0);
 }
 
-export function reviewCapPages(q: QuranSettings): number {
-  return Math.floor(q.reviewCapMinutes / q.minutesPerReviewPage);
+/**
+ * Daily Quran reservation R: the planned memorize session length. Every day
+ * with capacity reserves R minutes for Quran, whatever the session type, so
+ * study-track caps never depend on the day's Quran session.
+ */
+export function quranReserveMinutes(s: QuranState | null, q: QuranSettings): number {
+  return s ? plannedMemorizeMinutes(s, q) : q.memorizeMinutes;
 }
 
-export function reviewMinutesFor(pageCount: number, q: QuranSettings): number {
-  return Math.min(q.reviewCapMinutes, Math.max(q.reviewMinMinutes, pageCount * q.minutesPerReviewPage));
+/** Review sessions never exceed the reservation: min(reviewCapMinutes, R). */
+export function effectiveReviewCapMinutes(q: QuranSettings, reserve: number): number {
+  return Math.min(q.reviewCapMinutes, reserve);
+}
+
+export function reviewCapPages(q: QuranSettings, capMinutes: number = effectiveReviewCapMinutes(q, q.memorizeMinutes)): number {
+  return Math.floor(capMinutes / q.minutesPerReviewPage);
+}
+
+export function reviewMinutesFor(
+  pageCount: number,
+  q: QuranSettings,
+  capMinutes: number = effectiveReviewCapMinutes(q, q.memorizeMinutes),
+): number {
+  return Math.min(capMinutes, Math.max(q.reviewMinMinutes, pageCount * q.minutesPerReviewPage));
 }
 
 export function selectReviewPages(s: QuranState, q: QuranSettings): ReviewSelection {
   const memorized = memorizedPages(s);
-  const capPages = reviewCapPages(q);
+  const capMinutes = effectiveReviewCapMinutes(q, quranReserveMinutes(s, q));
+  const capPages = reviewCapPages(q, capMinutes);
   const nearCount = Math.min(q.nearPages, capPages);
   const farPerSession = Math.max(1, capPages - nearCount);
 
@@ -148,7 +167,7 @@ export function selectReviewPages(s: QuranState, q: QuranSettings): ReviewSelect
       pages,
       near: pages,
       far: [],
-      minutes: memorized.length === 0 ? 0 : reviewMinutesFor(pages.length, q),
+      minutes: memorized.length === 0 ? 0 : reviewMinutesFor(pages.length, q, capMinutes),
       capPages,
       farPerSession,
       cycleLength: memorized.length === 0 ? 0 : 1,
@@ -176,7 +195,7 @@ export function selectReviewPages(s: QuranState, q: QuranSettings): ReviewSelect
     pages,
     near,
     far,
-    minutes: reviewMinutesFor(pages.length, q),
+    minutes: reviewMinutesFor(pages.length, q, capMinutes),
     capPages,
     farPerSession,
     cycleLength: Math.ceil((memorized.length - nearCount) / farPerSession),

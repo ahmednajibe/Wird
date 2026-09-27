@@ -57,10 +57,16 @@ describe('baseline', () => {
   it('is derived from the normal-week plan with factor 0.28', () => {
     console.log('Baseline:', JSON.stringify({ avg: b.avgDailyPlannedPoints, week: b.normalWeekPlannedPoints, normal: b.normal, fasting: b.fasting, perDay: b.perDay.map((d) => d.plannedPoints) }));
     expect(b.factor).toBe(0.28);
-    expect(b.normalWeekPlannedPoints).toBe(1149);
-    expect(b.avgDailyPlannedPoints).toBeCloseTo(164.14, 2);
-    expect(b.normal).toBe(46); // round(0.28 x 164.14) = round(45.96)
-    expect(b.fasting).toBe(28); // round(46 x 0.6) = round(27.6)
+    // Fixed daily caps: review-day buffers (3 x 25 min) are not planned, so not scored.
+    expect(b.normalWeekPlannedPoints).toBe(1059);
+    expect(b.avgDailyPlannedPoints).toBeCloseTo(151.29, 2);
+    expect(b.normal).toBe(42); // round(0.28 x 151.29) = round(42.36)
+    expect(b.fasting).toBe(25); // round(42 x 0.6) = round(25.2)
+    expect(b.quranReserveMinutes).toBe(40);
+    expect(b.effectiveReviewCapMinutes).toBe(40);
+    expect(b.normalWeekBufferMinutes).toBe(75);
+    expect(b.text).toMatch(/reserves 40 min for Quran/);
+    expect(b.text).toMatch(/Review sessions are capped at 40 min/);
     expect(baselineFor(b, { isFasting: false, isRestDay: true })).toBe(0);
     expect(b.text).toMatch(/two daily core habits/);
   });

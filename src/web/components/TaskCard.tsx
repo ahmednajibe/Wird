@@ -1,4 +1,5 @@
 import {
+  ArrowBendUpRight,
   ArrowCounterClockwise,
   ArrowSquareOut,
   BookOpenText,
@@ -172,7 +173,8 @@ export function TaskCard({
   const done = task.status === 'completed';
   const skipped = task.status === 'skipped';
   const missed = task.status === 'missed';
-  const closed = done || skipped;
+  const rolled = task.status === 'rolled';
+  const closed = done || skipped || rolled;
   const points = done ? (task.earnedPoints ?? 0) : task.plannedPoints;
   const hasDetails = Boolean(task.description) || resources.length > 0 || (isQuran && task.quranPages.length > 0);
   const TrackIcon = m.icon;
@@ -195,13 +197,13 @@ export function TaskCard({
           type="button"
           aria-label={done ? `Undo ${task.title}` : `Complete ${task.title}`}
           data-testid="task-check"
-          disabled={pending || skipped}
+          disabled={pending || skipped || rolled}
           onClick={() => (done ? actions.onUndo(task) : actions.onComplete(task, null, checkRef.current))}
           whileTap={{ scale: 0.9 }}
           className={cn(
             'group relative mt-0.5 inline-flex size-9 shrink-0 items-center justify-center rounded-full border-2 transition-colors disabled:cursor-not-allowed',
             done ? 'border-accent bg-accent text-on-accent' : isQuran ? 'border-quran/60 text-quran-ink hover:bg-quran/12' : 'border-line-strong text-muted hover:border-accent hover:text-accent-ink',
-            skipped && 'border-dashed opacity-60',
+            (skipped || rolled) && 'border-dashed opacity-60',
           )}
         >
           <AnimatePresence initial={false} mode="popLayout">
@@ -209,6 +211,8 @@ export function TaskCard({
               <motion.span key="done" initial={{ scale: 0.4, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: 'spring', stiffness: 600, damping: 22 }}>
                 <Check size={18} weight="bold" aria-hidden />
               </motion.span>
+            ) : rolled ? (
+              <ArrowBendUpRight key="rolled" size={16} aria-hidden />
             ) : skipped ? (
               <SkipForward key="skip" size={16} aria-hidden />
             ) : (
@@ -238,10 +242,19 @@ export function TaskCard({
               </Meta>
             )}
             {isQuran && task.quranPages.length === 0 && task.pagesCount ? <Meta icon={BookOpenText}>{task.pagesCount} pages</Meta> : null}
-            <span className={cn('inline-flex items-center gap-1 text-xs font-semibold', done ? 'text-accent-ink' : 'text-ink')} data-testid="task-points">
-              <Lightning size={14} weight="fill" aria-hidden className="text-accent-ink" />
-              <span className="num">{done ? `+${points}` : points}</span> {done ? 'earned' : 'pts'}
-            </span>
+            {!rolled && (
+              <span className={cn('inline-flex items-center gap-1 text-xs font-semibold', done ? 'text-accent-ink' : 'text-ink')} data-testid="task-points">
+                <Lightning size={14} weight="fill" aria-hidden className="text-accent-ink" />
+                <span className="num">{done ? `+${points}` : points}</span> {done ? 'earned' : 'pts'}
+              </span>
+            )}
+            {rolled && (
+              <Meta icon={ArrowBendUpRight} className="text-subtle">
+                <span data-testid="task-rolled" title="This session moved to the next slot of the same track. No points, not missed.">
+                  Moved forward
+                </span>
+              </Meta>
+            )}
             {skipped && <Meta icon={SkipForward}>Skipped</Meta>}
             {missed && (
               <Meta icon={WarningCircle} className="text-warn">
@@ -276,7 +289,7 @@ export function TaskCard({
           </AnimatePresence>
 
           <div className="mt-3 flex flex-wrap items-center gap-2">
-            {task.status === 'pending' || missed ? (
+            {rolled ? null : task.status === 'pending' || missed ? (
               <div className="relative flex items-center gap-1">
                 <Button
                   variant="primary"
@@ -308,7 +321,15 @@ export function TaskCard({
               </Button>
             )}
             {task.source === 'generated' && task.status === 'pending' && (
-              <Button size="sm" variant="ghost" icon={SkipForward} disabled={pending} onClick={() => actions.onSkip(task)}>
+              <Button
+                size="sm"
+                variant="ghost"
+                icon={SkipForward}
+                disabled={pending}
+                onClick={() => actions.onSkip(task)}
+                title={isQuran ? 'Skip this Quran session' : 'Move this session to the next slot of the same track'}
+                data-testid="task-skip"
+              >
                 Skip
               </Button>
             )}

@@ -90,10 +90,10 @@ describe('planning lifecycle (service + SQLite)', () => {
     for (const d of dateRange('2026-09-27', '2026-10-03')) {
       expect(service.tasks.byDate(d).filter((t) => t.track === 'quran')).toHaveLength(1);
     }
-    // Every day's generated minutes still equal its capacity.
+    // Every day's generated minutes plus its optional buffer still equal its capacity.
     for (const d of dateRange('2026-09-27', '2026-10-03')) {
       const v = service.dayView(d);
-      expect(v.plannedMinutes, d).toBe(v.capacity.total);
+      expect(v.plannedMinutes + v.bufferMinutes, d).toBe(v.capacity.total);
     }
   });
 

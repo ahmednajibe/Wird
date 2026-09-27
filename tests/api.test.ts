@@ -28,14 +28,17 @@ describe('API smoke test', () => {
     expect(json.tasks[0].track).toBe('quran');
     expect(json.tasks[0].title).toBe('Memorize page 604');
     expect(json.tasks.reduce((a: number, t: Json) => a + t.plannedMinutes, 0)).toBe(120);
-    expect(json.baseline.value).toBe(46);
-    expect(json.baseline.explanation.avgDailyPlannedPoints).toBeCloseTo(164.14, 2);
+    expect(json.bufferMinutes).toBe(0); // memorize day: Quran uses the whole 40 min reservation
+    expect(json.trackingStartDate).toBe('2026-09-27');
+    expect(json.baseline.value).toBe(42);
+    expect(json.baseline.explanation.avgDailyPlannedPoints).toBeCloseTo(151.29, 2);
     expect(json.weekSummary).toHaveLength(7);
     expect(json.streak).toEqual({ current: 0, longest: 0, todayCounts: false });
     const week = await call('GET', '/api/week?start=2026-09-27');
     expect(week.status).toBe(200);
     expect(week.json.days).toHaveLength(7);
-    expect(week.json.totals.capacity).toBe(week.json.totals.plannedMinutes);
+    expect(week.json.totals.capacity).toBe(week.json.totals.plannedMinutes + week.json.totals.bufferMinutes);
+    expect(week.json.totals.bufferMinutes).toBeGreaterThan(0);
     console.log('Sample dashboard (trimmed):', JSON.stringify({ ...json, tasks: json.tasks.map((t: Json) => ({ id: t.id, track: t.track, stream: t.stream, type: t.type, title: t.title, plannedMinutes: t.plannedMinutes, plannedPoints: t.plannedPoints, status: t.status })), baseline: { value: json.baseline.value, normal: json.baseline.normal, fasting: json.baseline.fasting, text: json.baseline.explanation.text } }, null, 1));
   });
 
@@ -105,7 +108,8 @@ describe('API smoke test', () => {
     expect(settings.status).toBe(200);
     expect(settings.json.regenerated).toBe(true);
     const sat = await call('GET', '/api/days/2026-10-03');
-    expect(sat.json.plannedMinutes).toBe(150);
+    expect(sat.json.plannedMinutes + sat.json.bufferMinutes).toBe(150);
+    expect(sat.json.tasks.filter((t: Json) => t.track !== 'quran').reduce((a: number, t: Json) => a + t.plannedMinutes, 0)).toBe(150 - 40);
     await call('PUT', '/api/settings', { capacityByDow: [120, 120, 120, 120, 120, 180, 180] });
   });
 
@@ -115,7 +119,8 @@ describe('API smoke test', () => {
     expect(tracks.json.streams).toHaveLength(4);
     const ai = tracks.json.streams.find((s: Json) => s.track === 'ai');
     expect(ai.currentModuleId).toBe('ai-py');
-    expect(ai.projection.weeklyPlannedMinutes).toBe(242);
+    expect(ai.projection.weeklyPlannedMinutes).toBe(207);
+    expect(tracks.json.normalWeek).toEqual({ capacity: 864, quranReserveMinutes: 280, quranPlannedMinutes: 205, bufferMinutes: 75, studyMinutes: 584 });
     const quran = await call('GET', '/api/quran');
     expect(quran.json.pages).toHaveLength(604);
     expect(quran.json.memorized).toBe(1);
@@ -126,6 +131,9 @@ describe('API smoke test', () => {
     const stats = await call('GET', '/api/stats');
     expect(stats.json.daily).toHaveLength(365);
     expect(stats.json.daily[364].points).toBe(75);
+    expect(stats.json.trackingStartDate).toBe('2026-09-27');
+    expect(stats.json.daily[363].beforeStart).toBe(true);
+    expect(stats.json.daily[364].beforeStart).toBe(false);
     const cal = await call('GET', '/api/calendar?from=2026-09-25&to=2026-09-26');
     expect(cal.json.days[0].fasting.codes).toContain('white-day');
     const mod = await call('POST', '/api/modules/ai-py/complete');

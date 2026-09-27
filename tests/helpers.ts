@@ -29,7 +29,7 @@ export function makeTestApp(startDate: string) {
     clock,
     dir,
     cleanup(): void {
-      db.close();
+      if (db.isOpen) db.close();
       rmSync(dir, { recursive: true, force: true });
     },
   };

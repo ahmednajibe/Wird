@@ -18,7 +18,8 @@
     "dev:web": "vite",
     "build:server": "tsc -p tsconfig.build.json",
     "build:web": "vite build",
-    "e2e": "npm run build && tsx scripts/e2e.ts"
+    "e2e": "npm run build && tsx scripts/e2e.ts",
+    "reset-plan": "tsx --no-warnings=ExperimentalWarning scripts/reset-plan.ts"
   },
   "dependencies": {
     "@fontsource-variable/jetbrains-mono": "5.3.0",

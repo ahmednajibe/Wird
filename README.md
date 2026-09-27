@@ -54,6 +54,46 @@ browser download), runs the core flows and writes full-page screenshots of
 every page to `screenshots/` (desktop 1440x900, mobile 390x844, plus Today in
 the light theme). Your real database is never touched.
 
+## Planning model
+
+- Fixed daily caps: every day with capacity reserves R minutes for Quran, where
+  R is the planned memorize session length (`quran.memorizeMinutes`, or the
+  rolling average of real memorize minutes once enough sessions exist). The
+  study tracks share `capacity - R` through the weekly template, so a track's
+  minutes on a date depend only on that date's capacity and the settings,
+  never on the day's Quran session or on other tracks. Review sessions are
+  capped at `min(reviewCapMinutes, R)` (default 40). On a review day the rest
+  of R is an optional buffer (`bufferMinutes` in the API, "Buffer: N min
+  (optional catch-up or rest)" in the UI); it is never planned or scored.
+  Normal week with defaults: capacity 864 min = Quran reserved 280 +
+  drawing 160 + story 70 + AI 207 + Full Stack 147 (buffer 75).
+- Per-track session queues: AI, Full Stack, Drawing (warm-up included) and
+  Story are independent numbered queues (`sessionNo`, shown as
+  "(session N)"). A missed session (a past pending one) or a skipped one
+  becomes `rolled` ("Moved forward", no points, not missed) and its content
+  moves to the next slot of the same stream: that stream's pending sessions
+  from today on keep their dates, slots and minutes, and their content is
+  re-planned from real progress. Other streams and Quran never change. Quran
+  keeps its own memorize/review alternation; skipping a Quran session works
+  as before. A rolled session cannot be completed late.
+- Tracking start: `meta.tracking_start_date` is set to today (Cairo) the first
+  time the app plans. Earlier dates are never planned, never missed, get no
+  baseline snapshot and are excluded from streak, stats and heatmap ("Not
+  started" in the UI).
+
+### Reset the plan
+
+```
+npm run reset-plan -- --confirm            # add --force if tasks were completed
+```
+
+Stop the server first (the script refuses while something answers on `PORT`
+or 4545). It uses the same database as the server (`LEARNING_DB_PATH` or
+`data/learning.db`), writes `backups/pre-reset-YYYYMMDD-HHMMSS.db` next to it
+via `VACUUM INTO`, deletes all tasks, planned days, daily summaries, module
+state and day overrides, keeps settings, and sets the tracking start to today.
+It does not plan anything: the server plans from today on the next load.
+
 ## Data
 
 Data lives in `data/learning.db` (SQLite, WAL). Set `LEARNING_DB_PATH`
@@ -101,7 +141,8 @@ npm run gen:quran
 ## Streaks
 
 The daily baseline is `round(0.28 x average daily planned points of a normal
-week)` (fasting days x 0.6). It is set so that on an off day doing only the
+week)` (fasting days x 0.6); with defaults 1059 points a week, 151.29 a day,
+baseline 42 (fasting 25). It is set so that on an off day doing only the
 two core habits (the day's Quran session plus the drawing warm-up) keeps the
 streak. Each day's baseline, rest-day and fasting status are snapshotted in
 `daily_summary`; once a day is in the past its snapshot is frozen, so later
@@ -112,7 +153,8 @@ settings or override changes can never break a streak retroactively.
 `GET /api/dashboard?date=`, `GET /api/week?start=` (Sunday),
 `POST /api/plan/regenerate {from?}`, `POST /api/tasks`,
 `POST /api/tasks/score-preview`, `POST /api/tasks/:id/complete {actualMinutes?}`,
-`POST /api/tasks/:id/uncomplete`, `POST /api/tasks/:id/skip`,
+`POST /api/tasks/:id/uncomplete`, `POST /api/tasks/:id/skip` (study
+session: moves it to the next slot of its own track; Quran: skipped),
 `DELETE /api/tasks/:id`, `GET /api/tracks`, `POST /api/modules/:id/complete`,
 `POST /api/modules/:id/reset`, `GET /api/quran`, `GET /api/stats`,
 `GET|PUT /api/settings`, `GET|PUT /api/days/:date`, `GET /api/calendar?from&to`.
