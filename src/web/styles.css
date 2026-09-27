@@ -1,0 +1,205 @@
+@import 'tailwindcss';
+
+@custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
+
+@theme inline {
+  --font-sans: 'Plus Jakarta Sans Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono Variable', ui-monospace, 'SFMono-Regular', monospace;
+  --font-arabic: 'Amiri', 'Traditional Arabic', serif;
+
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-subtle: var(--subtle);
+  --color-accent: var(--accent);
+  --color-accent-fill: var(--accent-fill);
+  --color-accent-ink: var(--accent-ink);
+  --color-on-accent: var(--on-accent);
+  --color-danger: var(--danger);
+  --color-warn: var(--warn);
+  --color-quran: var(--quran);
+  --color-quran-ink: var(--quran-ink);
+  --color-fsd: var(--fsd);
+  --color-fsd-ink: var(--fsd-ink);
+  --color-ai: var(--ai);
+  --color-ai-ink: var(--ai-ink);
+  --color-anim: var(--anim);
+  --color-anim-ink: var(--anim-ink);
+
+  --shadow-card: var(--shadow-card);
+  --shadow-pop: var(--shadow-pop);
+  --shadow-glow: var(--shadow-glow);
+}
+
+:root,
+[data-theme='dark'] {
+  color-scheme: dark;
+  --bg: #05192d;
+  --surface: #0b2239;
+  --surface-2: #11304d;
+  --surface-3: #183b5d;
+  --line: rgb(255 255 255 / 0.08);
+  --line-strong: rgb(255 255 255 / 0.16);
+  --ink: #e6edf5;
+  --muted: #a8b8ca;
+  --subtle: #8ba0b6;
+  --accent: #03ef62;
+  --accent-fill: #03ef62;
+  --accent-ink: #2cf27d;
+  --on-accent: #05192d;
+  --danger: #ff8a80;
+  --warn: #f5bd55;
+  --quran: #eccb62;
+  --quran-ink: #f0d27a;
+  --fsd: #5ea8f2;
+  --fsd-ink: #7cb8f5;
+  --ai: #b39af2;
+  --ai-ink: #c2adf5;
+  --anim: #f08b6e;
+  --anim-ink: #f4a086;
+  --shadow-card: 0 1px 0 0 rgb(255 255 255 / 0.03) inset, 0 18px 40px -24px rgb(0 8 20 / 0.85);
+  --shadow-pop: 0 24px 60px -20px rgb(0 8 20 / 0.9), 0 0 0 1px rgb(255 255 255 / 0.08);
+  --shadow-glow: 0 10px 30px -10px rgb(3 239 98 / 0.45);
+  --grid-empty: rgb(255 255 255 / 0.05);
+}
+
+[data-theme='light'] {
+  color-scheme: light;
+  --bg: #f2f5f9;
+  --surface: #ffffff;
+  --surface-2: #edf1f6;
+  --surface-3: #e1e8f0;
+  --line: rgb(11 31 51 / 0.1);
+  --line-strong: rgb(11 31 51 / 0.2);
+  --ink: #0b1f33;
+  --muted: #3f5368;
+  --subtle: #56697e;
+  --accent: #03ef62;
+  --accent-fill: #00a443;
+  --accent-ink: #007a36;
+  --on-accent: #05192d;
+  --danger: #c0352b;
+  --warn: #9a6200;
+  --quran: #d2a11c;
+  --quran-ink: #7a5900;
+  --fsd: #2f86e0;
+  --fsd-ink: #1558a8;
+  --ai: #8b63e6;
+  --ai-ink: #5a36b8;
+  --anim: #e5663f;
+  --anim-ink: #a33c1c;
+  --shadow-card: 0 1px 2px 0 rgb(11 31 51 / 0.05), 0 16px 36px -22px rgb(11 31 51 / 0.25);
+  --shadow-pop: 0 24px 60px -20px rgb(11 31 51 / 0.35), 0 0 0 1px rgb(11 31 51 / 0.08);
+  --shadow-glow: 0 10px 28px -12px rgb(0 164 67 / 0.55);
+  --grid-empty: rgb(11 31 51 / 0.06);
+}
+
+@layer base {
+  html {
+    background: var(--bg);
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    @apply bg-bg font-sans text-ink antialiased;
+    min-height: 100dvh;
+    font-feature-settings: 'cv11', 'ss01';
+  }
+  ::selection {
+    background: color-mix(in oklab, var(--accent) 35%, transparent);
+  }
+  :focus-visible {
+    outline: 2px solid var(--accent-ink);
+    outline-offset: 2px;
+  }
+  button {
+    cursor: pointer;
+  }
+  button:disabled {
+    cursor: not-allowed;
+  }
+  input[type='number'] {
+    -moz-appearance: textfield;
+  }
+  input[type='number']::-webkit-inner-spin-button,
+  input[type='number']::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+}
+
+@layer components {
+  .card {
+    @apply rounded-2xl border border-line bg-surface shadow-card;
+  }
+  .num {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.01em;
+  }
+  .arabic {
+    font-family: var(--font-arabic);
+    line-height: 1.5;
+  }
+  .field {
+    @apply w-full rounded-[10px] border border-line-strong bg-surface-2 px-3 py-2 text-sm text-ink placeholder:text-subtle;
+    transition: border-color 150ms ease;
+  }
+  .field:focus {
+    outline: none;
+    border-color: var(--accent-ink);
+  }
+  .label {
+    @apply text-xs font-semibold tracking-wide text-muted uppercase;
+  }
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: var(--surface-3) transparent;
+  }
+}
+
+@keyframes pulse-ring {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.35;
+    transform: scale(1.18);
+  }
+}
+
+@keyframes skeleton {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.pulse-ring {
+  animation: pulse-ring 1.6s ease-in-out infinite;
+}
+
+.skeleton {
+  background: var(--surface-2);
+  animation: skeleton 1.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

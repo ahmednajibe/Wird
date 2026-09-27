@@ -9,21 +9,49 @@
   },
   "scripts": {
     "dev:server": "tsx watch --no-warnings=ExperimentalWarning src/server/index.ts",
-    "build": "tsc -p tsconfig.build.json",
+    "build": "npm run build:server && npm run build:web",
     "start": "node --no-warnings=ExperimentalWarning dist/server/index.js",
     "test": "vitest run",
-    "typecheck": "tsc --noEmit -p tsconfig.json",
-    "gen:quran": "tsx scripts/gen-quran-data.ts"
+    "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.web.json",
+    "gen:quran": "tsx scripts/gen-quran-data.ts",
+    "dev": "concurrently -k -n server,web -c green,cyan \"npm:dev:server\" \"npm:dev:web\"",
+    "dev:web": "vite",
+    "build:server": "tsc -p tsconfig.build.json",
+    "build:web": "vite build",
+    "e2e": "npm run build && tsx scripts/e2e.ts"
   },
   "dependencies": {
+    "@fontsource-variable/jetbrains-mono": "5.3.0",
+    "@fontsource-variable/plus-jakarta-sans": "5.3.0",
+    "@fontsource/amiri": "5.3.0",
     "@hono/node-server": "1.19.17",
+    "@phosphor-icons/react": "2.1.10",
+    "@tanstack/react-query": "5.103.1",
+    "canvas-confetti": "1.9.4",
     "hono": "4.13.8",
+    "motion": "13.4.0",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "react-router": "8.4.0",
     "zod": "4.6.5"
   },
   "devDependencies": {
+    "@tailwindcss/vite": "4.3.3",
+    "@types/canvas-confetti": "1.9.0",
     "@types/node": "25.9.7",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@vitejs/plugin-react": "6.1.1",
+    "concurrently": "10.0.5",
+    "playwright-core": "1.63.0",
+    "tailwindcss": "4.3.3",
     "tsx": "4.23.13",
     "typescript": "5.9.3",
+    "vite": "8.3.0",
     "vitest": "4.1.11"
+  },
+  "overrides": {
+    "framer-motion": "13.4.0",
+    "motion-dom": "13.3.0"
   }
 }
