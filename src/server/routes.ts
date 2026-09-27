@@ -6,7 +6,7 @@ import { z } from 'zod';
 import { dayOfWeek, diffDays, isIsoDate } from '../shared/dates.js';
 import { ApiError, badRequest } from './errors.js';
 import type { LearningService, ManualTaskInput } from './service.js';
-import { calendar, dashboard, quran, stats, tracks, week } from './views.js';
+import { calendar, dashboard, quran, resources, stats, tracks, week } from './views.js';
 
 const isoDate = z.string().refine(isIsoDate, { message: 'expected a valid date YYYY-MM-DD' });
 
@@ -148,6 +148,7 @@ export function apiRoutes(service: LearningService): Hono {
     return c.json(tracks(service));
   });
 
+  api.get('/resources', (c) => c.json(resources(service)));
   api.get('/quran', (c) => c.json(quran(service)));
   api.get('/stats', (c) => c.json(stats(service)));
 

@@ -8,15 +8,70 @@ Sunday.
 
 ```
 npm install
-npm run dev:server   # tsx watch, http://127.0.0.1:4545
 npm test             # vitest
-npm run typecheck
-npm run build && npm start   # compiled server (serves dist/web if present)
+npm run typecheck    # server + web tsconfigs
 ```
 
-Data lives in `data/learning.db` (SQLite, WAL). A backup is written to
-`data/backups/learning-YYYY-MM-DD.db` on start and at most once per day; the
-last 30 are kept.
+### Development
+
+```
+npm run dev
+```
+
+Runs the API server (`tsx watch`, http://127.0.0.1:4545) and the Vite dev
+server (http://127.0.0.1:5173) together. Vite proxies every request starting
+with `/api` to http://127.0.0.1:4545. Open http://127.0.0.1:5173.
+`npm run dev:server` or `npm run dev:web` start either half alone.
+
+### Production build
+
+```
+npm run build   # tsc server into dist/server, vite build UI into dist/web
+npm start       # node dist/server/index.js, serves the API and dist/web
+```
+
+Open http://127.0.0.1:4545. The server binds to 127.0.0.1 only; `PORT`
+overrides 4545.
+
+### Windows launcher
+
+Double-click `start-tracker.cmd` at the repo root. It runs `npm install` if
+`node_modules` is missing, runs `npm run build` if `dist\server\index.js` or
+`dist\web\index.html` is missing, opens http://127.0.0.1:4545 in the default
+browser after about 2 seconds, and runs `npm start` in the foreground of that
+window. Close the window or press Ctrl+C to stop the server.
+
+### End-to-end check
+
+```
+npm run e2e
+```
+
+Builds, then `scripts/e2e.ts` starts `dist/server/index.js` on a free port
+with a throwaway database in a temp folder (via `LEARNING_DB_PATH`), drives
+the locally installed Microsoft Edge headless through `playwright-core` (no
+browser download), runs the core flows and writes full-page screenshots of
+every page to `screenshots/` (desktop 1440x900, mobile 390x844, plus Today in
+the light theme). Your real database is never touched.
+
+## Data
+
+Data lives in `data/learning.db` (SQLite, WAL). Set `LEARNING_DB_PATH`
+(absolute, or relative to the working directory) to use another file. A
+backup is written to `backups/learning-YYYY-MM-DD.db` next to the database
+(by default `data/backups/`) on start and at most once per day; the last 30
+are kept. `data/` is git-ignored.
+
+## Pages
+
+- Today: the day's tasks, points, streak and Quran session.
+- Plan: the week plan.
+- Tracks: curriculum tracks and modules.
+- Quran: memorization and review progress.
+- Stats: history and projections.
+- Resources: learning resources per track.
+- Settings: schedule and preferences.
+- Add task: available from anywhere; press `n` to open it.
 
 ## Layout
 
@@ -25,7 +80,8 @@ last 30 are kept.
   streak/baseline/levels, projections, settings schema.
 - `src/server/` Hono API over `node:sqlite`: migrations, repositories, service
   (planning lifecycle and commands), read models, routes.
-- `src/web/` reserved for the Vite React UI (Phase 2).
+- `src/web/` Vite + React UI (pages, components, `client/` API client).
+- `scripts/e2e.ts` end-to-end run against the production build.
 - `scripts/gen-quran-data.ts` generator for the Tanzil-derived Quran data.
 - `tests/` vitest suites (engine unit tests and API smoke test).
 

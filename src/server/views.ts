@@ -17,7 +17,7 @@ import {
 } from '../shared/quran.js';
 import { JUZ, juzOfPage, pageContents, pageContentsLabel, QURAN_ATTRIBUTION, QURAN_PAGES, SURAHS, surahLabelForPage } from '../shared/quranData.js';
 import { computeStreak, dayCounts, levelFor } from '../shared/streak.js';
-import type { IsoDate } from '../shared/types.js';
+import type { IsoDate, Resource } from '../shared/types.js';
 import { STREAM_LABELS, STUDY_TRACK_STREAMS, TRACK_LABELS } from '../shared/types.js';
 import type { LearningService } from './service.js';
 
@@ -246,6 +246,73 @@ export function stats(service: LearningService) {
     },
     streak,
     level: levelFor(service.totalPoints()),
+  };
+}
+
+type ResourceAccess = 'owned' | 'free' | 'paid';
+
+function normalizeResource(r: Resource) {
+  const access: ResourceAccess = r.owned ? 'owned' : r.paid ? 'paid' : 'free';
+  return { name: r.name, url: r.url ?? null, owned: Boolean(r.owned), paid: Boolean(r.paid), access, note: r.note ?? null };
+}
+
+/**
+ * Every curriculum resource grouped by track/stream (deduplicated by URL or
+ * name), with the modules that use it, plus the owned-but-unscheduled ones.
+ */
+export function resources(service: LearningService) {
+  const ledger = service.ledger();
+  const streams = STUDY_TRACK_STREAMS.map(({ track, stream }) => {
+    const byKey = new Map<
+      string,
+      ReturnType<typeof normalizeResource> & {
+        modules: { id: string; title: string; phaseId: string; phaseTitle: string; estimateUncertain: boolean; completed: boolean }[];
+      }
+    >();
+    for (const m of modulesFor(track, stream)) {
+      for (const r of m.resources) {
+        const key = r.url ?? r.name;
+        const entry = byKey.get(key) ?? { ...normalizeResource(r), modules: [] };
+        entry.modules.push({
+          id: m.id,
+          title: m.title,
+          phaseId: m.phase.id,
+          phaseTitle: m.phase.title,
+          estimateUncertain: Boolean(m.estimateUncertain),
+          completed: ledger.isComplete(m.id),
+        });
+        byKey.set(key, entry);
+      }
+    }
+    const list = [...byKey.values()];
+    const unscheduled = UNSCHEDULED_RESOURCES.filter((r) => r.track === track && r.stream === stream).map(normalizeResource);
+    return {
+      track,
+      stream,
+      trackLabel: TRACK_LABELS[track],
+      streamLabel: STREAM_LABELS[stream],
+      counts: {
+        owned: list.filter((r) => r.access === 'owned').length,
+        free: list.filter((r) => r.access === 'free').length,
+        paid: list.filter((r) => r.access === 'paid').length,
+      },
+      resources: list,
+      unscheduled,
+    };
+  });
+  return {
+    streams,
+    modules: CURRICULUM.map((m) => ({
+      id: m.id,
+      track: m.track,
+      stream: m.stream,
+      title: m.title,
+      phaseId: m.phase.id,
+      phaseTitle: m.phase.title,
+      estimateUncertain: Boolean(m.estimateUncertain),
+      resources: m.resources.map(normalizeResource),
+    })),
+    unscheduled: UNSCHEDULED_RESOURCES.map((r) => ({ track: r.track, stream: r.stream, ...normalizeResource(r) })),
   };
 }
 

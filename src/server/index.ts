@@ -1,20 +1,20 @@
 /**
  * Server entry point: binds to 127.0.0.1:4545 (local only).
  */
-import { join } from 'node:path';
 import { serve } from '@hono/node-server';
 import { createApp } from './app.js';
 import { backupIfDue } from './backup.js';
+import { backupDirFor, resolveDbPath } from './config.js';
 
 const HOST = '127.0.0.1';
 const PORT = Number(process.env.PORT ?? 4545);
-const dataDir = join(process.cwd(), 'data');
+const dbPath = resolveDbPath(process.env, process.cwd());
 
-const { app, service, db } = createApp({ dbPath: join(dataDir, 'learning.db') });
+const { app, service, db } = createApp({ dbPath });
 
 function runBackup(): void {
   try {
-    const result = backupIfDue(db, join(dataDir, 'backups'), service.today());
+    const result = backupIfDue(db, backupDirFor(dbPath), service.today());
     if (result.created) console.log(`Backup written: ${result.created}`);
     for (const f of result.removed) console.log(`Old backup removed: ${f}`);
   } catch (err) {
