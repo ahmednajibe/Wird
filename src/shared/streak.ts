@@ -51,6 +51,19 @@ export function computeBaseline(settings: Settings, catalog: Catalog): BaselineE
   const reserve = settings.quran.enabled ? quranReserveMinutes(null, settings.quran) : 0;
   const reviewCap = effectiveReviewCapMinutes(settings.quran, reserve);
   const bufferWeek = week.reduce((a, d) => a + d.bufferMinutes, 0);
+  const warmupSlot = settings.weeklyTemplate.flat().find((s) => s.role === 'warmup');
+  const warmupTitle = warmupSlot ? catalog.stream(warmupSlot.track, warmupSlot.stream)?.warmupTitle : null;
+  const warmupName = warmupTitle ? warmupTitle.charAt(0).toLowerCase() + warmupTitle.slice(1) : 'warm-up';
+  const habits: string[] = [];
+  if (settings.quran.enabled) habits.push("the day's Quran session");
+  if (warmupSlot) habits.push(`the ${warmupName}`);
+  const clause =
+    habits.length === 2
+      ? `doing only the two daily core habits (${habits[0]} plus ${habits[1]}) must keep the streak`
+      : habits.length === 1
+        ? `doing only the daily core habit (${habits[0]}) must keep the streak`
+        : 'doing a little of your plan each day must keep the streak';
+  const rationale = `On an off day, ${clause}.`;
   return {
     quranReserveMinutes: reserve,
     effectiveReviewCapMinutes: reviewCap,
@@ -67,12 +80,11 @@ export function computeBaseline(settings: Settings, catalog: Catalog): BaselineE
       `A normal week (Mon/Thu fasting) plans ${total} points, ${avg.toFixed(2)} per day. ` +
       `Daily baseline = round(${factor} x ${avg.toFixed(2)}) = ${normal}. ` +
       `Fasting-day baseline = round(${normal} x ${fastingFactor}) = ${fasting}. Rest days (capacity 0) have no baseline and are skipped by the streak. ` +
-      `Why this factor: on an off day, doing only the two daily core habits (the day's Quran session plus the drawing warm-up) must keep the streak. ` +
+      `Why this factor: on an off day, ${clause}. ` +
       `Every day reserves ${reserve} min for Quran (the memorize session length), and study tracks share the rest, so a track's time never depends on the day's Quran session. ` +
       `Review sessions are capped at ${reviewCap} min (the review cap, never more than the reservation); the unused part of the reservation is an optional buffer and is never planned or scored. ` +
       `Past days keep the baseline that was in effect for them; later settings changes never affect them.`,
-    rationale:
-      "On an off day, doing only the two daily core habits (the day's Quran session plus the drawing warm-up) must keep the streak.",
+    rationale,
   };
 }
 

@@ -30,7 +30,7 @@ export function metaFor(catalog: CatalogResponse | null | undefined, track: Trac
   if (!def) return fallback(track);
   const s =
     stream !== undefined ? def.streams.find((x) => x.id === stream) : (def.streams.find((x) => !x.archived) ?? def.streams[0]);
-  const multi = def.streams.length > 1;
+  const multi = def.streams.filter((x) => !x.archived).length > 1;
   const theme = s?.theme ?? def.theme;
   return {
     key: stream !== undefined ? `${track}.${stream}` : track,
