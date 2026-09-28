@@ -5,6 +5,10 @@ import { createServer } from 'node:net';
 import { join, resolve } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 import { dateRange } from '../src/shared/dates.js';
+import { normalWeekPlan } from '../src/shared/planner.js';
+import { ModuleLedger } from '../src/shared/progress.js';
+import { quranProjection, streamProjections } from '../src/shared/projections.js';
+import { STUDY_TRACK_STREAMS } from '../src/shared/types.js';
 import { openDb } from '../src/server/db.js';
 import { MetaRepo } from '../src/server/repoMisc.js';
 import { completedTaskCount, resetPlan, tableCounts } from '../src/server/resetPlan.js';
@@ -190,4 +194,54 @@ describe('scripts/reset-plan.ts', () => {
     rmSync(c().dir, { recursive: true, force: true });
     ctx = null; // db already closed
   }, 30_000);
+});
+
+describe('projections anchor', () => {
+  const expectedStreams = (date: string) =>
+    streamProjections(new ModuleLedger(), normalWeekPlan(c().service.settings()), date);
+  const expectedQuran = (date: string) => {
+    const settings = c().service.settings();
+    const activeDays = settings.capacityByDow.filter((x) => x > 0).length;
+    return quranProjection(c().service.quranState(), activeDays, date);
+  };
+  const streamDate = (res: Json, track: string, stream: string) =>
+    (res.json.streams as Json[]).find((s) => s.track === track && s.stream === stream)?.projection?.projectedCompletionDate;
+  const expectStreamsAnchoredTo = async (date: string) => {
+    const res = await call('GET', '/api/tracks');
+    const expected = expectedStreams(date);
+    for (const { track, stream } of STUDY_TRACK_STREAMS) {
+      const want = expected.find((p) => p.track === track && p.stream === stream)?.projectedCompletionDate;
+      expect(streamDate(res, track, stream), `${track}/${stream}`).toBe(want);
+    }
+    return res;
+  };
+
+  it('counts from the tracking start when it is in the future', async () => {
+    ctx = makeTestApp('2026-09-28');
+    c().service.meta.set(TRACKING_START_KEY, '2026-10-01');
+    const res = await expectStreamsAnchoredTo('2026-10-01');
+    const todayAnchored = expectedStreams('2026-09-28');
+    for (const { track, stream } of STUDY_TRACK_STREAMS) {
+      const todayWant = todayAnchored.find((p) => p.track === track && p.stream === stream)?.projectedCompletionDate;
+      expect(streamDate(res, track, stream), `${track}/${stream}`).not.toBe(todayWant);
+    }
+    const q = await call('GET', '/api/quran');
+    expect(q.json.projection.plannedCompletionDate).toBe(expectedQuran('2026-10-01').plannedCompletionDate);
+    expect(q.json.projection.plannedCompletionDate).not.toBe(expectedQuran('2026-09-28').plannedCompletionDate);
+  });
+
+  it('counts from today when the tracking start is unset', async () => {
+    ctx = makeTestApp('2026-09-28');
+    await expectStreamsAnchoredTo('2026-09-28');
+    const q = await call('GET', '/api/quran');
+    expect(q.json.projection.plannedCompletionDate).toBe(expectedQuran('2026-09-28').plannedCompletionDate);
+  });
+
+  it('counts from today when the tracking start is in the past', async () => {
+    ctx = makeTestApp('2026-09-28');
+    c().service.meta.set(TRACKING_START_KEY, '2026-09-20');
+    await expectStreamsAnchoredTo('2026-09-28');
+    const q = await call('GET', '/api/quran');
+    expect(q.json.projection.plannedCompletionDate).toBe(expectedQuran('2026-09-28').plannedCompletionDate);
+  });
 });

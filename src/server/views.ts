@@ -129,7 +129,7 @@ export function tracks(service: LearningService) {
   const settings = service.settings();
   const ledger = service.ledger();
   const normal = normalWeekPlan(settings);
-  const projections = streamProjections(ledger, normal, t);
+  const projections = streamProjections(ledger, normal, service.planFloor());
   const weekly = weeklyMinutesByStream(normal);
   const groups = STUDY_TRACK_STREAMS.map(({ track, stream }) => {
     const modules = modulesFor(track, stream);
@@ -209,7 +209,7 @@ export function quran(service: LearningService) {
       reviewAll: review.reviewAll,
       nextReview: { pages: review.pages, near: review.near, far: review.far, minutes: review.minutes },
     },
-    projection: quranProjection(state, activeDays, t),
+    projection: quranProjection(state, activeDays, service.planFloor()),
     order: memorizationOrder(settings.quran.memorizationOrder),
     surahs: SURAHS,
     juz: JUZ,
