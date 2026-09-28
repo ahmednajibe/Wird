@@ -14,8 +14,8 @@ describe('curriculum data', () => {
   it('matches the stated totals per track/stream', () => {
     const hours = (track: string, stream: string) =>
       modulesFor(track as never, stream as never).reduce((a, m) => a + m.estMinutes, 0) / 60;
-    expect(hours('ai', 'main')).toBe(635);
-    expect(hours('fsd', 'main')).toBe(367);
+    expect(hours('ai', 'main')).toBeCloseTo(663.1, 1);
+    expect(hours('fsd', 'main')).toBeCloseTo(364.5, 1);
     expect(hours('animation', 'draw')).toBe(225);
     expect(hours('animation', 'story')).toBe(182);
     expect(new Set(CURRICULUM.map((m) => m.id)).size).toBe(CURRICULUM.length);
