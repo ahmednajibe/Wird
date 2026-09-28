@@ -5,7 +5,7 @@ export function SegmentRow({ seg, className }: { seg: SegmentView; className?: s
   return (
     <span className={cn('inline-flex items-baseline gap-2', className)}>
       <span className="font-medium text-ink">{seg.nameEn}</span>
-      <span className="arabic text-[17px] leading-none text-quran-ink" lang="ar" dir="rtl">
+      <span className="arabic text-[17px] leading-none text-amber-ink" lang="ar" dir="rtl">
         {seg.nameAr}
       </span>
       <span className="num text-xs text-muted">

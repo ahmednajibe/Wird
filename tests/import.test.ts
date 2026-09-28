@@ -4,8 +4,9 @@
  * round trip, and the empty-plan streak fix.
  */
 import { existsSync } from 'node:fs';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { Db } from '../src/server/db.js';
+import { CatalogRepo } from '../src/server/repoCatalog.js';
 import { OWNER_PACK } from '../src/server/seed/ownerCatalog.js';
 import { addDays } from '../src/shared/dates.js';
 import { makeTestApp } from './helpers.js';
@@ -207,6 +208,32 @@ describe('import commit (update mode)', () => {
     expect(service.ledger().creditedOf(xid)).toBe(creditedBefore);
   });
 
+  it('restores the in-memory catalog when the transaction fails after reload', async () => {
+    ctx = makeTestApp('2026-10-04');
+    const edited = JSON.parse(JSON.stringify(OWNER_PACK)) as Json;
+    edited.modules.push({
+      id: 'new-mod',
+      track: 'ai',
+      stream: 'main',
+      phase: { id: 'NEW-1', title: 'New phase' },
+      title: 'A brand new module',
+      estMinutes: 30,
+    });
+    // recordImport runs last, after service.reloadCatalog(): forcing it to
+    // throw leaves the in-memory catalog holding the rolled-back import.
+    const spy = vi.spyOn(CatalogRepo.prototype, 'recordImport').mockImplementation(() => {
+      throw new Error('forced failure');
+    });
+    try {
+      const res = await call('POST', '/api/import', { pack: edited, mode: 'update' });
+      expect(res.status).toBe(500);
+    } finally {
+      spy.mockRestore();
+    }
+    expect(ctx!.db.prepare("SELECT id FROM plan_modules WHERE id = 'new-mod'").get()).toBeUndefined();
+    expect(ctx!.service.catalog.data).toEqual(new CatalogRepo(ctx!.db).load());
+  });
+
   it('rejects moving a module to another stream with the exact message', async () => {
     ctx = makeTestApp('2026-10-04');
     const edited = JSON.parse(JSON.stringify(OWNER_PACK)) as any;
@@ -334,6 +361,9 @@ describe('catalog and export read models', () => {
     const tracks = res.json.tracks as Json[];
     expect(tracks.map((t) => t.id)).toEqual(['quran', 'ai', 'fsd', 'animation']);
     expect(tracks.every((t) => t.archived === false)).toBe(true);
+    // data carries the full catalog as CatalogRepo.load returns it.
+    expect((res.json.data as Json).tracks).toEqual(res.json.tracks);
+    expect(Array.isArray((res.json.data as Json).modules)).toBe(true);
   });
 
   it('GET /api/catalog on an empty plan reports hasPlan false', async () => {

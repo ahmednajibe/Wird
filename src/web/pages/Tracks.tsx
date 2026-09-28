@@ -1,9 +1,9 @@
 import { ArrowCounterClockwise, CalendarCheck, CheckCircle, Flag, Info, Path, Target } from '@phosphor-icons/react';
 import { motion } from 'motion/react';
 import { useState } from 'react';
-import { useSearchParams } from 'react-router';
+import { Link, useSearchParams } from 'react-router';
 import { errorMessage } from '../client/client';
-import { useModuleAction, useTracks } from '../client/hooks';
+import { useCatalog, useModuleAction, useTracks } from '../client/hooks';
 import type { StreamProjection, TrackModule, TrackStreamGroup } from '../client/types';
 import { ResourceLinks } from '../components/TaskCard';
 import { Button } from '../components/ui/Button';
@@ -11,14 +11,7 @@ import { ConfirmDialog } from '../components/ui/Dialog';
 import { Card, Chip, EmptyState, ErrorState, PageHeader, ProgressBar, Skeleton } from '../components/ui/primitives';
 import { useToast } from '../components/ui/Toast';
 import { cn, formatHours, formatMediumDate } from '../lib/format';
-import { metaByKey, trackKey } from '../lib/tracks';
-
-const SECTION_LABEL: Record<string, string> = {
-  'ai/main': 'AI',
-  'fsd/main': 'Full Stack',
-  'animation/draw': 'Animation: Draw',
-  'animation/story': 'Animation: Story',
-};
+import { useTrackMeta } from '../lib/tracks';
 
 function PhaseTimeline({ group, projection, color }: { group: TrackStreamGroup; projection: StreamProjection | null; color: string }) {
   const currentPhase = group.phases.find((p) => p.modules.some((m) => m.isCurrent))?.id;
@@ -142,7 +135,8 @@ function ModuleCard({
 }
 
 function StreamSection({ group, onAction, index }: { group: TrackStreamGroup; onAction: (m: TrackModule, a: 'complete' | 'reset') => void; index: number }) {
-  const meta = metaByKey(trackKey(group.track, group.stream));
+  const trackMeta = useTrackMeta();
+  const meta = trackMeta(group.track, group.stream);
   const I = meta.icon;
   const pr = group.projection;
   const all = group.phases.flatMap((p) => p.modules);
@@ -165,7 +159,7 @@ function StreamSection({ group, onAction, index }: { group: TrackStreamGroup; on
             <I size={24} aria-hidden />
           </span>
           <div className="min-w-0">
-            <h2 className="text-xl font-semibold tracking-tight text-ink">{SECTION_LABEL[key] ?? meta.label}</h2>
+            <h2 className="text-xl font-semibold tracking-tight text-ink">{meta.label}</h2>
             <p className="text-sm text-muted">
               {group.currentModuleTitle ? (
                 <>
@@ -236,13 +230,13 @@ function StreamSection({ group, onAction, index }: { group: TrackStreamGroup; on
 }
 
 function StreamTab({ group, active, onSelect }: { group: TrackStreamGroup; active: boolean; onSelect: () => void }) {
-  const meta = metaByKey(trackKey(group.track, group.stream));
+  const trackMeta = useTrackMeta();
+  const meta = trackMeta(group.track, group.stream);
   const I = meta.icon;
   const pr = group.projection;
   const all = group.phases.flatMap((p) => p.modules);
   const total = pr?.totalMinutes ?? all.reduce((a, m) => a + m.estMinutes, 0);
   const done = total - (pr?.remainingMinutes ?? 0);
-  const key = `${group.track}/${group.stream}`;
   return (
     <motion.button
       type="button"
@@ -261,7 +255,7 @@ function StreamTab({ group, active, onSelect }: { group: TrackStreamGroup; activ
         <span className={cn('inline-flex size-8 shrink-0 items-center justify-center rounded-xl', meta.soft, meta.text)}>
           <I size={18} aria-hidden />
         </span>
-        <span className="truncate text-sm font-semibold text-ink">{SECTION_LABEL[key]}</span>
+        <span className="truncate text-sm font-semibold text-ink">{meta.label}</span>
         <span className="num ml-auto text-xs text-muted">{total > 0 ? Math.round((done / total) * 100) : 0}%</span>
       </div>
       <ProgressBar value={done} max={total} height={6} color={meta.cssVar} />
@@ -272,10 +266,9 @@ function StreamTab({ group, active, onSelect }: { group: TrackStreamGroup; activ
   );
 }
 
-const STREAM_PARAM: Record<string, string> = { 'ai/main': 'ai', 'fsd/main': 'fsd', 'animation/draw': 'draw', 'animation/story': 'story' };
-
 export function TracksPage() {
   const q = useTracks();
+  const catalog = useCatalog();
   const action = useModuleAction();
   const { toast } = useToast();
   const [params, setParams] = useSearchParams();
@@ -295,9 +288,9 @@ export function TracksPage() {
     setPending(null);
   };
 
-  const selectedParam = params.get('s') ?? 'ai';
+  const selectedParam = params.get('s');
   const streams = q.data?.streams ?? [];
-  const selected = streams.find((g) => STREAM_PARAM[`${g.track}/${g.stream}`] === selectedParam) ?? streams[0];
+  const selected = streams.find((g) => `${g.track}.${g.stream}` === selectedParam) ?? streams[0];
 
   return (
     <div className="flex flex-col gap-6">
@@ -325,19 +318,30 @@ export function TracksPage() {
         <ErrorState message={errorMessage(q.error)} onRetry={() => void q.refetch()} />
       ) : !selected ? (
         <Card>
-          <EmptyState icon={Path} title="No tracks yet" />
+          <EmptyState
+            icon={Path}
+            title="No study plan yet"
+            body="Import a plan to add tracks, streams and modules."
+            action={
+              catalog.data && !catalog.data.hasPlan ? (
+                <Link to="/import" className="text-accent-ink underline underline-offset-2">
+                  Import a plan
+                </Link>
+              ) : undefined
+            }
+          />
         </Card>
       ) : (
         <>
           <div role="tablist" aria-label="Tracks" className="grid grid-cols-2 gap-3 lg:grid-cols-4">
             {streams.map((g) => {
-              const key = `${g.track}/${g.stream}`;
+              const key = `${g.track}.${g.stream}`;
               return (
                 <StreamTab
                   key={key}
                   group={g}
                   active={g === selected}
-                  onSelect={() => setParams(STREAM_PARAM[key] === 'ai' ? {} : { s: STREAM_PARAM[key] ?? 'ai' }, { replace: true })}
+                  onSelect={() => setParams(g === streams[0] ? {} : { s: key }, { replace: true })}
                 />
               );
             })}

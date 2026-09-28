@@ -44,16 +44,32 @@ export function PageHeader({ title, subtitle, actions, eyebrow }: { title: React
   );
 }
 
-type ChipTone = 'neutral' | 'accent' | 'warn' | 'danger' | 'quran' | 'fsd' | 'ai' | 'anim';
+export type ChipTone =
+  | 'neutral'
+  | 'accent'
+  | 'warn'
+  | 'danger'
+  | 'amber'
+  | 'blue'
+  | 'violet'
+  | 'coral'
+  | 'green'
+  | 'teal'
+  | 'rose'
+  | 'slate';
 const chipTones: Record<ChipTone, string> = {
   neutral: 'bg-surface-2 text-muted border-line',
   accent: 'bg-accent/12 text-accent-ink border-accent/25',
   warn: 'bg-warn/12 text-warn border-warn/30',
   danger: 'bg-danger/12 text-danger border-danger/30',
-  quran: 'bg-quran/12 text-quran-ink border-quran/30',
-  fsd: 'bg-fsd/12 text-fsd-ink border-fsd/30',
-  ai: 'bg-ai/12 text-ai-ink border-ai/30',
-  anim: 'bg-anim/12 text-anim-ink border-anim/30',
+  amber: 'bg-amber/12 text-amber-ink border-amber/30',
+  blue: 'bg-blue/12 text-blue-ink border-blue/30',
+  violet: 'bg-violet/12 text-violet-ink border-violet/30',
+  coral: 'bg-coral/12 text-coral-ink border-coral/30',
+  green: 'bg-green/12 text-green-ink border-green/30',
+  teal: 'bg-teal/12 text-teal-ink border-teal/30',
+  rose: 'bg-rose/12 text-rose-ink border-rose/30',
+  slate: 'bg-slate/12 text-slate-ink border-slate/30',
 };
 
 export function Chip({ tone = 'neutral', icon: I, children, className, title }: { tone?: ChipTone; icon?: Icon; children: ReactNode; className?: string; title?: string }) {
@@ -68,11 +84,9 @@ export function Chip({ tone = 'neutral', icon: I, children, className, title }: 
   );
 }
 
-export function trackTone(key: string): ChipTone {
-  if (key === 'quran') return 'quran';
-  if (key === 'fsd') return 'fsd';
-  if (key === 'ai') return 'ai';
-  return 'anim';
+/** Chip tone for a catalog theme id; unknown ids fall back to neutral. */
+export function trackTone(theme: string): ChipTone {
+  return theme in chipTones ? (theme as ChipTone) : 'neutral';
 }
 
 export function ProgressBar({

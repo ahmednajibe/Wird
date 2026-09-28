@@ -4,7 +4,7 @@
  */
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from './client';
-import type { DayOverrideInput, ManualTaskInput, Settings } from './types';
+import type { DayOverrideInput, IdReuse, ImportMode, ManualTaskInput, Settings } from './types';
 
 export const qk = {
   dashboard: ['dashboard'] as const,
@@ -14,6 +14,7 @@ export const qk = {
   stats: ['stats'] as const,
   resources: ['resources'] as const,
   settings: ['settings'] as const,
+  catalog: ['catalog'] as const,
   preview: (input: ManualTaskInput) => ['score-preview', input] as const,
 };
 
@@ -25,6 +26,7 @@ export const useQuran = () => useQuery({ queryKey: qk.quran, queryFn: api.quran 
 export const useStats = () => useQuery({ queryKey: qk.stats, queryFn: api.stats });
 export const useResources = () => useQuery({ queryKey: qk.resources, queryFn: api.resources, staleTime: 60_000 });
 export const useSettings = () => useQuery({ queryKey: qk.settings, queryFn: api.settings });
+export const useCatalog = () => useQuery({ queryKey: qk.catalog, queryFn: api.catalog, staleTime: 60_000 });
 
 export function useScorePreview(input: ManualTaskInput | null) {
   return useQuery({
@@ -71,4 +73,13 @@ export function useModuleAction() {
 export function useSaveSettings() {
   const invalidate = useInvalidateAll();
   return useMutation({ mutationFn: (patch: Partial<Settings>) => api.saveSettings(patch), onSettled: invalidate });
+}
+
+export function useCommitImport() {
+  const invalidate = useInvalidateAll();
+  return useMutation({
+    mutationFn: ({ pack, mode, onIdReuse }: { pack: unknown; mode: ImportMode; onIdReuse?: IdReuse }) =>
+      api.importCommit(pack, mode, onIdReuse),
+    onSettled: invalidate,
+  });
 }

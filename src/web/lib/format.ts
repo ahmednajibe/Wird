@@ -43,14 +43,14 @@ export function plural(n: number, one: string, many = `${one}s`): string {
   return `${n} ${n === 1 ? one : many}`;
 }
 
-/** Hour of the day in Cairo (0..23). */
-export function cairoHour(now: Date = new Date()): number {
-  const h = new Intl.DateTimeFormat('en-GB', { timeZone: DEFAULT_TIMEZONE, hour: 'numeric', hourCycle: 'h23' }).format(now);
+/** Hour of the day in the plan timezone (0..23). */
+export function localHour(now: Date = new Date(), tz: string = DEFAULT_TIMEZONE): number {
+  const h = new Intl.DateTimeFormat('en-GB', { timeZone: tz, hour: 'numeric', hourCycle: 'h23' }).format(now);
   return Number(h);
 }
 
-export function greeting(now: Date = new Date()): string {
-  const h = cairoHour(now);
+export function greeting(now: Date = new Date(), tz: string = DEFAULT_TIMEZONE): string {
+  const h = localHour(now, tz);
   if (h < 5) return 'Up early';
   if (h < 12) return 'Good morning';
   if (h < 17) return 'Good afternoon';

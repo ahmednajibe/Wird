@@ -257,7 +257,8 @@ export function commitImport(service: LearningService, body: ImportBody): Import
 
   const backup = service.dbPath !== null && service.dbPath !== ':memory:' ? snapshotDb(service.db, backupDirFor(service.dbPath), 'pre-import') : null;
 
-  transaction(service.db, () => {
+  try {
+    transaction(service.db, () => {
     // Freeze past days under the settings and catalog that were in effect.
     service.freezePastDays();
 
@@ -296,7 +297,13 @@ export function commitImport(service: LearningService, body: ImportBody): Import
     service.applyImportedSettings(v.settings, preview.regenerates);
 
     repo.recordImport(body.mode, pack.name, JSON.stringify(body.pack), JSON.stringify(preview), nowIso);
-  });
+    });
+  } catch (err) {
+    // The transaction rolled back; the in-memory catalog may already hold the
+    // imported data. Reload it from the untouched DB before propagating.
+    service.reloadCatalog();
+    throw err;
+  }
 
   return { preview, backup, regenerated: preview.regenerates };
 }

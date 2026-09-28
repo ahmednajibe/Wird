@@ -7,6 +7,7 @@ import { AddTaskProvider } from './components/AddTaskContext';
 import { Layout } from './components/Layout';
 import { ToastProvider } from './components/ui/Toast';
 import { ThemeProvider } from './lib/theme';
+import { ImportPlanPage } from './pages/ImportPlan';
 import { NotFoundPage } from './pages/NotFound';
 import { PlanPage } from './pages/Plan';
 import { QuranPage } from './pages/Quran';
@@ -45,6 +46,7 @@ export function App() {
                     <Route path="quran" element={<QuranPage />} />
                     <Route path="stats" element={<StatsPage />} />
                     <Route path="resources" element={<ResourcesPage />} />
+                    <Route path="import" element={<ImportPlanPage />} />
                     <Route path="settings" element={<SettingsPage />} />
                     <Route path="*" element={<NotFoundPage />} />
                   </Route>

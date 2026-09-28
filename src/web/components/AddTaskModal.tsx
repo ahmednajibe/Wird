@@ -2,12 +2,13 @@ import { Lightning, Plus } from '@phosphor-icons/react';
 import { useQueryClient } from '@tanstack/react-query';
 import { AnimatePresence, motion } from 'motion/react';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { Link } from 'react-router';
 import { errorMessage, ApiError } from '../client/client';
-import { qk, useCreateTask, useScorePreview } from '../client/hooks';
-import type { Dashboard, ManualTaskInput, ManualTaskType, TrackId } from '../client/types';
+import { qk, useCatalog, useCreateTask, useScorePreview } from '../client/hooks';
+import type { Dashboard, ManualTaskInput, ManualTaskType, TrackDef, TrackId } from '../client/types';
 import { burstFrom, celebrate } from '../lib/confetti';
 import { cn } from '../lib/format';
-import { metaByKey, type TrackKey } from '../lib/tracks';
+import { metaFor, typeLabel } from '../lib/tracks';
 import { alreadyCelebrated, markCelebrated } from '../lib/useTaskActions';
 import { Button } from './ui/Button';
 import { Dialog } from './ui/Dialog';
@@ -22,13 +23,6 @@ function useDebounced<T>(value: T, ms: number): T {
   }, [value, ms]);
   return v;
 }
-
-const TRACK_CHOICES: { key: TrackKey; track: TrackId }[] = [
-  { key: 'quran', track: 'quran' },
-  { key: 'fsd', track: 'fsd' },
-  { key: 'ai', track: 'ai' },
-  { key: 'draw', track: 'animation' },
-];
 
 const STUDY_TYPES: { value: ManualTaskType; label: string }[] = [
   { value: 'learn', label: 'Learn' },
@@ -45,10 +39,11 @@ export function AddTaskModal({ open, onClose }: { open: boolean; onClose: () => 
   const qc = useQueryClient();
   const { toast } = useToast();
   const create = useCreateTask();
+  const catalog = useCatalog();
   const submitRef = useRef<HTMLButtonElement>(null);
 
-  const [track, setTrack] = useState<TrackId>('fsd');
-  const [stream, setStream] = useState<'draw' | 'story'>('draw');
+  const [trackChoice, setTrackChoice] = useState<TrackId | null>(null);
+  const [streamChoice, setStreamChoice] = useState<string | null>(null);
   const [title, setTitle] = useState('');
   const [minutes, setMinutes] = useState('30');
   const [type, setType] = useState<ManualTaskType>('learn');
@@ -66,29 +61,47 @@ export function AddTaskModal({ open, onClose }: { open: boolean; onClose: () => 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
+  const all = catalog.data?.tracks ?? [];
+  const quranDef = all.find((t) => t.kind === 'quran');
+  const choices: TrackDef[] = [
+    ...(catalog.data?.quranEnabled && quranDef && !quranDef.archived ? [quranDef] : []),
+    ...all.filter((t) => t.kind === 'study' && !t.archived),
+  ];
+  const defaultTrack = choices.find((t) => t.kind === 'study') ?? choices[0];
+  const track: TrackId = trackChoice && choices.some((t) => t.id === trackChoice) ? trackChoice : (defaultTrack?.id ?? '');
+  const trackDef = choices.find((t) => t.id === track);
+  const isQuran = trackDef?.kind === 'quran';
+  const effectiveType: ManualTaskType = isQuran ? (type === 'review' ? 'review' : 'memorize') : type === 'memorize' ? 'learn' : type;
+  const streams = trackDef?.streams.filter((s) => !s.archived) ?? [];
+  const firstStream = streams[0]?.id;
+  const stream = streams.length > 1 ? (streamChoice && streams.some((s) => s.id === streamChoice) ? streamChoice : firstStream) : undefined;
+
   const chooseTrack = (t: TrackId) => {
-    setTrack(t);
-    if (t === 'quran') setType((cur) => (cur === 'review' ? 'review' : 'memorize'));
+    setTrackChoice(t);
+    setStreamChoice(null);
+    const def = choices.find((x) => x.id === t);
+    if (def?.kind === 'quran') setType((cur) => (cur === 'review' ? 'review' : 'memorize'));
     else setType((cur) => (cur === 'memorize' ? 'learn' : cur));
   };
 
   const minutesNum = Number(minutes);
   const pagesNum = Number(pages);
-  const isQuranMemorize = track === 'quran' && type === 'memorize';
+  const isQuranMemorize = Boolean(isQuran) && effectiveType === 'memorize';
 
   const input: ManualTaskInput | null = useMemo(() => {
+    if (!track) return null;
     if (!Number.isInteger(minutesNum) || minutesNum < 1 || minutesNum > 600) return null;
     if (isQuranMemorize && (!Number.isInteger(pagesNum) || pagesNum < 1 || pagesNum > 20)) return null;
     return {
       track,
-      ...(track === 'animation' ? { stream } : {}),
+      ...(stream ? { stream } : {}),
       title: title.trim() || 'Preview',
       minutes: minutesNum,
-      type,
+      type: effectiveType,
       ...(isQuranMemorize ? { pagesCount: pagesNum } : {}),
-      ...(track !== 'quran' ? { offCurriculum } : {}),
+      ...(!isQuran ? { offCurriculum } : {}),
     };
-  }, [track, stream, title, minutesNum, pagesNum, type, offCurriculum, isQuranMemorize]);
+  }, [track, stream, title, minutesNum, pagesNum, effectiveType, offCurriculum, isQuranMemorize, isQuran]);
 
   const previewInput = useDebounced(input ? { ...input, title: 'Preview' } : null, 300);
   const preview = useScorePreview(previewInput);
@@ -135,8 +148,6 @@ export function AddTaskModal({ open, onClose }: { open: boolean; onClose: () => 
     }
   };
 
-  const currentKey: TrackKey = track === 'animation' ? 'draw' : (track as TrackKey);
-
   return (
     <Dialog
       open={open}
@@ -150,15 +161,24 @@ export function AddTaskModal({ open, onClose }: { open: boolean; onClose: () => 
         <fieldset>
           <legend className="label mb-2">Track</legend>
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-            {TRACK_CHOICES.map((c) => {
-              const m = metaByKey(c.key);
-              const active = currentKey === c.key;
+            {choices.length === 0 && (
+              <p className="col-span-full text-sm text-muted">
+                No tracks yet.{' '}
+                <Link to="/import" className="text-accent-ink underline underline-offset-2">
+                  Import a plan
+                </Link>{' '}
+                or turn Quran on in Settings.
+              </p>
+            )}
+            {choices.map((c) => {
+              const m = metaFor(catalog.data, c.id);
+              const active = track === c.id;
               const I = m.icon;
               return (
                 <button
-                  key={c.key}
+                  key={c.id}
                   type="button"
-                  onClick={() => chooseTrack(c.track)}
+                  onClick={() => chooseTrack(c.id)}
                   aria-pressed={active}
                   className={cn(
                     'flex h-11 items-center justify-center gap-1.5 rounded-[10px] border px-2 text-sm font-medium whitespace-nowrap transition-colors',
@@ -166,25 +186,17 @@ export function AddTaskModal({ open, onClose }: { open: boolean; onClose: () => 
                   )}
                 >
                   <I size={17} aria-hidden />
-                  {c.key === 'draw' ? 'Animation' : m.short}
+                  {c.shortLabel}
                 </button>
               );
             })}
           </div>
         </fieldset>
 
-        {track === 'animation' && (
+        {streams.length > 1 && (
           <div>
             <div className="label mb-2">Stream</div>
-            <Segmented
-              label="Animation stream"
-              value={stream}
-              onChange={setStream}
-              options={[
-                { value: 'draw', label: 'Draw' },
-                { value: 'story', label: 'Story' },
-              ]}
-            />
+            <Segmented label={`${trackDef?.shortLabel ?? 'Track'} stream`} value={stream ?? firstStream ?? ''} onChange={setStreamChoice} options={streams.map((s) => ({ value: s.id, label: s.shortLabel }))} />
           </div>
         )}
 
@@ -197,7 +209,7 @@ export function AddTaskModal({ open, onClose }: { open: boolean; onClose: () => 
             className="field"
             value={title}
             maxLength={200}
-            placeholder={track === 'quran' ? 'Extra page with my teacher' : 'Watched a lecture on attention'}
+            placeholder={isQuran ? 'Extra page with my teacher' : 'Watched a lecture on attention'}
             onChange={(e) => setTitle(e.target.value)}
             aria-invalid={Boolean(errors.title)}
           />
@@ -206,7 +218,14 @@ export function AddTaskModal({ open, onClose }: { open: boolean; onClose: () => 
 
         <div>
           <div className="label mb-2">Type</div>
-          <Segmented label="Task type" value={type} onChange={setType} options={track === 'quran' ? QURAN_TYPES : STUDY_TYPES} />
+          <Segmented
+            label="Task type"
+            value={effectiveType}
+            onChange={setType}
+            options={
+              isQuran ? QURAN_TYPES : STUDY_TYPES.map((t) => ({ ...t, label: typeLabel(trackDef, t.value) }))
+            }
+          />
           {errors.type && <p className="mt-1.5 text-xs text-danger">{errors.type}</p>}
         </div>
 
@@ -250,7 +269,7 @@ export function AddTaskModal({ open, onClose }: { open: boolean; onClose: () => 
         </div>
 
         <div className="rounded-[10px] border border-line bg-surface-2/50 px-3 py-1">
-          {track !== 'quran' && (
+          {!isQuran && (
             <Switch
               checked={offCurriculum}
               onChange={setOffCurriculum}

@@ -1,8 +1,8 @@
 import { Check, Clock, Coffee, Fire, Hourglass, Lightning, ListChecks, Moon, Plus, SealCheck, Trophy } from '@phosphor-icons/react';
 import { motion } from 'motion/react';
-import { useNavigate } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 import { errorMessage } from '../client/client';
-import { useDashboard } from '../client/hooks';
+import { useCatalog, useDashboard } from '../client/hooks';
 import type { Dashboard, WeekSummaryDay } from '../client/types';
 import { useAddTask } from '../components/AddTaskContext';
 import { TaskCard, type TaskActions } from '../components/TaskCard';
@@ -293,6 +293,7 @@ function TodaySkeleton() {
 
 export function TodayPage() {
   const q = useDashboard();
+  const catalog = useCatalog();
   const { open } = useAddTask();
   const { complete, undo, skip, remove } = useTaskActions();
   const resourcesFor = useModuleResources();
@@ -321,7 +322,7 @@ export function TodayPage() {
             </span>
             <span>{d.hijri.label}</span>
           </p>
-          <h1 className="mt-1 text-2xl font-bold tracking-tight text-ink md:text-[30px]">{greeting()}. Ready for today?</h1>
+          <h1 className="mt-1 text-2xl font-bold tracking-tight text-ink md:text-[30px]">{greeting(new Date(), catalog.data?.timezone)}. Ready for today?</h1>
           <div className="mt-2.5 flex flex-wrap items-center gap-3">
             <FastingBadge fasting={d.fasting} />
             <CapacityLine d={d} />
@@ -336,6 +337,20 @@ export function TodayPage() {
           <LevelCard d={d} />
         </div>
       </div>
+
+      {catalog.data && !catalog.data.hasPlan && (
+        <Card className="p-5 sm:p-6" data-testid="no-plan-card">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 className="text-lg font-semibold tracking-tight text-ink">No study plan yet</h2>
+              <p className="mt-0.5 text-sm text-muted">Import a plan to get study tracks and a weekly schedule. Quran tasks still show below if enabled.</p>
+            </div>
+            <Link to="/import" className="inline-flex h-9 items-center rounded-full bg-accent px-4 text-sm font-semibold text-on-accent">
+              Import a plan
+            </Link>
+          </div>
+        </Card>
+      )}
 
       <section aria-labelledby="tasks-heading" className="flex flex-col gap-3">
         <div className="flex items-end justify-between gap-3">

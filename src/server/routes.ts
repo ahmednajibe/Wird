@@ -2,9 +2,11 @@
  * HTTP API routes (JSON). Inputs are validated with zod; invalid input -> 400.
  */
 import { Hono, type Context } from 'hono';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { z } from 'zod';
 import { dayOfWeek, diffDays, isIsoDate } from '../shared/dates.js';
-import { ApiError, badRequest } from './errors.js';
+import { ApiError, badRequest, notFound } from './errors.js';
 import { commitImport, previewImport } from './importer.js';
 import type { LearningService, ManualTaskInput } from './service.js';
 import { calendar, catalogView, dashboard, planPack, quran, resources, stats, tracks, week } from './views.js';
@@ -146,6 +148,16 @@ export function apiRoutes(service: LearningService): Hono {
 
   api.get('/catalog', (c) => c.json(catalogView(service)));
   api.get('/plan-pack', (c) => c.json(planPack(service)));
+
+  api.get('/plan-prompt', (c) => {
+    // Resolved like dist/web in app.ts: relative to the process cwd.
+    const file = join(process.cwd(), 'PLAN_PROMPT.md');
+    try {
+      return c.json({ markdown: readFileSync(file, 'utf8') });
+    } catch {
+      throw notFound('PLAN_PROMPT.md is missing from this install');
+    }
+  });
 
   api.post('/import/preview', async (c) => {
     const body = parse(importPreviewSchema, await jsonBody(c));

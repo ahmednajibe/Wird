@@ -2,10 +2,17 @@
  * Typed fetch client for the local API.
  */
 import type {
+  CatalogResponse,
   Dashboard,
   DayOverrideInput,
   DayView,
+  IdReuse,
+  ImportMode,
+  ImportPreview,
+  ImportResult,
   ManualTaskInput,
+  PlanPack,
+  PlanPromptResponse,
   QuranResponse,
   ResourcesResponse,
   ScorePreview,
@@ -27,6 +34,8 @@ export class ApiError extends Error {
     message: string,
     readonly status: number,
     readonly details: ApiIssue[] = [],
+    /** Raw `details` payload as returned (not always an array). */
+    readonly rawDetails?: unknown,
   ) {
     super(message);
     this.name = 'ApiError';
@@ -54,8 +63,8 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
     }
   }
   if (!res.ok) {
-    const obj = (data ?? {}) as { error?: string; details?: ApiIssue[] };
-    throw new ApiError(obj.error ?? `Request failed (${res.status})`, res.status, Array.isArray(obj.details) ? obj.details : []);
+    const obj = (data ?? {}) as { error?: string; details?: unknown };
+    throw new ApiError(obj.error ?? `Request failed (${res.status})`, res.status, Array.isArray(obj.details) ? (obj.details as ApiIssue[]) : [], obj.details);
   }
   return data as T;
 }
@@ -82,6 +91,12 @@ export const api = {
   saveSettings: (patch: Partial<Settings>) => request<SettingsSaveResponse>('PUT', '/settings', patch),
   day: (date: string) => request<DayView>('GET', `/days/${date}`),
   saveDay: (date: string, body: DayOverrideInput) => request<DayView>('PUT', `/days/${date}`, body),
+  catalog: () => request<CatalogResponse>('GET', '/catalog'),
+  planPack: () => request<PlanPack>('GET', '/plan-pack'),
+  planPrompt: () => request<PlanPromptResponse>('GET', '/plan-prompt'),
+  importPreview: (pack: unknown, mode: ImportMode) => request<ImportPreview>('POST', '/import/preview', { pack, mode }),
+  importCommit: (pack: unknown, mode: ImportMode, onIdReuse?: IdReuse) =>
+    request<ImportResult>('POST', '/import', { pack, mode, ...(onIdReuse ? { onIdReuse } : {}) }),
 };
 
 export function errorMessage(err: unknown): string {

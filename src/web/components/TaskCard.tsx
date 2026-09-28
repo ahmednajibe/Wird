@@ -15,10 +15,11 @@ import {
 } from '@phosphor-icons/react';
 import { AnimatePresence, motion } from 'motion/react';
 import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
+import { isQuranType } from '../../shared/types.js';
 import type { ResourceView, TaskView } from '../client/types';
 import { cn, formatMinutes } from '../lib/format';
 import { formatPages } from '../lib/quran';
-import { INTENSITY_LABELS, TYPE_LABELS, trackMeta } from '../lib/tracks';
+import { INTENSITY_LABELS, useTrackMeta, useTypeLabel } from '../lib/tracks';
 import { QuranSegments } from './QuranSegments';
 import { Button, IconButton } from './ui/Button';
 import { Chip, ExternalLink, trackTone } from './ui/primitives';
@@ -165,11 +166,13 @@ export function TaskCard({
   actions: TaskActions;
   pending?: boolean;
 }) {
-  const [open, setOpen] = useState(task.track === 'quran');
+  const [open, setOpen] = useState(isQuranType(task.type));
   const [popover, setPopover] = useState(false);
   const checkRef = useRef<HTMLButtonElement>(null);
+  const trackMeta = useTrackMeta();
+  const typeLabel = useTypeLabel();
   const m = trackMeta(task.track, task.stream);
-  const isQuran = task.track === 'quran';
+  const isQuran = isQuranType(task.type);
   const done = task.status === 'completed';
   const skipped = task.status === 'skipped';
   const missed = task.status === 'missed';
@@ -186,11 +189,11 @@ export function TaskCard({
       data-status={task.status}
       className={cn(
         'card relative overflow-visible transition-colors',
-        isQuran && 'border-quran/35 bg-[linear-gradient(135deg,color-mix(in_oklab,var(--quran)_10%,var(--surface))_0%,var(--surface)_55%)]',
+        isQuran && 'border-amber/35 bg-[linear-gradient(135deg,color-mix(in_oklab,var(--amber)_10%,var(--surface))_0%,var(--surface)_55%)]',
         closed && 'opacity-80',
       )}
     >
-      {isQuran && <span aria-hidden className="absolute inset-y-4 left-0 w-1 rounded-r-full bg-quran" />}
+      {isQuran && <span aria-hidden className="absolute inset-y-4 left-0 w-1 rounded-r-full bg-amber" />}
       <div className="flex items-start gap-3 p-4 sm:gap-4 sm:p-5">
         <motion.button
           ref={checkRef}
@@ -202,7 +205,7 @@ export function TaskCard({
           whileTap={{ scale: 0.9 }}
           className={cn(
             'group relative mt-0.5 inline-flex size-9 shrink-0 items-center justify-center rounded-full border-2 transition-colors disabled:cursor-not-allowed',
-            done ? 'border-accent bg-accent text-on-accent' : isQuran ? 'border-quran/60 text-quran-ink hover:bg-quran/12' : 'border-line-strong text-muted hover:border-accent hover:text-accent-ink',
+            done ? 'border-accent bg-accent text-on-accent' : isQuran ? 'border-amber/60 text-amber-ink hover:bg-amber/12' : 'border-line-strong text-muted hover:border-accent hover:text-accent-ink',
             (skipped || rolled) && 'border-dashed opacity-60',
           )}
         >
@@ -223,10 +226,10 @@ export function TaskCard({
 
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-1.5">
-            <Chip tone={trackTone(m.key)} icon={TrackIcon}>
+            <Chip tone={trackTone(m.theme)} icon={TrackIcon}>
               {m.label}
             </Chip>
-            <Chip>{TYPE_LABELS[task.type]}</Chip>
+            <Chip>{typeLabel(task.track, task.type)}</Chip>
             {!isQuran && <Chip>{INTENSITY_LABELS[task.intensity]}</Chip>}
             {task.source === 'manual' && <Chip>Manual</Chip>}
             {task.offCurriculum && <Chip>Off-curriculum</Chip>}

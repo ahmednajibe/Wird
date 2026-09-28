@@ -1,18 +1,19 @@
-import { BookOpen, CalendarBlank, CheckCircle, Clock, FloppyDisk, Moon, Palette, Target } from '@phosphor-icons/react';
+import { BookOpen, CalendarBlank, CheckCircle, Clock, Download, FileArrowUp, FloppyDisk, Moon, Palette, Target } from '@phosphor-icons/react';
 import { AnimatePresence, motion } from 'motion/react';
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { Link } from 'react-router';
 import { toHijri } from '../../shared/calendar.js';
+import { buildCatalog } from '../../shared/catalog.js';
 import { today as cairoToday } from '../../shared/dates.js';
 import { settingsSchema } from '../../shared/settings.js';
 import { computeBaseline } from '../../shared/streak.js';
-import { ApiError, errorMessage } from '../client/client';
-import { CATALOG } from '../lib/catalog';
-import { useSaveSettings, useSettings } from '../client/hooks';
-import type { Settings } from '../client/types';
+import { api, ApiError, errorMessage } from '../client/client';
+import { useCatalog, useSaveSettings, useSettings } from '../client/hooks';
+import type { CatalogResponse, Settings } from '../client/types';
 import { Button } from '../components/ui/Button';
 import { Card, ErrorState, PageHeader, Segmented, Skeleton, Switch } from '../components/ui/primitives';
 import { useToast } from '../components/ui/Toast';
-import { cn, formatLongDate } from '../lib/format';
+import { cn, formatLongDate, formatMediumDate } from '../lib/format';
 import { useTheme, type ThemePref } from '../lib/theme';
 
 const DOW = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -115,23 +116,67 @@ function editable(s: Settings) {
     hijriOffsetDays: s.hijriOffsetDays,
     quran: s.quran,
     baseline: s.baseline,
+    timezone: s.timezone,
   };
 }
 
-function SettingsForm({ initial }: { initial: Settings }) {
+function PlanSection({ catalog }: { catalog: CatalogResponse }) {
+  const { toast } = useToast();
+  const [downloading, setDownloading] = useState(false);
+  const download = async () => {
+    setDownloading(true);
+    try {
+      const pack = await api.planPack();
+      const blob = new Blob([JSON.stringify(pack, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'plan.json';
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      toast({ tone: 'error', title: 'Could not download the plan', body: errorMessage(err) });
+    } finally {
+      setDownloading(false);
+    }
+  };
+  return (
+    <Section icon={FileArrowUp} title="Your plan" description="The tracks, modules and settings this install runs on.">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="text-sm">
+          <p className="font-medium text-ink">{catalog.planName ?? 'No plan imported yet'}</p>
+          {catalog.importedAt && <p className="text-xs text-muted">Imported {formatMediumDate(catalog.importedAt.slice(0, 10))}</p>}
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Link to="/import">
+            <Button variant="secondary" size="sm" icon={FileArrowUp}>
+              Import a plan
+            </Button>
+          </Link>
+          <Button variant="ghost" size="sm" icon={Download} onClick={() => void download()} loading={downloading}>
+            Download current plan
+          </Button>
+        </div>
+      </div>
+    </Section>
+  );
+}
+
+function SettingsForm({ initial, catalog }: { initial: Settings; catalog: CatalogResponse }) {
   const [draft, setDraft] = useState<Settings>(initial);
   const [errors, setErrors] = useState<Errors>({});
   const [savedText, setSavedText] = useState<string | null>(null);
   const save = useSaveSettings();
   const { toast } = useToast();
   const { pref, setPref } = useTheme();
-  const t = cairoToday();
+  const t = cairoToday(new Date(), catalog.timezone);
+  const engineCatalog = useMemo(() => buildCatalog(catalog.data), [catalog.data]);
 
   useEffect(() => setDraft(initial), [initial]);
 
   const dirty = JSON.stringify(editable(draft)) !== JSON.stringify(editable(initial));
   const parsed = useMemo(() => settingsSchema.safeParse(draft), [draft]);
-  const preview = parsed.success ? computeBaseline(parsed.data, CATALOG) : null;
+  const preview = parsed.success ? computeBaseline(parsed.data, engineCatalog) : null;
 
   const set = <K extends keyof Settings>(k: K, v: Settings[K]) => setDraft((d) => ({ ...d, [k]: v }));
   const setQuran = <K extends keyof Settings['quran']>(k: K, v: Settings['quran'][K]) => setDraft((d) => ({ ...d, quran: { ...d.quran, [k]: v } }));
@@ -150,7 +195,7 @@ function SettingsForm({ initial }: { initial: Settings }) {
     setErrors({});
     try {
       const res = await save.mutateAsync(editable(parsed.data));
-      setSavedText(computeBaseline(res.settings, CATALOG).text);
+      setSavedText(computeBaseline(res.settings, engineCatalog).text);
       toast({ title: 'Settings saved', body: res.regenerated ? 'The plan from today was refreshed.' : 'No plan changes were needed.' });
     } catch (err) {
       if (err instanceof ApiError && err.details.length > 0) {
@@ -231,27 +276,62 @@ function SettingsForm({ initial }: { initial: Settings }) {
               ]}
             />
           </Section>
+          <Section icon={Clock} title="Timezone" description="IANA name used for 'today', greetings and week boundaries.">
+            <div>
+              <label htmlFor="timezone" className="mb-1.5 block text-sm font-medium text-ink">
+                Timezone
+              </label>
+              <input
+                id="timezone"
+                data-testid="field-timezone"
+                className={cn('field', err('timezone') && 'border-danger')}
+                value={draft.timezone}
+                placeholder="Africa/Cairo"
+                aria-invalid={Boolean(err('timezone'))}
+                aria-describedby={err('timezone') ? 'timezone-err' : undefined}
+                onChange={(e) => set('timezone', e.target.value)}
+              />
+              {err('timezone') ? (
+                <p id="timezone-err" className="mt-1 text-xs text-danger">
+                  {err('timezone')}
+                </p>
+              ) : (
+                <p className="mt-1 text-xs text-muted">For example Africa/Cairo or Europe/Berlin.</p>
+              )}
+            </div>
+          </Section>
         </div>
       </div>
 
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
         <Section icon={BookOpen} title="Quran" description="How long sessions take. Memorize minutes adapt to your real average after a few sessions.">
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-            <NumberField id="q-mem" label="Memorize session" value={draft.quran.memorizeMinutes} suffix="min" error={err('quran.memorizeMinutes')} onChange={(n) => setQuran('memorizeMinutes', n)} />
-            <NumberField id="q-page" label="Review per page" value={draft.quran.minutesPerReviewPage} suffix="min" error={err('quran.minutesPerReviewPage')} onChange={(n) => setQuran('minutesPerReviewPage', n)} />
-            <NumberField id="q-cap" label="Review cap" value={draft.quran.reviewCapMinutes} suffix="min" error={err('quran.reviewCapMinutes')} onChange={(n) => setQuran('reviewCapMinutes', n)} />
-          </div>
-          <div className="mt-4">
-            <div className="mb-1.5 text-sm font-medium text-ink">Memorization order</div>
-            <Segmented<Settings['quran']['memorizationOrder']>
-              label="Memorization order"
-              value={draft.quran.memorizationOrder}
-              onChange={(v) => setQuran('memorizationOrder', v)}
-              options={[
-                { value: 'juz30-29-then-forward', label: 'Juz 30, 29, then from the start' },
-                { value: 'forward', label: 'From the start' },
-              ]}
+          <div className="rounded-[10px] border border-line px-3">
+            <Switch
+              checked={draft.quran.enabled}
+              onChange={(v) => setQuran('enabled', v)}
+              label="Quran sessions"
+              description="When off, no Quran sessions are planned and all study time goes to your tracks. Your Quran history is kept."
+              id="quran-enabled"
             />
+          </div>
+          <div className={cn(!draft.quran.enabled && 'pointer-events-none opacity-45')} aria-disabled={!draft.quran.enabled}>
+            <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
+              <NumberField id="q-mem" label="Memorize session" value={draft.quran.memorizeMinutes} suffix="min" error={err('quran.memorizeMinutes')} onChange={(n) => setQuran('memorizeMinutes', n)} />
+              <NumberField id="q-page" label="Review per page" value={draft.quran.minutesPerReviewPage} suffix="min" error={err('quran.minutesPerReviewPage')} onChange={(n) => setQuran('minutesPerReviewPage', n)} />
+              <NumberField id="q-cap" label="Review cap" value={draft.quran.reviewCapMinutes} suffix="min" error={err('quran.reviewCapMinutes')} onChange={(n) => setQuran('reviewCapMinutes', n)} />
+            </div>
+            <div className="mt-4">
+              <div className="mb-1.5 text-sm font-medium text-ink">Memorization order</div>
+              <Segmented<Settings['quran']['memorizationOrder']>
+                label="Memorization order"
+                value={draft.quran.memorizationOrder}
+                onChange={(v) => setQuran('memorizationOrder', v)}
+                options={[
+                  { value: 'juz30-29-then-forward', label: 'Juz 30, 29, then from the start' },
+                  { value: 'forward', label: 'From the start' },
+                ]}
+              />
+            </div>
           </div>
         </Section>
 
@@ -283,6 +363,8 @@ function SettingsForm({ initial }: { initial: Settings }) {
           <p className="mt-2 text-xs text-muted">Past days keep the goal they had. Changes only apply from today.</p>
         </Section>
       </div>
+
+      <PlanSection catalog={catalog} />
 
 
       <AnimatePresence>
@@ -333,10 +415,11 @@ function SettingsForm({ initial }: { initial: Settings }) {
 
 export function SettingsPage() {
   const q = useSettings();
+  const catalog = useCatalog();
   return (
     <div className="flex flex-col gap-6">
       <PageHeader title="Settings" subtitle="Saving refreshes the plan from today. Past days and their streak status never change." />
-      {q.isPending ? (
+      {q.isPending || catalog.isPending ? (
         <div className="flex flex-col gap-4">
           <Skeleton className="h-40 rounded-2xl" />
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
@@ -346,8 +429,10 @@ export function SettingsPage() {
         </div>
       ) : q.isError ? (
         <ErrorState message={errorMessage(q.error)} onRetry={() => void q.refetch()} />
+      ) : catalog.isError ? (
+        <ErrorState message={errorMessage(catalog.error)} onRetry={() => void catalog.refetch()} />
       ) : (
-        <SettingsForm initial={q.data} />
+        <SettingsForm initial={q.data} catalog={catalog.data} />
       )}
     </div>
   );
