@@ -20,8 +20,8 @@ screenshots to `screenshots/`. Never point tests or scripts at
 
 ## Architecture
 
-- `src/shared/` pure engine, no I/O: dates (Africa/Cairo, weeks start Sunday),
-  calendar (Hijri + fasting), curriculum, Quran data and engine, scoring,
+- `src/shared/` pure engine, no I/O: dates (configured timezone, weeks start
+  Sunday), calendar (Hijri + fasting), catalog, plan packs, Quran data and engine, scoring,
   planner, progress ledger, streak/baseline/levels, projections, settings
   schema.
 - `src/server/` Hono API over `node:sqlite`: config, migrations, repositories,
@@ -31,6 +31,41 @@ screenshots to `screenshots/`. Never point tests or scripts at
   `pages/`, shared UI in `components/`, API client and hooks in `client/`.
 - `scripts/` Quran data generator and the e2e runner.
 - `tests/` vitest suites.
+
+## Plan packs and the catalog
+
+- Tracks, streams, modules and resources live in the `plan_*` tables, not in
+  code. The engine never imports curriculum data: the service loads a
+  `Catalog` (`src/shared/catalog.ts`) from `CatalogRepo` and injects it
+  (`new ModuleLedger(catalog, ...)`; planner and projections read
+  `ledger.catalog`). Call `service.reloadCatalog()` after writing plan tables.
+- Track and stream ids are plain strings. Branch on `catalog.kindOf(track)`
+  ('study' | 'quran') or `isQuranType(task.type)`, never on a track id literal.
+  `QURAN_TRACK_ID` ('quran') is only used to create Quran tasks. Per-stream
+  behavior comes from data (`style: 'practice'`, warm-up titles and drills).
+- Ids (track, stream, module) match `ID_RE` (`/^[a-z0-9][a-z0-9-]*$/`, no '/'
+  because slot keys are `track/stream/role`). Phase ids may use uppercase.
+- Imports (`src/server/importer.ts`): `POST /api/import/preview` never writes;
+  `POST /api/import` backs up first, then one transaction. Entities are never
+  hard-deleted, only archived (`archived_at`). Imports never touch completed
+  tasks, points, `daily_summary`, `tracking_start_date` or manual tasks; module
+  progress is only reset in fresh mode with `onIdReuse: 'reset'`.
+- Pack validation messages (`src/shared/pack.ts`) are read by end users and
+  pasted back to an AI: keep them self-contained (path, id, allowed values).
+  `PLAN_PROMPT.md` documents the pack format for external AIs; update it with
+  any schema change, and keep its JSON examples valid (a test checks them).
+- The owner's curriculum is seed data in `src/server/seed/` (migration 4 and
+  tests only). Fresh installs have no study tracks. Tests get the owner plan via
+  `makeTestApp(date)` (default `plan: 'owner'`) or an empty plan with
+  `{ plan: 'empty' }`.
+- `settings.quran.enabled` (default true): when false, reserve 0 and no Quran
+  tasks for today onward; Quran history is never modified.
+  `settings.timezone` (default Africa/Cairo) drives `today()`.
+- Web: track colors and icons come only from the fixed palettes (`THEMES`,
+  `ICONS` in pack.ts, mapped in `src/web/lib/themes.ts` / `icons.ts`); never
+  accept CSS, hex or SVG from a pack. Use `useTrackMeta()` for track display.
+- `tests/golden.test.ts` pins API output. Never regenerate its snapshots to
+  make a refactor pass.
 
 ## Rules
 

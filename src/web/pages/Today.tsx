@@ -2,7 +2,7 @@ import { Check, Clock, Coffee, Fire, Hourglass, Lightning, ListChecks, Moon, Plu
 import { motion } from 'motion/react';
 import { Link, useNavigate } from 'react-router';
 import { errorMessage } from '../client/client';
-import { useCatalog, useDashboard } from '../client/hooks';
+import { useCatalog, useDashboard, useSettings } from '../client/hooks';
 import type { Dashboard, WeekSummaryDay } from '../client/types';
 import { useAddTask } from '../components/AddTaskContext';
 import { TaskCard, type TaskActions } from '../components/TaskCard';
@@ -46,6 +46,10 @@ function GoalCard({ d }: { d: Dashboard }) {
   const secured = d.streak.todayCounts;
   const left = Math.max(0, baseline - d.pointsToday);
   const wide = useMediaQuery('(min-width: 640px)');
+  const catalog = useCatalog();
+  const settings = useSettings();
+  const hasWarmup = (settings.data?.weeklyTemplate ?? []).some((day) => day.some((s) => s.role === 'warmup'));
+  const enough = catalog.data?.quranEnabled && hasWarmup ? 'The Quran session plus the warm-up is enough.' : 'A light day of your core habits is enough.';
   return (
     <Card className={cn('relative overflow-hidden p-5 sm:p-6', secured && 'border-accent/40')} data-testid="goal-card">
       {secured && (
@@ -86,7 +90,7 @@ function GoalCard({ d }: { d: Dashboard }) {
               <p className="mt-1.5 text-lg font-semibold text-ink">
                 <span className="num">{left}</span> {left === 1 ? 'point' : 'points'} to go
               </p>
-              <p className="mt-1 text-sm text-muted">Reach {baseline} points to keep your streak. The Quran session plus the warm-up is enough.</p>
+              <p className="mt-1 text-sm text-muted">Reach {baseline} points to keep your streak. {enough}</p>
             </>
           )}
           <div className="mt-3 flex items-center gap-2 text-xs text-muted">
