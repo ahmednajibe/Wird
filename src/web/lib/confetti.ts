@@ -7,7 +7,7 @@ export function prefersReducedMotion(): boolean {
 function palette(): string[] {
   const s = getComputedStyle(document.documentElement);
   const v = (name: string, fallback: string) => s.getPropertyValue(name).trim() || fallback;
-  return [v('--accent', '#03ef62'), v('--quran', '#eccb62'), v('--fsd', '#5ea8f2'), v('--ai', '#b39af2'), v('--anim', '#f08b6e')];
+  return [v('--accent', '#03ef62'), v('--amber', '#eccb62'), v('--blue', '#5ea8f2'), v('--violet', '#b39af2'), v('--coral', '#f08b6e')];
 }
 
 /** Small burst from an element (task completed). */

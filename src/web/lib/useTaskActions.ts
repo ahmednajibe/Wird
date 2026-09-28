@@ -5,6 +5,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { completionPoints } from '../../shared/scoring.js';
 import { levelFor } from '../../shared/streak.js';
+import { isQuranType } from '../../shared/types.js';
 import { api, errorMessage } from '../client/client';
 import { qk } from '../client/hooks';
 import type { Dashboard, TaskView } from '../client/types';
@@ -119,7 +120,7 @@ export function useTaskActions() {
     onMutate: async (task) => {
       const prev = await snapshot();
       // Quran skip marks the session skipped; a study session moves forward in its own track.
-      if (prev) qc.setQueryData(qk.dashboard, patchTask(prev, task.id, task.track === 'quran' ? { status: 'skipped' } : { status: 'rolled', plannedPoints: 0 }));
+      if (prev) qc.setQueryData(qk.dashboard, patchTask(prev, task.id, isQuranType(task.type) ? { status: 'skipped' } : { status: 'rolled', plannedPoints: 0 }));
       return { prev };
     },
     onError: (err, _v, ctx) => {

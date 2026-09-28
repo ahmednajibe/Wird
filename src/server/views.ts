@@ -379,6 +379,8 @@ export function catalogView(service: LearningService) {
     themes: THEMES,
     icons: ICONS,
     tracks,
+    // Full catalog data incl. archived entities, exactly as stored.
+    data: service.catalog.data,
   };
 }
 

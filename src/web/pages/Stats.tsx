@@ -1,13 +1,14 @@
 import { ChartBar, Fire, Lightning, SealCheck, Trophy } from '@phosphor-icons/react';
 import { motion } from 'motion/react';
 import { useMemo } from 'react';
+import { QURAN_TRACK_ID } from '../../shared/catalog.js';
 import { addDays, weekStart } from '../../shared/dates.js';
 import { errorMessage } from '../client/client';
-import { useStats } from '../client/hooks';
-import type { StatsResponse } from '../client/types';
+import { useCatalog, useStats } from '../client/hooks';
+import type { CatalogResponse, StatsResponse } from '../client/types';
 import { AnimatedNumber, Card, EmptyState, ErrorState, PageHeader, ProgressBar, Skeleton } from '../components/ui/primitives';
 import { cn, formatHours, formatMediumDate, formatMonthShort, formatShortDate } from '../lib/format';
-import { metaByKey, trackKey, TRACK_ORDER, type TrackKey } from '../lib/tracks';
+import { metaFor, streamOrderMap } from '../lib/tracks';
 
 type Day = StatsResponse['daily'][number];
 
@@ -139,27 +140,29 @@ function WeeklyBars({ weekly, today }: { weekly: StatsResponse['weekly']; today:
   );
 }
 
-function TrackTotals({ perTrack }: { perTrack: StatsResponse['perTrack'] }) {
+function TrackTotals({ perTrack, catalog }: { perTrack: StatsResponse['perTrack']; catalog: CatalogResponse | undefined }) {
   const rows = useMemo(() => {
-    const map = new Map<TrackKey, { points: number; minutes: number; tasks: number }>();
+    const map = new Map<string, { track: string; stream: string; points: number; minutes: number; tasks: number }>();
     for (const p of perTrack) {
-      const k = trackKey(p.track, p.stream);
-      const cur = map.get(k) ?? { points: 0, minutes: 0, tasks: 0 };
+      const k = `${p.track}.${p.stream}`;
+      const cur = map.get(k) ?? { track: p.track, stream: p.stream, points: 0, minutes: 0, tasks: 0 };
       cur.points += p.points;
       cur.minutes += p.minutes;
       cur.tasks += p.tasks;
       map.set(k, cur);
     }
-    return TRACK_ORDER.map((k) => ({ key: k, ...(map.get(k) ?? { points: 0, minutes: 0, tasks: 0 }) }));
-  }, [perTrack]);
+    // Quran first when enabled or when history has Quran rows, then catalog order.
+    const order = streamOrderMap(catalog, (catalog?.quranEnabled ?? false) || perTrack.some((p) => p.track === QURAN_TRACK_ID));
+    return [...map.values()].sort((a, b) => (order.get(`${a.track}.${a.stream}`) ?? order.get(a.track) ?? 999) - (order.get(`${b.track}.${b.stream}`) ?? order.get(b.track) ?? 999));
+  }, [perTrack, catalog]);
   const max = Math.max(1, ...rows.map((r) => r.points));
   return (
     <ul className="flex flex-col gap-4">
       {rows.map((r) => {
-        const m = metaByKey(r.key);
+        const m = metaFor(catalog, r.track, r.stream);
         const I = m.icon;
         return (
-          <li key={r.key}>
+          <li key={`${r.track}.${r.stream}`}>
             <div className="mb-1.5 flex items-center justify-between gap-2 text-sm">
               <span className={cn('inline-flex items-center gap-1.5 font-medium', m.text)}>
                 <I size={16} aria-hidden />
@@ -179,6 +182,7 @@ function TrackTotals({ perTrack }: { perTrack: StatsResponse['perTrack'] }) {
 
 export function StatsPage() {
   const q = useStats();
+  const catalog = useCatalog();
   if (q.isPending) {
     return (
       <div className="flex flex-col gap-6">
@@ -241,7 +245,7 @@ export function StatsPage() {
         <Card className="p-4 sm:p-6">
           <h2 className="text-lg font-semibold tracking-tight">Totals per track</h2>
           <p className="mb-4 text-sm text-muted">Everything completed in the last year.</p>
-          <TrackTotals perTrack={d.perTrack} />
+          <TrackTotals perTrack={d.perTrack} catalog={catalog.data} />
         </Card>
       </div>
     </div>

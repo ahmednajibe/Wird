@@ -18,20 +18,22 @@ import {
 import { motion } from 'motion/react';
 import { useEffect, useState } from 'react';
 import { useLocation, useSearchParams } from 'react-router';
+import { QURAN_TRACK_ID } from '../../shared/catalog.js';
 import { addDays, today as cairoToday, weekStart } from '../../shared/dates.js';
 import { errorMessage } from '../client/client';
-import { useDashboard, useRegenerate, useSaveDay, useSettings, useTracks, useWeek } from '../client/hooks';
+import { useCatalog, useDashboard, useRegenerate, useSaveDay, useSettings, useTracks, useWeek } from '../client/hooks';
 import type { DayView, TaskView } from '../client/types';
 import { Button, IconButton } from '../components/ui/Button';
 import { ConfirmDialog, Dialog } from '../components/ui/Dialog';
 import { Card, Chip, Duration, ErrorState, PageHeader, ProgressBar, Segmented, Skeleton } from '../components/ui/primitives';
 import { useToast } from '../components/ui/Toast';
 import { cn, formatMediumDate, formatShortDate } from '../lib/format';
-import { metaByKey, trackKey, trackMeta, TRACK_ORDER } from '../lib/tracks';
+import { streamOrderMap, useTrackMeta } from '../lib/tracks';
 
 const DOW_SHORT = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 function StatusIcon({ t }: { t: TaskView }) {
+  const trackMeta = useTrackMeta();
   if (t.status === 'completed')
     return (
       <span className="inline-flex size-5 shrink-0 items-center justify-center rounded-full bg-accent text-on-accent" title="Completed">
@@ -71,6 +73,7 @@ function NotStartedCard({ day, index }: { day: DayView; index: number }) {
 }
 
 function DayCard({ day, onEdit, index }: { day: DayView; onEdit: (d: DayView) => void; index: number }) {
+  const trackMeta = useTrackMeta();
   const cap = day.capacity;
   const done = day.tasks.filter((t) => t.status === 'completed').length;
   const countable = day.tasks.filter((t) => t.status !== 'rolled').length;
@@ -335,17 +338,20 @@ function WhyPanel() {
   const settings = useSettings();
   const tracks = useTracks();
   const dash = useDashboard();
+  const catalog = useCatalog();
+  const meta = useTrackMeta();
   if (settings.isPending || tracks.isPending || dash.isPending) return <Skeleton className="h-72 rounded-2xl" />;
   if (settings.isError || tracks.isError || dash.isError) {
     return <ErrorState message="Could not load the plan explanation." onRetry={() => void Promise.all([settings.refetch(), tracks.refetch(), dash.refetch()])} />;
   }
   const s = settings.data;
   const expl = dash.data.baseline.explanation;
+  const order = streamOrderMap(catalog.data);
   const weekly = [...tracks.data.normalWeekMinutes].sort(
-    (a, b) => TRACK_ORDER.indexOf(trackKey(a.track, a.stream)) - TRACK_ORDER.indexOf(trackKey(b.track, b.stream)),
+    (a, b) => (order.get(`${a.track}.${a.stream}`) ?? order.get(a.track) ?? 999) - (order.get(`${b.track}.${b.stream}`) ?? order.get(b.track) ?? 999),
   );
   const nw = tracks.data.normalWeek;
-  const rows = weekly.map((w) => (w.track === 'quran' ? { ...w, plannedMinutes: nw.quranReserveMinutes } : w));
+  const rows = weekly.map((w) => (w.track === QURAN_TRACK_ID ? { ...w, plannedMinutes: nw.quranReserveMinutes } : w));
   const totalWeekly = nw.capacity;
   return (
     <Card className="p-5 sm:p-6" data-testid="why-panel">
@@ -388,11 +394,11 @@ function WhyPanel() {
           <h3 className="label mb-3">Normal week, minutes per track</h3>
           <ul className="flex flex-col gap-2.5">
             {rows.map((w) => {
-              const m = metaByKey(trackKey(w.track, w.stream));
+              const m = meta(w.track, w.stream);
               return (
                 <li key={`${w.track}-${w.stream}`} className="text-sm">
                   <div className="mb-1 flex justify-between">
-                    <span className={m.text}>{w.track === 'quran' ? `${m.label} (reserved)` : m.label}</span>
+                    <span className={m.text}>{w.track === QURAN_TRACK_ID ? `${m.label} (reserved)` : m.label}</span>
                     <span className="text-ink">
                       <span className="num">{w.plannedMinutes}</span> min
                       <span className="ml-1 text-muted">{totalWeekly > 0 ? Math.round((w.plannedMinutes / totalWeekly) * 100) : 0}%</span>
@@ -439,7 +445,8 @@ function WhyPanel() {
 export function PlanPage() {
   const [params, setParams] = useSearchParams();
   const location = useLocation();
-  const t = cairoToday();
+  const catalog = useCatalog();
+  const t = cairoToday(new Date(), catalog.data?.timezone);
   const thisWeek = weekStart(t);
   const paramWeek = params.get('week');
   const start = paramWeek && /^\d{4}-\d{2}-\d{2}$/.test(paramWeek) ? weekStart(paramWeek) : thisWeek;

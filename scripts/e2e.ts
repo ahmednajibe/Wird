@@ -28,6 +28,7 @@ const PAGES: [string, string][] = [
   ['quran', '/quran'],
   ['stats', '/stats'],
   ['resources', '/resources'],
+  ['import', '/import'],
   ['settings', '/settings'],
 ];
 
@@ -121,6 +122,8 @@ async function run(): Promise<void> {
   try {
     await waitForHealth(base, server);
     console.log(`Server on ${base} (db in ${tmp})`);
+    rmSync(shotsDir, { recursive: true, force: true });
+    mkdirSync(shotsDir, { recursive: true });
     browser = await chromium.launch({ channel: 'msedge', headless: true });
 
     const ctx: BrowserContext = await browser.newContext({ viewport: { width: 1440, height: 900 }, colorScheme: 'dark', reducedMotion: 'reduce' });
@@ -234,11 +237,78 @@ async function run(): Promise<void> {
       }
       assert((await page.locator('[data-testid="resource-stream"]').count()) === 4, '4 resource streams');
     });
+
+    await check('Import page reports invalid packs', async () => {
+      await page.goto(`${base}/import`);
+      await page.locator('[data-testid="pack-input"]').waitFor();
+      await page.locator('[data-testid="pack-input"]').fill('{ "version": 2');
+      await page.locator('[data-testid="preview-button"]').click();
+      await page.locator('[data-testid="parse-error"]').waitFor();
+      const msg = await page.locator('[data-testid="parse-error"]').innerText();
+      assert(/Not valid JSON near line \d+, column \d+/.test(msg), `parse error text: ${msg}`);
+      await page.locator('[data-testid="pack-input"]').fill(JSON.stringify({ version: 2, name: 'Bad', tracks: [] }));
+      await page.locator('[data-testid="preview-button"]').click();
+      await page.locator('[data-testid="preview-errors"]').waitFor();
+      assert((await page.locator('[data-testid="preview-error-list"] li').count()) > 0, 'error list non-empty');
+      await page.screenshot({ path: join(shotsDir, 'import-errors-desktop.png'), fullPage: true });
+    });
+
+    await check('Importing a pack adds a German track end to end', async () => {
+      const pack = (await (await fetch(`${base}/api/plan-pack`)).json()) as {
+        tracks: unknown[];
+        modules: unknown[];
+        settings: { weeklyTemplate: Record<string, unknown>[][] };
+      };
+      pack.tracks.push({
+        id: 'german',
+        kind: 'study',
+        label: 'German',
+        shortLabel: 'German',
+        theme: 'green',
+        icon: 'translate',
+        streams: [{ id: 'main', label: 'Main', style: 'study' }],
+      });
+      pack.modules.push({ id: 'de-a1', track: 'german', stream: 'main', phase: { id: 'G1', title: 'Basics' }, title: 'German A1', estMinutes: 120 });
+      for (const day of pack.settings.weeklyTemplate) day.unshift({ track: 'german', stream: 'main', role: 'focus', kind: 'fixed', minutes: 20 });
+      await page.locator('[data-testid="pack-input"]').fill(JSON.stringify(pack));
+      await page.locator('[data-testid="preview-button"]').click();
+      await page.locator('[data-testid="preview-ok"]').waitFor();
+      await page.screenshot({ path: join(shotsDir, 'import-preview-desktop.png'), fullPage: true });
+      await page.locator('[data-testid="commit-button"]').click();
+      await page.waitForURL(`${base}/`);
+      await page.locator('[data-testid="task-card"][data-track="german"]').first().waitFor();
+      const card = page.locator('[data-testid="task-card"][data-track="german"]').first();
+      assert((await card.locator('[class*="text-green-ink"]').count()) > 0, 'German task carries the green theme');
+      await page.goto(`${base}/plan`);
+      await settle(page);
+      assert((await page.locator('text=German A1').count()) > 0, 'Plan page shows a German task');
+      assert((await page.locator('[class*="text-green-ink"]').count()) > 0, 'Plan page shows the green accent');
+    });
+
+    await check('Turning Quran off hides its nav entry and tasks', async () => {
+      await page.goto(`${base}/settings`);
+      const toggle = page.locator('#quran-enabled');
+      await toggle.waitFor();
+      assert((await toggle.getAttribute('aria-checked')) === 'true', 'Quran starts enabled');
+      await toggle.click();
+      await page.locator('[data-testid="settings-save"]').click();
+      await page.locator('[data-testid="saved-explanation"]').waitFor();
+      await page.screenshot({ path: join(shotsDir, 'settings-quran-desktop.png'), fullPage: true });
+      await page.goto(`${base}/`);
+      await settle(page);
+      assert((await page.locator('nav a[href="/quran"]').count()) === 0, 'Quran nav entry hidden');
+      // Completed Quran work is history and stays; only pending generated sessions are removed.
+      assert((await page.locator('[data-testid="task-card"][data-track="quran"][data-status="pending"]').count()) === 0, 'no pending Quran task today');
+      // Restore for the remaining flows and screenshots.
+      await page.goto(`${base}/settings`);
+      await toggle.waitFor();
+      await toggle.click();
+      await page.locator('[data-testid="settings-save"]').click();
+      await page.locator('[data-testid="saved-explanation"]').waitFor();
+    });
     await ctx.close();
 
     console.log('Screenshots');
-    rmSync(shotsDir, { recursive: true, force: true });
-    mkdirSync(shotsDir, { recursive: true });
     const sizes: [string, { width: number; height: number }][] = [
       ['desktop', { width: 1440, height: 900 }],
       ['mobile', { width: 390, height: 844 }],
@@ -274,6 +344,39 @@ async function run(): Promise<void> {
       await p.screenshot({ path: file, fullPage: true });
       console.log(`  ${file}`);
       await c.close();
+    }
+
+    // Fresh install: no owner seed, so there is no study plan.
+    const dbPath2 = join(tmp, 'empty.db');
+    const port2 = await freePort();
+    const base2 = `http://127.0.0.1:${port2}`;
+    const server2 = spawn(process.execPath, ['--no-warnings=ExperimentalWarning', 'dist/server/index.js'], {
+      cwd: root,
+      env: { ...process.env, PORT: String(port2), LEARNING_DB_PATH: dbPath2 },
+      stdio: ['ignore', 'pipe', 'pipe'],
+    });
+    try {
+      await waitForHealth(base2, server2);
+      const c = await browser.newContext({ viewport: { width: 1440, height: 900 }, colorScheme: 'dark', reducedMotion: 'reduce' });
+      const p = await c.newPage();
+      watch(p);
+      await check('Fresh empty install shows the no-plan state', async () => {
+        await p.goto(`${base2}/`);
+        await p.locator('[data-testid="no-plan-card"]').waitFor();
+        assert((await p.locator('a[href="/import"]').count()) > 0, 'empty state links to /import');
+        const file = join(shotsDir, 'today-empty-desktop.png');
+        await p.screenshot({ path: file, fullPage: true });
+        console.log(`  ${file}`);
+        await p.goto(`${base2}/tracks`);
+        await settle(p);
+        await p.locator('text=No study plan yet').first().waitFor();
+        const file2 = join(shotsDir, 'tracks-empty-desktop.png');
+        await p.screenshot({ path: file2, fullPage: true });
+        console.log(`  ${file2}`);
+      });
+      await c.close();
+    } finally {
+      server2.kill();
     }
 
     const relevant = consoleErrors.filter((e) => !/favicon/i.test(e));

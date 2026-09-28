@@ -10,11 +10,12 @@ import {
   Plus,
   Sun,
   SunHorizon,
+  Upload,
   type Icon,
 } from '@phosphor-icons/react';
 import { motion } from 'motion/react';
 import { NavLink, Outlet, useLocation } from 'react-router';
-import { useDashboard } from '../client/hooks';
+import { useCatalog, useDashboard } from '../client/hooks';
 import { cn } from '../lib/format';
 import { useTheme } from '../lib/theme';
 import { useAddTask } from './AddTaskContext';
@@ -26,19 +27,27 @@ interface NavItem {
   label: string;
   icon: Icon;
   mobile: boolean;
+  /** Only shown when Quran is enabled in Settings. */
+  quran?: boolean;
 }
 
 const NAV: NavItem[] = [
   { to: '/', label: 'Today', icon: SunHorizon, mobile: true },
   { to: '/plan', label: 'Plan', icon: CalendarDots, mobile: true },
   { to: '/tracks', label: 'Tracks', icon: Path, mobile: true },
-  { to: '/quran', label: 'Quran', icon: BookOpen, mobile: true },
+  { to: '/quran', label: 'Quran', icon: BookOpen, mobile: true, quran: true },
   { to: '/stats', label: 'Stats', icon: ChartBar, mobile: true },
   { to: '/resources', label: 'Resources', icon: Books, mobile: false },
+  { to: '/import', label: 'Import', icon: Upload, mobile: false },
   { to: '/settings', label: 'Settings', icon: GearSix, mobile: false },
 ];
 
+function navItems(quranEnabled: boolean): NavItem[] {
+  return NAV.filter((n) => !n.quran || quranEnabled);
+}
+
 function Logo() {
+  const { data } = useCatalog();
   return (
     <div className="flex items-center gap-2.5">
       <svg width="30" height="30" viewBox="0 0 32 32" aria-hidden>
@@ -48,7 +57,7 @@ function Logo() {
       </svg>
       <div className="leading-tight">
         <div className="text-[15px] font-bold tracking-tight text-ink">Learning tracker</div>
-        <div className="text-[11px] font-medium text-subtle">Quran, code, AI, animation</div>
+        <div className="text-[11px] font-medium text-subtle">{data?.planName ?? 'Your learning plan'}</div>
       </div>
     </div>
   );
@@ -110,6 +119,8 @@ function SidebarStatus() {
 
 function Sidebar() {
   const { open } = useAddTask();
+  const { data: catalog } = useCatalog();
+  const items = navItems(catalog?.quranEnabled ?? true);
   return (
     <div className="hidden w-[248px] shrink-0 border-r border-line bg-surface/40 md:block">
     <aside className="sticky top-0 flex h-dvh flex-col gap-6 px-4 py-6">
@@ -121,7 +132,7 @@ function Sidebar() {
         <kbd className="num rounded-md bg-on-accent/15 px-1.5 text-[11px] font-semibold">N</kbd>
       </Button>
       <nav aria-label="Main" className="flex flex-col gap-1">
-        {NAV.map((item) => (
+        {items.map((item) => (
           <NavLink
             key={item.to}
             to={item.to}
@@ -164,6 +175,7 @@ function Sidebar() {
 function MobileTopBar() {
   const location = useLocation();
   const current = NAV.find((n) => (n.to === '/' ? location.pathname === '/' : location.pathname.startsWith(n.to)));
+  // NB: NAV here only labels the top bar; hidden nav entries still get a title.
   return (
     <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-line bg-bg/85 px-4 backdrop-blur-md md:hidden">
       <div className="flex items-center gap-2">
@@ -189,6 +201,8 @@ function MobileTopBar() {
 
 function BottomTabs() {
   const { open } = useAddTask();
+  const { data: catalog } = useCatalog();
+  const items = navItems(catalog?.quranEnabled ?? true);
   return (
     <>
       <motion.button
@@ -206,7 +220,7 @@ function BottomTabs() {
         aria-label="Main"
         className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 border-t border-line bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-md md:hidden"
       >
-        {NAV.filter((n) => n.mobile).map((item) => (
+        {items.filter((n) => n.mobile).map((item) => (
           <NavLink
             key={item.to}
             to={item.to}

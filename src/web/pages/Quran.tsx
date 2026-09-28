@@ -1,9 +1,10 @@
 import { ArrowsClockwise, BookOpen, CalendarBlank, Info, Repeat, TrendUp } from '@phosphor-icons/react';
 import { AnimatePresence, motion } from 'motion/react';
 import { useMemo, useRef, useState } from 'react';
+import { Link } from 'react-router';
 import { diffDays } from '../../shared/dates.js';
 import { errorMessage } from '../client/client';
-import { useQuran } from '../client/hooks';
+import { useCatalog, useQuran } from '../client/hooks';
 import type { QuranPageView, QuranResponse } from '../client/types';
 import { QuranSegments, SegmentRow } from '../components/QuranSegments';
 import { AnimatedNumber, Card, Chip, ErrorState, PageHeader, ProgressBar, Ring, Skeleton } from '../components/ui/primitives';
@@ -22,10 +23,10 @@ function cellState(p: QuranPageView, today: string, next: number | null): CellSt
 
 const CELL_CLASS: Record<CellState, string> = {
   empty: 'bg-[var(--grid-empty)] hover:bg-surface-3',
-  fresh: 'bg-quran/40',
-  memorized: 'bg-quran/75',
-  recent: 'bg-quran shadow-[0_0_8px_-1px_var(--quran)]',
-  next: 'bg-[var(--grid-empty)] ring-2 ring-inset ring-quran-ink',
+  fresh: 'bg-amber/40',
+  memorized: 'bg-amber/75',
+  recent: 'bg-amber shadow-[0_0_8px_-1px_var(--amber)]',
+  next: 'bg-[var(--grid-empty)] ring-2 ring-inset ring-amber-ink',
 };
 
 function orderInWords(order: string): string {
@@ -113,7 +114,7 @@ function PageGrid({ data }: { data: QuranResponse }) {
                       onClick={(e) => show(p, e.currentTarget)}
                       className={cn('relative aspect-square rounded-[3px] transition-colors sm:rounded-[5px]', CELL_CLASS[st])}
                     >
-                      {st === 'next' && <span aria-hidden className="pulse-ring absolute -inset-[3px] rounded-[6px] border-2 border-quran-ink" />}
+                      {st === 'next' && <span aria-hidden className="pulse-ring absolute -inset-[3px] rounded-[6px] border-2 border-amber-ink" />}
                     </button>
                   );
                 })}
@@ -134,10 +135,10 @@ function PageGrid({ data }: { data: QuranResponse }) {
 
 function Legend() {
   const items: { cls: string; label: string }[] = [
-    { cls: 'bg-quran', label: `Reviewed in the last ${RECENT_DAYS} days` },
-    { cls: 'bg-quran/75', label: 'Memorized' },
-    { cls: 'bg-quran/40', label: 'Memorized, never reviewed' },
-    { cls: 'bg-[var(--grid-empty)] ring-2 ring-inset ring-quran-ink', label: 'Next page' },
+    { cls: 'bg-amber', label: `Reviewed in the last ${RECENT_DAYS} days` },
+    { cls: 'bg-amber/75', label: 'Memorized' },
+    { cls: 'bg-amber/40', label: 'Memorized, never reviewed' },
+    { cls: 'bg-[var(--grid-empty)] ring-2 ring-inset ring-amber-ink', label: 'Next page' },
     { cls: 'bg-[var(--grid-empty)] border border-line', label: 'Not started' },
   ];
   return (
@@ -154,6 +155,23 @@ function Legend() {
 
 export function QuranPage() {
   const q = useQuran();
+  const catalog = useCatalog();
+  if (catalog.data && !catalog.data.quranEnabled) {
+    return (
+      <div className="flex flex-col gap-6">
+        <PageHeader title="Quran" />
+        <Card className="p-5 sm:p-6" data-testid="quran-disabled">
+          <p className="text-sm text-muted">
+            Quran is turned off. You can turn it on in{' '}
+            <Link to="/settings" className="text-accent-ink underline underline-offset-2">
+              Settings
+            </Link>
+            .
+          </p>
+        </Card>
+      </div>
+    );
+  }
   if (q.isPending) {
     return (
       <div className="flex flex-col gap-6">
@@ -182,13 +200,13 @@ export function QuranPage() {
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1.1fr_1fr_1fr]">
         <Card className="flex items-center gap-5 p-5 sm:p-6">
-          <Ring value={d.memorized} max={604} size={128} stroke={12} color="var(--quran)" label={`${d.memorized} of 604 pages memorized`}>
+          <Ring value={d.memorized} max={604} size={128} stroke={12} color="var(--amber)" label={`${d.memorized} of 604 pages memorized`}>
             <AnimatedNumber value={d.memorized} className="text-3xl leading-none font-semibold text-ink" data-testid="quran-memorized" />
             <span className="mt-1 text-xs text-muted">of 604</span>
           </Ring>
           <div className="min-w-0">
             <div className="label">Memorized</div>
-            <p className="num mt-1 text-2xl font-semibold text-quran-ink">{pct}%</p>
+            <p className="num mt-1 text-2xl font-semibold text-amber-ink">{pct}%</p>
             <p className="mt-1 text-sm text-muted">{604 - d.memorized} pages to go</p>
           </div>
         </Card>
@@ -196,7 +214,7 @@ export function QuranPage() {
         <Card className="p-5 sm:p-6">
           <div className="flex items-center justify-between">
             <div className="label">Next session</div>
-            <Chip tone="quran" icon={d.nextSessionType === 'memorize' ? BookOpen : Repeat}>
+            <Chip tone="amber" icon={d.nextSessionType === 'memorize' ? BookOpen : Repeat}>
               {d.nextSessionType === 'memorize' ? 'Memorize' : 'Review'}
             </Chip>
           </div>
@@ -231,7 +249,7 @@ export function QuranPage() {
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <Card className="flex items-start gap-3 p-5">
-          <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-xl bg-quran/12 text-quran-ink">
+          <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-xl bg-amber/12 text-amber-ink">
             <CalendarBlank size={19} aria-hidden />
           </span>
           <div>
@@ -243,7 +261,7 @@ export function QuranPage() {
           </div>
         </Card>
         <Card className="flex items-start gap-3 p-5">
-          <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-xl bg-quran/12 text-quran-ink">
+          <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-xl bg-amber/12 text-amber-ink">
             <TrendUp size={19} aria-hidden />
           </span>
           <div>
@@ -281,7 +299,7 @@ export function QuranPage() {
             </div>
             <div>
               <h3 className="label mb-2">Progress</h3>
-              <ProgressBar value={d.memorized} max={604} color="var(--quran)" height={8} label="Pages memorized" />
+              <ProgressBar value={d.memorized} max={604} color="var(--amber)" height={8} label="Pages memorized" />
               <p className="mt-1.5 text-xs text-muted">
                 <span className="num text-ink">{d.memorized}</span> of <span className="num">604</span> pages,{' '}
                 <span className="num">{d.pages.filter((p) => p.memorized && p.lastReviewed === null).length}</span> not reviewed yet

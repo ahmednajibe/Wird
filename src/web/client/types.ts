@@ -3,6 +3,8 @@
  * built on the shared domain types.
  */
 import type { DayCapacity } from '../../shared/calendar.js';
+import type { CatalogData, TrackDef } from '../../shared/catalog.js';
+import type { PackIssue, PlanPack } from '../../shared/pack.js';
 import type { StreamWeekly } from '../../shared/planner.js';
 import type { ModuleProgress } from '../../shared/progress.js';
 import type { StreamProjection } from '../../shared/projections.js';
@@ -45,6 +47,7 @@ export type {
   StreamProjection,
 };
 export type { TaskType, Intensity } from '../../shared/types.js';
+export type { TrackDef, CatalogData, PackIssue, PlanPack };
 
 export interface TaskView extends Omit<Task, 'status'> {
   status: TaskStatus;
@@ -279,4 +282,70 @@ export interface DayOverrideInput {
   fasting: boolean | null;
   capacityOverride: number | null;
   note: string | null;
+}
+
+/** GET /api/catalog read model (src/server/views.ts catalogView). */
+export interface CatalogResponse {
+  hasPlan: boolean;
+  planName: string | null;
+  importedAt: string | null;
+  quranEnabled: boolean;
+  timezone: string;
+  themes: readonly string[];
+  icons: readonly string[];
+  /** Track defs including archived, in sort order (quran track included). */
+  tracks: TrackDef[];
+  /** Full catalog data incl. archived, as the engine sees it. */
+  data: CatalogData;
+}
+
+export type ImportMode = 'update' | 'fresh';
+export type IdReuse = 'reset' | 'keep';
+
+export interface ChangeCounts {
+  added: number;
+  updated: number;
+  unchanged: number;
+  revived: number;
+  archived: number;
+}
+
+export interface ArchivedEntity {
+  kind: 'track' | 'stream' | 'module';
+  /** Stream ids are written as 'track/stream'. */
+  id: string;
+  title: string;
+  hasProgress: boolean;
+}
+
+export interface ReusedModule {
+  id: string;
+  title: string;
+  creditedMinutes: number;
+  manualComplete: boolean;
+}
+
+export type ImportPreview =
+  | { ok: false; errors: PackIssue[]; warnings: PackIssue[] }
+  | {
+      ok: true;
+      mode: ImportMode;
+      name: string;
+      warnings: PackIssue[];
+      counts: { tracks: ChangeCounts; streams: ChangeCounts; modules: ChangeCounts };
+      archived: ArchivedEntity[];
+      reusedWithProgress: ReusedModule[];
+      settingsChanged: string[];
+      regenerates: boolean;
+      regenerateFrom: IsoDate;
+    };
+
+export interface ImportResult {
+  preview: ImportPreview;
+  backup: string | null;
+  regenerated: boolean;
+}
+
+export interface PlanPromptResponse {
+  markdown: string;
 }
