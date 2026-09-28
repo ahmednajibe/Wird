@@ -181,7 +181,7 @@ export class LearningService {
   }
 
   /** First date that may be planned: max(today, tracking start). */
-  private planFloor(): IsoDate {
+  planFloor(): IsoDate {
     return maxDate(this.today(), this.trackingStartDate());
   }
 
