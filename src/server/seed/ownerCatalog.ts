@@ -5,6 +5,7 @@
  * can run on any injected CatalogData.
  */
 import type { CatalogData, LibraryResource, TrackDef } from '../../shared/catalog.js';
+import type { TemplateSlot } from '../../shared/settings.js';
 import type { CurriculumModule, Phase, Resource } from '../../shared/types.js';
 
 const h = (hours: number): number => Math.round(hours * 60);
@@ -811,3 +812,31 @@ export const OWNER_CATALOG_DATA: CatalogData = {
   modules: MODULES.map((m) => (WARMUP_DESCRIPTIONS[m.id] ? { ...m, warmupDrills: WARMUP_DESCRIPTIONS[m.id] } : m)),
   library: LIBRARY,
 };
+
+const warmup = (): TemplateSlot => ({
+  track: 'animation',
+  stream: 'draw',
+  role: 'warmup',
+  kind: 'fixed',
+  minutes: 20,
+  fastingMinutes: 15,
+});
+
+const rest = (track: 'ai' | 'fsd'): TemplateSlot => ({ track, stream: 'main', role: 'focus', kind: 'rest' });
+
+/** The owner's weekly template, seeded into existing databases by migration 4. */
+export const OWNER_WEEKLY_TEMPLATE: TemplateSlot[][] = [
+  /* Sun */ [warmup(), rest('ai')],
+  /* Mon */ [warmup(), rest('fsd')],
+  /* Tue */ [warmup(), rest('fsd')],
+  /* Wed */ [warmup(), rest('ai')],
+  /* Thu */ [warmup(), rest('ai')],
+  /* Fri */ [
+    { track: 'animation', stream: 'draw', role: 'focus', kind: 'share', share: 0.5 },
+    { track: 'ai', stream: 'main', role: 'focus', kind: 'rest' },
+  ],
+  /* Sat */ [
+    { track: 'animation', stream: 'story', role: 'focus', kind: 'share', share: 0.5 },
+    { track: 'fsd', stream: 'main', role: 'focus', kind: 'rest' },
+  ],
+];

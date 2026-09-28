@@ -2,6 +2,7 @@ import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { createApp } from '../src/server/app.js';
+import { seedOwnerPlan } from '../src/server/seed/seed.js';
 import type { Clock } from '../src/server/service.js';
 
 export class TestClock implements Clock {
@@ -18,10 +19,25 @@ export class TestClock implements Clock {
   }
 }
 
-export function makeTestApp(startDate: string) {
+export interface TestAppOptions {
+  /**
+   * Which plan the database starts with: 'owner' seeds the owner catalog and
+   * weekly template (like a migrated database), 'empty' leaves the fresh
+   * install state (only the built-in Quran track, empty template).
+   */
+  plan?: 'owner' | 'empty';
+}
+
+export function makeTestApp(startDate: string, opts: TestAppOptions = {}) {
   const dir = mkdtempSync(join(tmpdir(), 'learning-test-'));
   const clock = new TestClock(new Date(`${startDate}T04:00:00Z`));
   const { app, service, db } = createApp({ dbPath: join(dir, 'test.db'), clock, webDir: join(dir, 'no-web') });
+  if ((opts.plan ?? 'owner') === 'owner') {
+    // createApp plans lazily on first request, so seeding before any request
+    // is identical to a migrated database.
+    seedOwnerPlan(db);
+    service.reloadCatalog();
+  }
   return {
     app,
     service,

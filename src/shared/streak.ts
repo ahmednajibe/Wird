@@ -48,7 +48,7 @@ export function computeBaseline(settings: Settings, catalog: Catalog): BaselineE
   const { factor, fastingFactor } = settings.baseline;
   const normal = Math.round(factor * avg);
   const fasting = Math.round(normal * fastingFactor);
-  const reserve = quranReserveMinutes(null, settings.quran);
+  const reserve = settings.quran.enabled ? quranReserveMinutes(null, settings.quran) : 0;
   const reviewCap = effectiveReviewCapMinutes(settings.quran, reserve);
   const bufferWeek = week.reduce((a, d) => a + d.bufferMinutes, 0);
   return {

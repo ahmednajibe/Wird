@@ -2,14 +2,12 @@
  * Settings: defaults in code, persisted as JSON, validated with zod.
  */
 import { z } from 'zod';
-
-const trackSchema = z.enum(['fsd', 'ai', 'animation']);
-const streamSchema = z.enum(['main', 'draw', 'story']);
+import { ID_RE } from './catalog.js';
 
 export const templateSlotSchema = z
   .object({
-    track: trackSchema,
-    stream: streamSchema,
+    track: z.string().regex(ID_RE, 'must be a lowercase id (a-z, 0-9, -)'),
+    stream: z.string().regex(ID_RE, 'must be a lowercase id (a-z, 0-9, -)'),
     role: z.enum(['warmup', 'focus']),
     /**
      * fixed: `minutes` (or `fastingMinutes` on fasting days) off the top.
@@ -28,11 +26,6 @@ export const templateSlotSchema = z
     if (slot.kind === 'share' && slot.share === undefined) {
       ctx.addIssue({ code: 'custom', message: 'share slot requires share' });
     }
-    const validStream =
-      slot.track === 'animation' ? slot.stream === 'draw' || slot.stream === 'story' : slot.stream === 'main';
-    if (!validStream) {
-      ctx.addIssue({ code: 'custom', message: `stream '${slot.stream}' is not valid for track '${slot.track}'` });
-    }
   });
 
 export type TemplateSlot = z.infer<typeof templateSlotSchema>;
@@ -49,6 +42,14 @@ export const settingsSchema = z.object({
     dhulHijjahFirstNine: z.boolean(),
   }),
   hijriOffsetDays: z.number().int().min(-2).max(2),
+  /** IANA timezone used for "today" (and therefore every day boundary). */
+  timezone: z.string().superRefine((tz, ctx) => {
+    try {
+      new Intl.DateTimeFormat('en-US', { timeZone: tz });
+    } catch {
+      ctx.addIssue({ code: 'custom', message: `unknown timezone '${tz}'` });
+    }
+  }),
   /** Weekly template, index 0 = Sunday. */
   weeklyTemplate: z.array(z.array(templateSlotSchema)).length(7),
   planner: z.object({
@@ -57,6 +58,8 @@ export const settingsSchema = z.object({
     maxTaskMinutes: z.number().int().min(15).max(240),
   }),
   quran: z.object({
+    /** When false, Quran sessions are not planned and the reservation is 0. */
+    enabled: z.boolean(),
     memorizationOrder: z.enum(['juz30-29-then-forward', 'forward']),
     memorizeMinutes: z.number().int().min(5).max(180),
     minutesPerReviewPage: z.number().int().min(1).max(30),
@@ -74,33 +77,6 @@ export const settingsSchema = z.object({
 
 export type Settings = z.infer<typeof settingsSchema>;
 
-const warmup = (): TemplateSlot => ({
-  track: 'animation',
-  stream: 'draw',
-  role: 'warmup',
-  kind: 'fixed',
-  minutes: 20,
-  fastingMinutes: 15,
-});
-
-const rest = (track: 'ai' | 'fsd'): TemplateSlot => ({ track, stream: 'main', role: 'focus', kind: 'rest' });
-
-export const DEFAULT_WEEKLY_TEMPLATE: TemplateSlot[][] = [
-  /* Sun */ [warmup(), rest('ai')],
-  /* Mon */ [warmup(), rest('fsd')],
-  /* Tue */ [warmup(), rest('fsd')],
-  /* Wed */ [warmup(), rest('ai')],
-  /* Thu */ [warmup(), rest('ai')],
-  /* Fri */ [
-    { track: 'animation', stream: 'draw', role: 'focus', kind: 'share', share: 0.5 },
-    { track: 'ai', stream: 'main', role: 'focus', kind: 'rest' },
-  ],
-  /* Sat */ [
-    { track: 'animation', stream: 'story', role: 'focus', kind: 'share', share: 0.5 },
-    { track: 'fsd', stream: 'main', role: 'focus', kind: 'rest' },
-  ],
-];
-
 export const DEFAULT_SETTINGS: Settings = {
   capacityByDow: [120, 120, 120, 120, 120, 180, 180],
   fastingReductionPct: 40,
@@ -112,13 +88,16 @@ export const DEFAULT_SETTINGS: Settings = {
     dhulHijjahFirstNine: true,
   },
   hijriOffsetDays: 0,
-  weeklyTemplate: DEFAULT_WEEKLY_TEMPLATE,
+  timezone: 'Africa/Cairo',
+  /** Fresh installs start with an empty plan; packs fill this in. */
+  weeklyTemplate: [[], [], [], [], [], [], []],
   planner: {
     roundToMinutes: 5,
     minSlotMinutes: 15,
     maxTaskMinutes: 75,
   },
   quran: {
+    enabled: true,
     memorizationOrder: 'juz30-29-then-forward',
     memorizeMinutes: 40,
     minutesPerReviewPage: 3,

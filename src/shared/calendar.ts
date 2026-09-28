@@ -1,7 +1,7 @@
 /**
  * Hijri conversion (ICU islamic-umalqura) and fasting rules.
  */
-import { addDays, APP_TIMEZONE, dayOfWeek, toUtcNoon } from './dates.js';
+import { addDays, dayOfWeek, toUtcNoon } from './dates.js';
 import type { Settings } from './settings.js';
 import type { DayOverride, FastingCode, FastingInfo, HijriDate, IsoDate } from './types.js';
 
@@ -20,8 +20,10 @@ export const HIJRI_MONTH_NAMES = [
   'Dhu al-Hijjah',
 ] as const;
 
+// Inputs are UTC-noon instants, so format in UTC: the calendar fields are the
+// same in every timezone and the setting can never shift the Hijri result.
 const hijriFormatter = new Intl.DateTimeFormat('en-u-ca-islamic-umalqura', {
-  timeZone: APP_TIMEZONE,
+  timeZone: 'UTC',
   day: 'numeric',
   month: 'numeric',
   year: 'numeric',
@@ -30,7 +32,7 @@ const hijriFormatter = new Intl.DateTimeFormat('en-u-ca-islamic-umalqura', {
 const hijriCache = new Map<string, HijriDate>();
 
 /**
- * Hijri date for a Gregorian Cairo date. `offsetDays` shifts the Gregorian
+ * Hijri date for a Gregorian date in the configured timezone. `offsetDays` shifts the Gregorian
  * date before conversion (local moon sighting can differ from Umm al-Qura).
  */
 export function toHijri(date: IsoDate, offsetDays = 0): HijriDate {

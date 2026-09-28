@@ -4,7 +4,7 @@ import { completionPoints, effectiveMinutes, plannedPoints, priorityOf, type Sco
 import { DEFAULT_SETTINGS } from '../src/shared/settings.js';
 import { baselineFor, computeBaseline, computeStreak, levelFor, levelThreshold, type DayRecord } from '../src/shared/streak.js';
 import { buildCatalog } from '../src/shared/catalog.js';
-import { OWNER_CATALOG_DATA } from '../src/server/seed/ownerCatalog.js';
+import { OWNER_CATALOG_DATA, OWNER_WEEKLY_TEMPLATE } from '../src/server/seed/ownerCatalog.js';
 
 const CATALOG = buildCatalog(OWNER_CATALOG_DATA);
 
@@ -56,7 +56,7 @@ describe('scoring', () => {
 });
 
 describe('baseline', () => {
-  const b = computeBaseline(DEFAULT_SETTINGS, CATALOG);
+  const b = computeBaseline({ ...DEFAULT_SETTINGS, weeklyTemplate: OWNER_WEEKLY_TEMPLATE }, CATALOG);
 
   it('is derived from the normal-week plan with factor 0.28', () => {
     console.log('Baseline:', JSON.stringify({ avg: b.avgDailyPlannedPoints, week: b.normalWeekPlannedPoints, normal: b.normal, fasting: b.fasting, perDay: b.perDay.map((d) => d.plannedPoints) }));

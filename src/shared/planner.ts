@@ -447,27 +447,32 @@ export interface NormalWeekDay {
 }
 
 /**
- * The hypothetical normal week: only Monday and Thursday fasting, the current
- * capacity/template settings, a fresh curriculum, and a representative Quran
- * state alternating memorize (memorizeMinutes = R) / review (near pages only,
- * 15 min with defaults, never more than R), starting with memorize on Sunday.
- * Every day reserves R for Quran; the study slots share the rest.
+ * The hypothetical normal week: fasting on the days enabled by
+ * settings.fastingRules.monday/.thursday, the current capacity/template
+ * settings, a fresh curriculum, and a representative Quran state alternating
+ * memorize (memorizeMinutes = R) / review (near pages only, 15 min with
+ * defaults, never more than R), starting with memorize on Sunday. Every day
+ * reserves R for Quran; the study slots share the rest. With
+ * settings.quran.enabled = false the reservation is 0 and no Quran session is
+ * projected.
  */
 export function normalWeekPlan(settings: Settings, ledger: ModuleLedger): NormalWeekDay[] {
   const q = settings.quran;
-  const reserve = quranReserveMinutes(null, q);
+  const reserve = q.enabled ? quranReserveMinutes(null, q) : 0;
   const reviewMinutes = reviewMinutesFor(q.nearPages, q, effectiveReviewCapMinutes(q, reserve));
   const sessions: SessionCounters = new Map();
   const days: NormalWeekDay[] = [];
   for (let dow = 0; dow < 7; dow++) {
     const date = `2000-01-${String(2 + dow).padStart(2, '0')}`;
-    const isFasting = dow === 1 || dow === 4;
+    const isFasting = (dow === 1 && settings.fastingRules.monday) || (dow === 4 && settings.fastingRules.thursday);
     const base = settings.capacityByDow[dow] ?? 0;
     const capacity = isFasting ? Math.round(base * (1 - settings.fastingReductionPct / 100)) : base;
     const memorize = dow % 2 === 0;
-    const quran: QuranSessionPlan = memorize
-      ? { type: 'memorize', pages: [604 - dow / 2], minutes: reserve, title: 'Memorize page', description: '' }
-      : { type: 'review', pages: [], minutes: reviewMinutes, title: 'Review', description: '' };
+    const quran: QuranSessionPlan | null = !q.enabled
+      ? null
+      : memorize
+        ? { type: 'memorize', pages: [604 - dow / 2], minutes: reserve, title: 'Memorize page', description: '' }
+        : { type: 'review', pages: [], minutes: reviewMinutes, title: 'Review', description: '' };
     const tasks = planDay({ date, isFasting, totalMinutes: capacity, quranReserve: reserve, quran, kept: [] }, settings, ledger, sessions);
     const dayReserve = capacity > 0 ? Math.min(reserve, capacity) : 0;
     const quranMinutes = tasks.filter((t) => isQuranType(t.type)).reduce((a, t) => a + t.plannedMinutes, 0);

@@ -4,7 +4,7 @@
  */
 import { dayCapacity, fastingInfo, toHijri, type DayCapacity } from '../shared/calendar.js';
 import { buildCatalog, type Catalog } from '../shared/catalog.js';
-import { addDays, dateRange, dayOfWeek, DOW_NAMES, maxDate, today as cairoToday, weekEnd } from '../shared/dates.js';
+import { addDays, dateInZone, dateRange, dayOfWeek, DOW_NAMES, maxDate, weekEnd } from '../shared/dates.js';
 import {
   planDays,
   replanStream,
@@ -43,9 +43,9 @@ import type {
 import { isQuranType } from '../shared/types.js';
 import { transaction, type Db } from './db.js';
 import { badRequest, conflict, notFound } from './errors.js';
+import { CatalogRepo } from './repoCatalog.js';
 import { DayOverrideRepo, type DaySnapshot, MetaRepo, ModuleStateRepo, SettingsRepo, SummaryRepo } from './repoMisc.js';
 import { PlannedDaysRepo, TaskRepo } from './repoTasks.js';
-import { OWNER_CATALOG_DATA } from './seed/ownerCatalog.js';
 
 export interface Clock {
   now(): Date;
@@ -56,7 +56,7 @@ export const systemClock: Clock = { now: () => new Date() };
 /** How far ahead weeks may be planned and persisted. */
 export const MAX_WEEKS_AHEAD = 26;
 
-/** meta key: first Cairo date that is tracked (planned, scored, streaked). */
+/** meta key: first date (configured timezone) that is tracked (planned, scored, streaked). */
 export const TRACKING_START_KEY = 'tracking_start_date';
 
 export interface TaskView extends Omit<Task, 'status'> {
@@ -106,7 +106,16 @@ export interface ManualTaskInput {
   actualMinutes?: number | null;
 }
 
-const PLANNING_KEYS = ['capacityByDow', 'fastingReductionPct', 'fastingRules', 'hijriOffsetDays', 'weeklyTemplate', 'planner', 'quran'] as const;
+const PLANNING_KEYS = [
+  'capacityByDow',
+  'fastingReductionPct',
+  'fastingRules',
+  'hijriOffsetDays',
+  'timezone',
+  'weeklyTemplate',
+  'planner',
+  'quran',
+] as const;
 
 export class LearningService {
   readonly tasks: TaskRepo;
@@ -116,12 +125,13 @@ export class LearningService {
   readonly modules: ModuleStateRepo;
   readonly summary: SummaryRepo;
   readonly meta: MetaRepo;
+  private _catalog: Catalog;
 
   constructor(
     readonly db: Db,
     readonly clock: Clock = systemClock,
-    readonly catalog: Catalog = buildCatalog(OWNER_CATALOG_DATA),
   ) {
+    this._catalog = buildCatalog(new CatalogRepo(db).load());
     this.tasks = new TaskRepo(db);
     this.plannedDays = new PlannedDaysRepo(db);
     this.settingsRepo = new SettingsRepo(db);
@@ -131,10 +141,19 @@ export class LearningService {
     this.meta = new MetaRepo(db);
   }
 
+  get catalog(): Catalog {
+    return this._catalog;
+  }
+
+  /** Re-reads the plan tables into the engine catalog (after a pack import). */
+  reloadCatalog(): void {
+    this._catalog = buildCatalog(new CatalogRepo(this.db).load());
+  }
+
   // ------------------------------------------------------------ context
 
   today(): IsoDate {
-    return cairoToday(this.clock.now());
+    return dateInZone(this.clock.now(), this.settings().timezone);
   }
 
   nowIso(): string {
@@ -187,9 +206,9 @@ export class LearningService {
     return maxDate(this.today(), this.trackingStartDate());
   }
 
-  /** Daily Quran reservation R from the real Quran state. */
+  /** Daily Quran reservation R from the real Quran state (0 when Quran is off). */
   quranReserve(settings: Settings = this.settings(), state: QuranState = this.quranState()): number {
-    return quranReserveMinutes(state, settings.quran);
+    return settings.quran.enabled ? quranReserveMinutes(state, settings.quran) : 0;
   }
 
   // ----------------------------------------------------------- planning
@@ -267,24 +286,26 @@ export class LearningService {
       if (task.moduleId) ledger.apply(task.moduleId, creditMinutes(task.type, task.plannedMinutes));
     }
 
-    // Project Quran sessions from today, assuming completion.
+    // Project Quran sessions from today, assuming completion (none when off).
     let qState = this.quranState();
     const reserve = this.quranReserve(settings, qState);
     const quranSessions = new Map<IsoDate, QuranSessionPlan>();
-    for (const d of dateRange(t, last)) {
-      const dayTasks = tasksByDate.get(d) ?? [];
-      const quranTask = dayTasks.find((x) => isQuranType(x.type) && x.source === 'generated');
-      const cap = dayCapacity(d, settings, overrides.get(d));
-      let active: boolean;
-      if (target.has(d)) {
-        active = cap.total > 0 && (!quranTask || quranTask.status === 'pending');
-      } else {
-        active = quranTask ? quranTask.status === 'pending' : !plannedSet.has(d) && cap.total > 0;
+    if (settings.quran.enabled) {
+      for (const d of dateRange(t, last)) {
+        const dayTasks = tasksByDate.get(d) ?? [];
+        const quranTask = dayTasks.find((x) => isQuranType(x.type) && x.source === 'generated');
+        const cap = dayCapacity(d, settings, overrides.get(d));
+        let active: boolean;
+        if (target.has(d)) {
+          active = cap.total > 0 && (!quranTask || quranTask.status === 'pending');
+        } else {
+          active = quranTask ? quranTask.status === 'pending' : !plannedSet.has(d) && cap.total > 0;
+        }
+        if (!active) continue;
+        const session = buildSession(qState, settings);
+        quranSessions.set(d, session);
+        qState = applySession(qState, session, d, { affectsAlternation: true });
       }
-      if (!active) continue;
-      const session = buildSession(qState, settings);
-      quranSessions.set(d, session);
-      qState = applySession(qState, session, d, { affectsAlternation: true });
     }
 
     const inputs: PlanDayInput[] = sorted.map((d) => {
@@ -325,8 +346,9 @@ export class LearningService {
    * affected days re-planned.
    */
   syncQuranTasks(): { updated: number; replanned: boolean } {
-    const t = this.planFloor();
     const settings = this.settings();
+    if (!settings.quran.enabled) return { updated: 0, replanned: false };
+    const t = this.planFloor();
     let state = this.quranState();
     const reserve = this.quranReserve(settings, state);
     const maxPlanned = this.plannedDays.maxPlanned();
@@ -448,6 +470,7 @@ export class LearningService {
     if (!trackDef || trackDef.archived) throw badRequest(`Unknown track '${track}'`);
     let type: TaskType;
     if (trackDef.kind === 'quran') {
+      if (!this.settings().quran.enabled) throw badRequest('Quran is turned off in Settings');
       if (input.type === 'memorize') type = 'quran-memorize';
       else if (input.type === 'review') type = 'quran-review';
       else throw badRequest("Quran tasks must have type 'memorize' or 'review'");
@@ -633,6 +656,23 @@ export class LearningService {
       );
     }
     const next = parsed.data;
+    // Template slots must reference an active stream of an active study track.
+    for (let dow = 0; dow < next.weeklyTemplate.length; dow++) {
+      const day = next.weeklyTemplate[dow] ?? [];
+      for (let i = 0; i < day.length; i++) {
+        const slot = day[i];
+        const trackDef = slot && this.catalog.track(slot.track);
+        const streamDef = slot && this.catalog.stream(slot.track, slot.stream);
+        if (!trackDef || trackDef.archived || trackDef.kind !== 'study' || !streamDef || streamDef.archived) {
+          throw badRequest('Invalid settings', [
+            {
+              path: `weeklyTemplate.${dow}.${i}`,
+              message: `weeklyTemplate[${dow}][${i}] references stream '${slot?.stream}' which is not defined in track '${slot?.track}'`,
+            },
+          ]);
+        }
+      }
+    }
     const changed = PLANNING_KEYS.some((k) => JSON.stringify(current[k]) !== JSON.stringify(next[k]));
     return transaction(this.db, () => {
       // Freeze past days under the settings that were in effect for them.
