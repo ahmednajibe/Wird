@@ -1,7 +1,7 @@
 import { join, resolve } from 'node:path';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { backupDirFor, resolveDbPath } from '../src/server/config.js';
-import { CURRICULUM, UNSCHEDULED_RESOURCES } from '../src/shared/curriculum.js';
+import { OWNER_CATALOG_DATA } from '../src/server/seed/ownerCatalog.js';
 import { makeTestApp } from './helpers.js';
 
 type Json = Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
@@ -46,7 +46,7 @@ describe('GET /api/resources', () => {
     // Every resource of every module appears exactly once per stream (dedup by url/name).
     for (const s of json.streams) {
       const expected = new Set(
-        CURRICULUM.filter((m) => m.track === s.track && m.stream === s.stream).flatMap((m) => m.resources.map((r) => r.url ?? r.name)),
+        OWNER_CATALOG_DATA.modules.filter((m) => m.track === s.track && m.stream === s.stream).flatMap((m) => m.resources.map((r) => r.url ?? r.name)),
       );
       expect(s.resources.map((r: Json) => r.url ?? r.name).sort()).toEqual([...expected].sort());
       expect(s.counts.owned + s.counts.free + s.counts.paid).toBe(s.resources.length);
@@ -64,7 +64,7 @@ describe('GET /api/resources', () => {
 
     const fsd = json.streams.find((s: Json) => s.track === 'fsd');
     expect(fsd.resources.find((r: Json) => r.name.startsWith('Designing Data-Intensive')).access).toBe('paid');
-    expect(fsd.unscheduled.map((r: Json) => r.name)).toEqual(UNSCHEDULED_RESOURCES.map((r) => r.name));
+    expect(fsd.unscheduled.map((r: Json) => r.name)).toEqual(OWNER_CATALOG_DATA.library.map((r) => r.name));
     expect(fsd.unscheduled.every((r: Json) => r.access === 'owned' && r.note)).toBe(true);
 
     // Animation has no owned resources: everything is a free alternative (paid items are optional books).
@@ -74,10 +74,10 @@ describe('GET /api/resources', () => {
 
   it('exposes a flat module list for resource lookups by module id', async () => {
     const { json } = await get('/api/resources');
-    expect(json.modules).toHaveLength(CURRICULUM.length);
+    expect(json.modules).toHaveLength(OWNER_CATALOG_DATA.modules.length);
     const m = json.modules.find((x: Json) => x.id === 'fsd-js');
     expect(m.resources[0]).toMatchObject({ name: 'javascript.info', url: 'https://javascript.info', access: 'free' });
-    expect(json.unscheduled).toHaveLength(UNSCHEDULED_RESOURCES.length);
+    expect(json.unscheduled).toHaveLength(OWNER_CATALOG_DATA.library.length);
   });
 
   it('reflects completed modules', async () => {

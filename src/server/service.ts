@@ -3,7 +3,7 @@
  * Planning lifecycle, task commands, and Quran synchronisation live here.
  */
 import { dayCapacity, fastingInfo, toHijri, type DayCapacity } from '../shared/calendar.js';
-import { getModule } from '../shared/curriculum.js';
+import { buildCatalog, type Catalog } from '../shared/catalog.js';
 import { addDays, dateRange, dayOfWeek, DOW_NAMES, maxDate, today as cairoToday, weekEnd } from '../shared/dates.js';
 import {
   planDays,
@@ -40,11 +40,12 @@ import type {
   TaskType,
   TrackId,
 } from '../shared/types.js';
-import { STUDY_TRACK_STREAMS } from '../shared/types.js';
+import { isQuranType } from '../shared/types.js';
 import { transaction, type Db } from './db.js';
 import { badRequest, conflict, notFound } from './errors.js';
 import { DayOverrideRepo, type DaySnapshot, MetaRepo, ModuleStateRepo, SettingsRepo, SummaryRepo } from './repoMisc.js';
 import { PlannedDaysRepo, TaskRepo } from './repoTasks.js';
+import { OWNER_CATALOG_DATA } from './seed/ownerCatalog.js';
 
 export interface Clock {
   now(): Date;
@@ -119,6 +120,7 @@ export class LearningService {
   constructor(
     readonly db: Db,
     readonly clock: Clock = systemClock,
+    readonly catalog: Catalog = buildCatalog(OWNER_CATALOG_DATA),
   ) {
     this.tasks = new TaskRepo(db);
     this.plannedDays = new PlannedDaysRepo(db);
@@ -146,14 +148,14 @@ export class LearningService {
   ledger(): ModuleLedger {
     const events: CreditEvent[] = [];
     for (const t of this.tasks.completed()) {
-      if (!t.moduleId || t.track === 'quran') continue;
+      if (!t.moduleId || isQuranType(t.type)) continue;
       events.push({
         moduleId: t.moduleId,
         minutes: creditMinutes(t.type, effectiveMinutes(t)),
         at: t.completedAt ?? `${t.completedDate ?? t.date}T00:00:00.000Z`,
       });
     }
-    return buildLedger(this.modules.all(), events);
+    return buildLedger(this.catalog, this.modules.all(), events);
   }
 
   quranState(): QuranState {
@@ -165,7 +167,7 @@ export class LearningService {
   }
 
   baseline(settings: Settings = this.settings()): BaselineExplanation {
-    return computeBaseline(settings);
+    return computeBaseline(settings, this.catalog);
   }
 
   /**
@@ -254,12 +256,12 @@ export class LearningService {
     // day, and continue each stream's session numbering after it.
     const ledger = this.ledger();
     const sessions: SessionCounters = new Map();
-    for (const { track, stream } of STUDY_TRACK_STREAMS) {
+    for (const { track, stream } of this.catalog.studyStreams()) {
       sessions.set(streamKeyOf(track, stream), this.tasks.countCompletedGenerated(track, stream) + 1);
     }
     for (const task of rangeTasks) {
       if (task.date >= first || target.has(task.date)) continue;
-      if (task.source !== 'generated' || task.status !== 'pending' || task.track === 'quran') continue;
+      if (task.source !== 'generated' || task.status !== 'pending' || isQuranType(task.type)) continue;
       const key = streamKeyOf(task.track, task.stream);
       sessions.set(key, (sessions.get(key) ?? 1) + 1);
       if (task.moduleId) ledger.apply(task.moduleId, creditMinutes(task.type, task.plannedMinutes));
@@ -271,7 +273,7 @@ export class LearningService {
     const quranSessions = new Map<IsoDate, QuranSessionPlan>();
     for (const d of dateRange(t, last)) {
       const dayTasks = tasksByDate.get(d) ?? [];
-      const quranTask = dayTasks.find((x) => x.track === 'quran' && x.source === 'generated');
+      const quranTask = dayTasks.find((x) => isQuranType(x.type) && x.source === 'generated');
       const cap = dayCapacity(d, settings, overrides.get(d));
       let active: boolean;
       if (target.has(d)) {
@@ -338,7 +340,7 @@ export class LearningService {
         this.regenerate(stale[0] as IsoDate, maxPlanned);
         return { updated: 0, replanned: true };
       }
-      const pending = this.tasks.pendingGeneratedFrom(t).filter((x) => x.track === 'quran');
+      const pending = this.tasks.pendingGeneratedFrom(t).filter((x) => isQuranType(x.type));
       const byDate = new Map(pending.map((x) => [x.date, x]));
       let updated = 0;
       for (const d of dateRange(t, pending[pending.length - 1]?.date ?? t)) {
@@ -442,10 +444,10 @@ export class LearningService {
     pagesCount: number | null;
   } {
     const track = input.track;
-    const stream: StreamId = track === 'animation' ? (input.stream ?? 'draw') : 'main';
-    if (track === 'animation' && stream === 'main') throw badRequest("Animation tasks need stream 'draw' or 'story'");
+    const trackDef = this.catalog.track(track);
+    if (!trackDef || trackDef.archived) throw badRequest(`Unknown track '${track}'`);
     let type: TaskType;
-    if (track === 'quran') {
+    if (trackDef.kind === 'quran') {
       if (input.type === 'memorize') type = 'quran-memorize';
       else if (input.type === 'review') type = 'quran-review';
       else throw badRequest("Quran tasks must have type 'memorize' or 'review'");
@@ -453,8 +455,19 @@ export class LearningService {
       if (input.type === 'memorize') throw badRequest("Type 'memorize' is only valid for the quran track");
       type = input.type;
     }
-    const offCurriculum = track === 'quran' ? false : Boolean(input.offCurriculum);
-    const moduleId = track === 'quran' || offCurriculum ? null : (ledger.current(track, stream)?.id ?? null);
+    let stream: StreamId;
+    if (trackDef.kind === 'quran') {
+      stream = 'main';
+    } else {
+      stream = input.stream ?? trackDef.streams.find((s) => !s.archived)?.id ?? 'main';
+      const streamDef = this.catalog.stream(track, stream);
+      if (!streamDef || streamDef.archived) throw badRequest(`Track '${track}' has no stream '${stream}'`);
+    }
+    if (input.pagesCount != null && type !== 'quran-memorize') {
+      throw badRequest('pagesCount is only valid for quran memorize');
+    }
+    const offCurriculum = trackDef.kind === 'quran' ? false : Boolean(input.offCurriculum);
+    const moduleId = trackDef.kind === 'quran' || offCurriculum ? null : (ledger.current(track, stream)?.id ?? null);
     const pagesCount = type === 'quran-memorize' ? (input.pagesCount ?? null) : null;
     return { track, stream, type, moduleId, offCurriculum, pagesCount };
   }
@@ -521,7 +534,7 @@ export class LearningService {
       }
       const settings = this.settings();
       let quranPages: number[] | undefined;
-      if (task.track === 'quran') {
+      if (isQuranType(task.type)) {
         // Content is kept current by syncQuranTasks (dashboard load and after
         // every Quran change); only guard against an already-memorized page.
         const state = this.quranState();
@@ -546,7 +559,7 @@ export class LearningService {
         points,
         ...(quranPages ? { quranPages } : {}),
       });
-      if (task.track === 'quran') this.syncQuranTasks();
+      if (isQuranType(task.type)) this.syncQuranTasks();
       return this.taskView(this.requireTask(id));
     });
   }
@@ -556,9 +569,9 @@ export class LearningService {
       const task = this.requireTask(id);
       if (task.status === 'pending') return this.taskView(task);
       if (task.status === 'rolled') throw badRequest('A session that moved forward cannot be undone');
-      const clearPages = task.track === 'quran' && task.type === 'quran-memorize' && task.source === 'manual';
+      const clearPages = task.type === 'quran-memorize' && task.source === 'manual';
       this.tasks.markPending(id, clearPages);
-      if (task.track === 'quran') this.syncQuranTasks();
+      if (isQuranType(task.type)) this.syncQuranTasks();
       return this.taskView(this.requireTask(id));
     });
   }
@@ -568,7 +581,7 @@ export class LearningService {
       const task = this.requireTask(id);
       if (task.source !== 'generated') throw badRequest('Only generated tasks can be skipped; delete manual tasks instead');
       if (task.status !== 'pending') throw conflict(`Task is already ${task.status}`);
-      if (task.track === 'quran') {
+      if (isQuranType(task.type)) {
         this.tasks.markSkipped(id);
         this.syncQuranTasks();
       } else {
@@ -585,14 +598,14 @@ export class LearningService {
       const task = this.requireTask(id);
       if (task.source !== 'manual') throw badRequest('Only manual tasks can be deleted');
       this.tasks.delete(id);
-      if (task.track === 'quran' && task.status === 'completed') this.syncQuranTasks();
+      if (isQuranType(task.type) && task.status === 'completed') this.syncQuranTasks();
     });
   }
 
   // ------------------------------------------------------------ modules
 
   completeModule(id: string): void {
-    if (!getModule(id)) throw notFound(`Module ${id} not found`);
+    if (!this.catalog.module(id)) throw notFound(`Module ${id} not found`);
     transaction(this.db, () => {
       this.modules.markComplete(id, this.nowIso());
       this.regenerate(this.today());
@@ -600,7 +613,7 @@ export class LearningService {
   }
 
   resetModule(id: string): void {
-    if (!getModule(id)) throw notFound(`Module ${id} not found`);
+    if (!this.catalog.module(id)) throw notFound(`Module ${id} not found`);
     transaction(this.db, () => {
       this.modules.reset(id, this.nowIso());
       this.regenerate(this.today());
@@ -746,7 +759,7 @@ export class LearningService {
       let bufferMinutes = 0;
       if (!beforeStart && capacity.total > 0 && reserves.has(d)) {
         const dayReserve = Math.min(reserves.get(d) ?? currentReserve, capacity.total);
-        const quranMinutes = views.filter((x) => x.source === 'generated' && x.track === 'quran').reduce((a, x) => a + x.plannedMinutes, 0);
+        const quranMinutes = views.filter((x) => x.source === 'generated' && isQuranType(x.type)).reduce((a, x) => a + x.plannedMinutes, 0);
         bufferMinutes = Math.max(0, dayReserve - quranMinutes);
       }
       return {

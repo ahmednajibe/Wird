@@ -1,0 +1,151 @@
+{
+  "capacityByDow": [
+    120,
+    120,
+    120,
+    120,
+    120,
+    180,
+    180
+  ],
+  "fastingReductionPct": 40,
+  "fastingRules": {
+    "monday": true,
+    "thursday": true,
+    "whiteDays": true,
+    "ramadan": true,
+    "dhulHijjahFirstNine": true
+  },
+  "hijriOffsetDays": 0,
+  "weeklyTemplate": [
+    [
+      {
+        "track": "animation",
+        "stream": "draw",
+        "role": "warmup",
+        "kind": "fixed",
+        "minutes": 20,
+        "fastingMinutes": 15
+      },
+      {
+        "track": "ai",
+        "stream": "main",
+        "role": "focus",
+        "kind": "rest"
+      }
+    ],
+    [
+      {
+        "track": "animation",
+        "stream": "draw",
+        "role": "warmup",
+        "kind": "fixed",
+        "minutes": 20,
+        "fastingMinutes": 15
+      },
+      {
+        "track": "fsd",
+        "stream": "main",
+        "role": "focus",
+        "kind": "rest"
+      }
+    ],
+    [
+      {
+        "track": "animation",
+        "stream": "draw",
+        "role": "warmup",
+        "kind": "fixed",
+        "minutes": 20,
+        "fastingMinutes": 15
+      },
+      {
+        "track": "fsd",
+        "stream": "main",
+        "role": "focus",
+        "kind": "rest"
+      }
+    ],
+    [
+      {
+        "track": "animation",
+        "stream": "draw",
+        "role": "warmup",
+        "kind": "fixed",
+        "minutes": 20,
+        "fastingMinutes": 15
+      },
+      {
+        "track": "ai",
+        "stream": "main",
+        "role": "focus",
+        "kind": "rest"
+      }
+    ],
+    [
+      {
+        "track": "animation",
+        "stream": "draw",
+        "role": "warmup",
+        "kind": "fixed",
+        "minutes": 20,
+        "fastingMinutes": 15
+      },
+      {
+        "track": "ai",
+        "stream": "main",
+        "role": "focus",
+        "kind": "rest"
+      }
+    ],
+    [
+      {
+        "track": "animation",
+        "stream": "draw",
+        "role": "focus",
+        "kind": "share",
+        "share": 0.5
+      },
+      {
+        "track": "ai",
+        "stream": "main",
+        "role": "focus",
+        "kind": "rest"
+      }
+    ],
+    [
+      {
+        "track": "animation",
+        "stream": "story",
+        "role": "focus",
+        "kind": "share",
+        "share": 0.5
+      },
+      {
+        "track": "fsd",
+        "stream": "main",
+        "role": "focus",
+        "kind": "rest"
+      }
+    ]
+  ],
+  "planner": {
+    "roundToMinutes": 5,
+    "minSlotMinutes": 15,
+    "maxTaskMinutes": 75
+  },
+  "quran": {
+    "memorizationOrder": "juz30-29-then-forward",
+    "memorizeMinutes": 40,
+    "minutesPerReviewPage": 3,
+    "reviewCapMinutes": 40,
+    "reviewMinMinutes": 10,
+    "nearPages": 5,
+    "rollingWindow": 10,
+    "rollingMinSessions": 3
+  },
+  "baseline": {
+    "factor": 0.28,
+    "fastingFactor": 0.6
+  }
+}

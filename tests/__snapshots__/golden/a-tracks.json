@@ -1,0 +1,1851 @@
+{
+  "today": "2026-10-04",
+  "normalWeekMinutes": [
+    {
+      "track": "quran",
+      "stream": "main",
+      "plannedMinutes": 205,
+      "creditedMinutes": 0
+    },
+    {
+      "track": "animation",
+      "stream": "draw",
+      "plannedMinutes": 160,
+      "creditedMinutes": 160
+    },
+    {
+      "track": "ai",
+      "stream": "main",
+      "plannedMinutes": 207,
+      "creditedMinutes": 198.5
+    },
+    {
+      "track": "fsd",
+      "stream": "main",
+      "plannedMinutes": 147,
+      "creditedMinutes": 147
+    },
+    {
+      "track": "animation",
+      "stream": "story",
+      "plannedMinutes": 70,
+      "creditedMinutes": 70
+    }
+  ],
+  "normalWeek": {
+    "capacity": 864,
+    "quranReserveMinutes": 280,
+    "quranPlannedMinutes": 205,
+    "bufferMinutes": 75,
+    "studyMinutes": 584
+  },
+  "streams": [
+    {
+      "track": "ai",
+      "stream": "main",
+      "trackLabel": "Artificial Intelligence",
+      "streamLabel": "Main",
+      "currentModuleId": "ai-py",
+      "currentModuleTitle": "Python for Data Science, AI & Development",
+      "phases": [
+        {
+          "id": "A1",
+          "title": "Foundations: Python and math",
+          "modules": [
+            {
+              "id": "ai-py",
+              "track": "ai",
+              "stream": "main",
+              "phase": {
+                "id": "A1",
+                "title": "Foundations: Python and math"
+              },
+              "title": "Python for Data Science, AI & Development",
+              "note": "IBM, Coursera: course 7 of your IBM Full Stack certificate.",
+              "resources": [
+                {
+                  "name": "Python for Data Science, AI & Development (IBM, Coursera)",
+                  "url": "https://www.coursera.org/learn/python-for-applied-data-science-ai",
+                  "owned": true
+                }
+              ],
+              "estMinutes": 1500,
+              "kind": "study",
+              "progress": {
+                "moduleId": "ai-py",
+                "estMinutes": 1500,
+                "creditedMinutes": 0,
+                "remainingMinutes": 1500,
+                "completed": false,
+                "manualComplete": false,
+                "percent": 0
+              },
+              "isCurrent": true
+            },
+            {
+              "id": "ai-linalg",
+              "track": "ai",
+              "stream": "main",
+              "phase": {
+                "id": "A1",
+                "title": "Foundations: Python and math"
+              },
+              "title": "Linear algebra",
+              "resources": [
+                {
+                  "name": "3Blue1Brown: Essence of Linear Algebra",
+                  "url": "https://www.3blue1brown.com/topics/linear-algebra"
+                },
+                {
+                  "name": "Khan Academy: Linear Algebra",
+                  "url": "https://www.khanacademy.org/math/linear-algebra"
+                }
+              ],
+              "estMinutes": 1500,
+              "kind": "study",
+              "estimateUncertain": true,
+              "progress": {
+                "moduleId": "ai-linalg",
+                "estMinutes": 1500,
+                "creditedMinutes": 0,
+                "remainingMinutes": 1500,
+                "completed": false,
+                "manualComplete": false,
+                "percent": 0
+              },
+              "isCurrent": false
+            },
+            {
+              "id": "ai-calc",
+              "track": "ai",
+              "stream": "main",
+              "phase": {
+                "id": "A1",
+                "title": "Foundations: Python and math"
+              },
+              "title": "Calculus and gradients",
+              "resources": [
+                {
+                  "name": "3Blue1Brown: Essence of Calculus",
+                  "url": "https://www.3blue1brown.com/topics/calculus"
+                },
+                {
+                  "name": "Khan Academy: Multivariable Calculus",
+                  "url": "https://www.khanacademy.org/math/multivariable-calculus"
+                }
+              ],
+              "estMinutes": 1500,
+              "kind": "study",
+              "estimateUncertain": true,
+              "progress": {
+                "moduleId": "ai-calc",
+                "estMinutes": 1500,
+                "creditedMinutes": 0,
+                "remainingMinutes": 1500,
+                "completed": false,
+                "manualComplete": false,
+                "percent": 0
+              },
+              "isCurrent": false
+            },
+            {
+              "id": "ai-prob",
+              "track": "ai",
+              "stream": "main",
+              "phase": {
+                "id": "A1",
+                "title": "Foundations: Python and math"
+              },
+              "title": "Probability and statistics",
+              "resources": [
+                {
+                  "name": "Khan Academy: Statistics and Probability",
+                  "url": "https://www.khanacademy.org/math/statistics-probability"
+                },
+                {
+                  "name": "StatQuest",
+                  "url": "https://statquest.org"
+                }
+              ],
+              "estMinutes": 1800,
+              "kind": "study",
+              "estimateUncertain": true,
+              "progress": {
+                "moduleId": "ai-prob",
+                "estMinutes": 1800,
+                "creditedMinutes": 0,
+                "remainingMinutes": 1800,
+                "completed": false,
+                "manualComplete": false,
+                "percent": 0
+              },
+              "isCurrent": false
+            },
+            {
+              "id": "ai-data",
+              "track": "ai",
+              "stream": "main",
+              "phase": {
+                "id": "A1",
+                "title": "Foundations: Python and math"
+              },
+              "title": "NumPy, pandas, visualization",
+              "resources": [
+                {
+                  "name": "Kaggle Learn",
+                  "url": "https://www.kaggle.com/learn"
+                },
+                {
+                  "name": "Udemy: Data Science A-Z (selected sections)",
+                  "url": "https://www.udemy.com/course/data_science_a_to_z/",
+                  "owned": true
+                }
+              ],
+              "estMinutes": 900,
+              "kind": "study",
+              "estimateUncertain": true,
+              "progress": {
+                "moduleId": "ai-data",
+                "estMinutes": 900,
+                "creditedMinutes": 0,
+                "remainingMinutes": 900,
+                "completed": false,
+                "manualComplete": false,
+                "percent": 0
+              },
+              "isCurrent": false
+            }
+          ]
+        },
+        {
+          "id": "A2",
+          "title": "Classical machine learning",
+          "modules": [
+            {
+              "id": "ai-mlspec",
+              "track": "ai",
+              "stream": "main",
+              "phase": {
+                "id": "A2",
+                "title": "Classical machine learning"
+              },
+              "title": "Machine Learning Specialization (Andrew Ng)",
+              "note": "Check your Coursera AI Engineer program first; otherwise audit free.",
+              "resources": [
+                {
+                  "name": "Machine Learning Specialization (Andrew Ng, Coursera)",
+                  "url": "https://www.coursera.org/specializations/machine-learning-introduction"
+                },
+                {
+                  "name": "Udemy: Step-by-Step Guide to Machine Learning (supplement)",
+                  "url": "https://www.udemy.com/course/step-by-step-guide-to-machine-learning-course/",
+                  "owned": true,
+                  "note": "supplement"
+                }
+              ],
+              "estMinutes": 5700,
+              "kind": "study",
+              "progress": {
+                "moduleId": "ai-mlspec",
+                "estMinutes": 5700,
+                "creditedMinutes": 0,
+                "remainingMinutes": 5700,
+                "completed": false,
+                "manualComplete": false,
+                "percent": 0
+              },
+              "isCurrent": false
+            },
+            {
+              "id": "ai-kaggle-ml",
+              "track": "ai",
+              "stream": "main",
+              "phase": {
+                "id": "A2",
+                "title": "Classical machine learning"
+              },
+              "title": "Kaggle Intro + Intermediate ML, then one full tabular project",
+              "resources": [
+                {
+                  "name": "Kaggle Learn",
+                  "url": "https://www.kaggle.com/learn"
+                }
+              ],
+              "estMinutes": 1500,
+              "kind": "project",
+              "estimateUncertain": true,
+              "progress": {
+                "moduleId": "ai-kaggle-ml",
+                "estMinutes": 1500,
+                "creditedMinutes": 0,
+                "remainingMinutes": 1500,
+                "completed": false,
+                "manualComplete": false,
+                "percent": 0
+              },
+              "isCurrent": false
+            }
+          ]
+        },
+        {
+          "id": "A3",
+          "title": "Deep learning",
+          "modules": [
+            {
+              "id": "ai-nn",
+              "track": "ai",
+              "stream": "main",
+              "phase": {
+                "id": "A3",
+                "title": "Deep learning"
+              },
+              "title": "3Blue1Brown Neural Networks series",
+              "resources": [
+                {
+                  "name": "3Blue1Brown: Neural Networks",
+                  "url": "https://www.3blue1brown.com/topics/neural-networks"
+                }
+              ],
+              "estMinutes": 300,
+              "kind": "study",
+              "estimateUncertain": true,
+              "progress": {
+                "moduleId": "ai-nn",
+                "estMinutes": 300,
+                "creditedMinutes": 0,
+                "remainingMinutes": 300,
+                "completed": false,
+                "manualComplete": false,
+                "percent": 0
+              },
+              "isCurrent": false
+            },
+            {
+              "id": "ai-z2h",
+              "track": "ai",
+              "stream": "main",
+              "phase": {
+                "id": "A3",
+                "title": "Deep learning"
+              },
+              "title": "Neural Networks: Zero to Hero (Andrej Karpathy)",
+              "note": "Code along every lecture.",
+              "resources": [
+                {
+                  "name": "Neural Networks: Zero to Hero",
+                  "url": "https://karpathy.ai/zero-to-hero.html"
+                }
+              ],
+              "estMinutes": 2616,
+              "kind": "study",
+              "estimateUncertain": true,
+              "progress": {
+                "moduleId": "ai-z2h",
+                "estMinutes": 2616,
+                "creditedMinutes": 0,
+                "remainingMinutes": 2616,
+                "completed": false,
+                "manualComplete": false,
+                "percent": 0
+              },
+              "isCurrent": false
+            },
+            {
+              "id": "ai-fastai",
+              "track": "ai",
+              "stream": "main",
+              "phase": {
+                "id": "A3",
+                "title": "Deep learning"
+              },
+              "title": "Practical Deep Learning for Coders, Part 1",
+              "resources": [
+                {
+                  "name": "fast.ai: Practical Deep Learning for Coders",
+                  "url": "https://course.fast.ai"
+                }
+              ],
+              "estMinutes": 2430,
+              "kind": "study",
+              "estimateUncertain": true,
+              "progress": {
+                "moduleId": "ai-fastai",
+                "estMinutes": 2430,
+                "creditedMinutes": 0,
+                "remainingMinutes": 2430,
+                "completed": false,
+                "manualComplete": false,
+                "percent": 0
+              },
+              "isCurrent": false
+            },
+            {
+              "id": "ai-d2l",
+              "track": "ai",
+              "stream": "main",
+              "phase": {
+                "id": "A3",
+                "title": "Deep learning"
+              },
+              "title": "Dive into Deep Learning (CNNs, RNNs, attention chapters)",
+              "resources": [
+                {
+                  "name": "Dive into Deep Learning",
+                  "url": "https://d2l.ai"
+                }
+              ],
+              "estMinutes": 1800,
+              "kind": "study",
+              "estimateUncertain": true,
+              "progress": {
+                "moduleId": "ai-d2l",
+                "estMinutes": 1800,
+                "creditedMinutes": 0,
+                "remainingMinutes": 1800,
+                "completed": false,
+                "manualComplete": false,
+                "percent": 0
+              },
+              "isCurrent": false
+            }
+          ]
+        },
+        {
+          "id": "A4",
+          "title": "LLMs and AI engineering",
+          "modules": [
+            {
+              "id": "ai-hf",
+              "track": "ai",
+              "stream": "main",
+              "phase": {
+                "id": "A4",
+                "title": "LLMs and AI engineering"
+              },
+              "title": "Hugging Face LLM Course",
+              "resources": [
+                {
+                  "name": "Hugging Face LLM Course",
+                  "url": "https://huggingface.co/learn/llm-course"
+                }
+              ],
+              "estMinutes": 5040,
+              "kind": "study",
+              "progress": {
+                "moduleId": "ai-hf",
+                "estMinutes": 5040,
+                "creditedMinutes": 0,
+                "remainingMinutes": 5040,
+                "completed": false,
+                "manualComplete": false,
+                "percent": 0
+              },
+              "isCurrent": false
+            },
+            {
+              "id": "ai-coursera",
+              "track": "ai",
+              "stream": "main",
+              "phase": {
+                "id": "A4",
+                "title": "LLMs and AI engineering"
+              },
+              "title": "Coursera AI Engineer program (L1 learning path)",
+              "resources": [
+                {
+                  "name": "Coursera AI Engineer program (L1 learning path)",
+                  "url": "https://www.coursera.org/programs/artificial-intelligence-engineer-l1-36fji/learning-path/artificial-intelligence-engineer-1-g0gik",
+                  "owned": true
+                }
+              ],
+              "estMinutes": 2400,
+              "kind": "study",
+              "estimateUncertain": true,
+              "progress": {
+                "moduleId": "ai-coursera",
+                "estMinutes": 2400,
+                "creditedMinutes": 0,
+                "remainingMinutes": 2400,
+                "completed": false,
+                "manualComplete": false,
+                "percent": 0
+              },
+              "isCurrent": false
+            },
+            {
+              "id": "ai-build",
+              "track": "ai",
+              "stream": "main",
+              "phase": {
+                "id": "A4",
+                "title": "LLMs and AI engineering"
+              },
+              "title": "Build two AI-powered full-stack apps (RAG + agent)",
+              "resources": [],
+              "estMinutes": 2400,
+              "kind": "project",
+              "estimateUncertain": true,
+              "progress": {
+                "moduleId": "ai-build",
+                "estMinutes": 2400,
+                "creditedMinutes": 0,
+                "remainingMinutes": 2400,
+                "completed": false,
+                "manualComplete": false,
+                "percent": 0
+              },
+              "isCurrent": false
+            }
+          ]
+        },
+        {
+          "id": "A5",
+          "title": "Depth and research",
+          "modules": [
+            {
+              "id": "ai-cs229",
+              "track": "ai",
+              "stream": "main",
+              "phase": {
+                "id": "A5",
+                "title": "Depth and research"
+              },
+              "title": "Stanford CS229 lectures + Mathematics for Machine Learning",
+              "resources": [
+                {
+                  "name": "Stanford CS229",
+                  "url": "https://cs229.stanford.edu"
+                },
+                {
+                  "name": "Mathematics for Machine Learning (free book)",
+                  "url": "https://mml-book.github.io"
+                }
+              ],
+              "estMinutes": 3000,
+              "kind": "study",
+              "estimateUncertain": true,
+              "progress": {
+                "moduleId": "ai-cs229",
+                "estMinutes": 3000,
+                "creditedMinutes": 0,
+                "remainingMinutes": 3000,
+                "completed": false,
+                "manualComplete": false,
+                "percent": 0
+              },
+              "isCurrent": false
+            },
+            {
+              "id": "ai-papers",
+              "track": "ai",
+              "stream": "main",
+              "phase": {
+                "id": "A5",
+                "title": "Depth and research"
+              },
+              "title": "Read and implement key papers (Attention Is All You Need, ResNet, ...)",
+              "resources": [],
+              "estMinutes": 2400,
+              "kind": "study",
+              "estimateUncertain": true,
+              "progress": {
+                "moduleId": "ai-papers",
+                "estMinutes": 2400,
+                "creditedMinutes": 0,
+                "remainingMinutes": 2400,
+                "completed": false,
+                "manualComplete": false,
+                "percent": 0
+              },
+              "isCurrent": false
+            },
+            {
+              "id": "ai-capstone",
+              "track": "ai",
+              "stream": "main",
+              "phase": {
+                "id": "A5",
+                "title": "Depth and research"
+              },
+              "title": "Capstone: train/fine-tune and deploy a model end-to-end",
+              "resources": [],
+              "estMinutes": 3000,
+              "kind": "project",
+              "estimateUncertain": true,
+              "progress": {
+                "moduleId": "ai-capstone",
+                "estMinutes": 3000,
+                "creditedMinutes": 0,
+                "remainingMinutes": 3000,
+                "completed": false,
+                "manualComplete": false,
+                "percent": 0
+              },
+              "isCurrent": false
+            }
+          ]
+        }
+      ],
+      "projection": {
+        "track": "ai",
+        "stream": "main",
+        "totalMinutes": 39786,
+        "remainingMinutes": 39786,
+        "weeklyPlannedMinutes": 207,
+        "weeklyCreditedMinutes": 198.5,
+        "weeksRemaining": 200.4,
+        "projectedCompletionDate": "2030-08-08",
+        "phases": [
+          {
+            "phaseId": "A1",
+            "title": "Foundations: Python and math",
+            "remainingMinutes": 7200,
+            "projectedCompletionDate": "2027-06-15",
+            "completed": false
+          },
+          {
+            "phaseId": "A2",
+            "title": "Classical machine learning",
+            "remainingMinutes": 7200,
+            "projectedCompletionDate": "2028-02-24",
+            "completed": false
+          },
+          {
+            "phaseId": "A3",
+            "title": "Deep learning",
+            "remainingMinutes": 7146,
+            "projectedCompletionDate": "2028-11-02",
+            "completed": false
+          },
+          {
+            "phaseId": "A4",
+            "title": "LLMs and AI engineering",
+            "remainingMinutes": 9840,
+            "projectedCompletionDate": "2029-10-15",
+            "completed": false
+          },
+          {
+            "phaseId": "A5",
+            "title": "Depth and research",
+            "remainingMinutes": 8400,
+            "projectedCompletionDate": "2030-08-08",
+            "completed": false
+          }
+        ]
+      },
+      "unscheduledResources": []
+    },
+    {
+      "track": "fsd",
+      "stream": "main",
+      "trackLabel": "Full Stack Development",
+      "streamLabel": "Main",
+      "currentModuleId": "fsd-cs50",
+      "currentModuleTitle": "CS50x weeks 0-5 (C, memory, data structures, algorithms)",
+      "phases": [
+        {
+          "id": "F1",
+          "title": "Fundamentals rebuild",
+          "modules": [
+            {
+              "id": "fsd-cs50",
+              "track": "fsd",
+              "stream": "main",
+              "phase": {
+                "id": "F1",
+                "title": "Fundamentals rebuild"
+              },
+              "title": "CS50x weeks 0-5 (C, memory, data structures, algorithms)",
+              "resources": [
+                {
+                  "name": "CS50x",
+                  "url": "https://cs50.harvard.edu/x/"
+                }
+              ],
+              "estMinutes": 2100,
+              "kind": "study",
+              "estimateUncertain": true,
+              "progress": {
+                "moduleId": "fsd-cs50",
+                "estMinutes": 2100,
+                "creditedMinutes": 0,
+                "remainingMinutes": 2100,
+                "completed": false,
+                "manualComplete": false,
+                "percent": 0
+              },
+              "isCurrent": true
+            },
+            {
+              "id": "fsd-missing",
+              "track": "fsd",
+              "stream": "main",
+              "phase": {
+                "id": "F1",
+                "title": "Fundamentals rebuild"
+              },
+              "title": "The Missing Semester (shell, git, debugging)",
+              "resources": [
+                {
+                  "name": "The Missing Semester",
+                  "url": "https://missing.csail.mit.edu"
+                }
+              ],
+              "estMinutes": 720,
+              "kind": "study",
+              "estimateUncertain": true,
+              "progress": {
+                "moduleId": "fsd-missing",
+                "estMinutes": 720,
+                "creditedMinutes": 0,
+                "remainingMinutes": 720,
+                "completed": false,
+                "manualComplete": false,
+                "percent": 0
+              },
+              "isCurrent": false
+            },
+            {
+              "id": "fsd-http",
+              "track": "fsd",
+              "stream": "main",
+              "phase": {
+                "id": "F1",
+                "title": "Fundamentals rebuild"
+              },
+              "title": "How the web works: HTTP, DNS, TLS, browsers",
+              "resources": [
+                {
+                  "name": "MDN HTTP",
+                  "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP"
+                }
+              ],
+              "estMinutes": 480,
+              "kind": "study",
+              "estimateUncertain": true,
+              "progress": {
+                "moduleId": "fsd-http",
+                "estMinutes": 480,
+                "creditedMinutes": 0,
+                "remainingMinutes": 480,
+                "completed": false,
+                "manualComplete": false,
+                "percent": 0
+              },
+              "isCurrent": false
+            },
+            {
+              "id": "fsd-js",
+              "track": "fsd",
+              "stream": "main",
+              "phase": {
+                "id": "F1",
+                "title": "Fundamentals rebuild"
+              },
+              "title": "JavaScript in depth (closures, prototypes, event loop, async)",
+              "resources": [
+                {
+                  "name": "javascript.info",
+                  "url": "https://javascript.info"
+                }
+              ],
+              "estMinutes": 1500,
+              "kind": "study",
+              "estimateUncertain": true,
+              "progress": {
+                "moduleId": "fsd-js",
+                "estMinutes": 1500,
+                "creditedMinutes": 0,
+                "remainingMinutes": 1500,
+                "completed": false,
+                "manualComplete": false,
+                "percent": 0
+              },
+              "isCurrent": false
+            }
+          ]
+        },
+        {
+          "id": "F2",
+          "title": "Front-end depth",
+          "modules": [
+            {
+              "id": "fsd-css",
+              "track": "fsd",
+              "stream": "main",
+              "phase": {
+                "id": "F2",
+                "title": "Front-end depth"
+              },
+              "title": "Modern CSS layout and responsive design",
+              "resources": [
+                {
+                  "name": "web.dev Learn CSS",
+                  "url": "https://web.dev/learn/css"
+                }
+              ],
+              "estMinutes": 720,
+              "kind": "study",
+              "estimateUncertain": true,
+              "progress": {
+                "moduleId": "fsd-css",
+                "estMinutes": 720,
+                "creditedMinutes": 0,
+                "remainingMinutes": 720,
+                "completed": false,
+                "manualComplete": false,
+                "percent": 0
+              },
+              "isCurrent": false
+            },
+            {
+              "id": "fsd-a11y",
+              "track": "fsd",
+              "stream": "main",
+              "phase": {
+                "id": "F2",
+                "title": "Front-end depth"
+              },
+              "title": "Accessibility",
+              "resources": [
+                {
+                  "name": "web.dev Learn Accessibility",
+                  "url": "https://web.dev/learn/accessibility"
+                }
+              ],
+              "estMinutes": 480,
+              "kind": "study",
+              "estimateUncertain": true,
+              "progress": {
+                "moduleId": "fsd-a11y",
+                "estMinutes": 480,
+                "creditedMinutes": 0,
+                "remainingMinutes": 480,
+                "completed": false,
+                "manualComplete": false,
+                "percent": 0
+              },
+              "isCurrent": false
+            },
+            {
+              "id": "fsd-ts",
+              "track": "fsd",
+              "stream": "main",
+              "phase": {
+                "id": "F2",
+                "title": "Front-end depth"
+              },
+              "title": "TypeScript Handbook",
+              "resources": [
+                {
+                  "name": "TypeScript Handbook",
+                  "url": "https://www.typescriptlang.org/docs/handbook/intro.html"
+                }
+              ],
+              "estMinutes": 720,
+              "kind": "study",
+              "estimateUncertain": true,
+              "progress": {
+                "moduleId": "fsd-ts",
+                "estMinutes": 720,
+                "creditedMinutes": 0,
+                "remainingMinutes": 720,
+                "completed": false,
+                "manualComplete": false,
+                "percent": 0
+              },
+              "isCurrent": false
+            },
+            {
+              "id": "fsd-react",
+              "track": "fsd",
+              "stream": "main",
+              "phase": {
+                "id": "F2",
+                "title": "Front-end depth"
+              },
+              "title": "React in depth (react.dev Learn incl. escape hatches)",
+              "resources": [
+                {
+                  "name": "react.dev Learn",
+                  "url": "https://react.dev/learn"
+                }
+              ],
+              "estMinutes": 900,
+              "kind": "study",
+              "estimateUncertain": true,
+              "progress": {
+                "moduleId": "fsd-react",
+                "estMinutes": 900,
+                "creditedMinutes": 0,
+                "remainingMinutes": 900,
+                "completed": false,
+                "manualComplete": false,
+                "percent": 0
+              },
+              "isCurrent": false
+            },
+            {
+              "id": "fsd-seo",
+              "track": "fsd",
+              "stream": "main",
+              "phase": {
+                "id": "F2",
+                "title": "Front-end depth"
+              },
+              "title": "Technical SEO essentials",
+              "resources": [
+                {
+                  "name": "Udemy: SEO Strategy (selected sections)",
+                  "url": "https://www.udemy.com/course/seo-strategy/learn",
+                  "owned": true
+                }
+              ],
+              "estMinutes": 180,
+              "kind": "study",
+              "estimateUncertain": true,
+              "progress": {
+                "moduleId": "fsd-seo",
+                "estMinutes": 180,
+                "creditedMinutes": 0,
+                "remainingMinutes": 180,
+                "completed": false,
+                "manualComplete": false,
+                "percent": 0
+              },
+              "isCurrent": false
+            }
+          ]
+        },
+        {
+          "id": "F3",
+          "title": "Back end and data",
+          "modules": [
+            {
+              "id": "fsd-fso",
+              "track": "fsd",
+              "stream": "main",
+              "phase": {
+                "id": "F3",
+                "title": "Back end and data"
+              },
+              "title": "Full Stack Open parts 3-5 (Node/Express, testing, auth)",
+              "resources": [
+                {
+                  "name": "Full Stack Open",
+                  "url": "https://fullstackopen.com/en/"
+                }
+              ],
+              "estMinutes": 3150,
+              "kind": "study",
+              "progress": {
+                "moduleId": "fsd-fso",
+                "estMinutes": 3150,
+                "creditedMinutes": 0,
+                "remainingMinutes": 3150,
+                "completed": false,
+                "manualComplete": false,
+                "percent": 0
+              },
+              "isCurrent": false
+            },
+            {
+              "id": "fsd-sql",
+              "track": "fsd",
+              "stream": "main",
+              "phase": {
+                "id": "F3",
+                "title": "Back end and data"
+              },
+              "title": "SQL and PostgreSQL in depth (indexes, transactions, query plans)",
+              "resources": [
+                {
+                  "name": "SQLBolt",
+                  "url": "https://sqlbolt.com"
+                },
+                {
+                  "name": "PostgreSQL tutorial",
+                  "url": "https://www.postgresql.org/docs/current/tutorial.html"
+                }
+              ],
+              "estMinutes": 1200,
+              "kind": "study",
+              "estimateUncertain": true,
+              "progress": {
+                "moduleId": "fsd-sql",
+                "estMinutes": 1200,
+                "creditedMinutes": 0,
+                "remainingMinutes": 1200,
+                "completed": false,
+                "manualComplete": false,
+                "percent": 0
+              },
+              "isCurrent": false
+            },
+            {
+              "id": "fsd-sec",
+              "track": "fsd",
+              "stream": "main",
+              "phase": {
+                "id": "F3",
+                "title": "Back end and data"
+              },
+              "title": "Web security: OWASP Top 10 + PortSwigger Web Security Academy",
+              "resources": [
+                {
+                  "name": "OWASP Top 10",
+                  "url": "https://owasp.org/www-project-top-ten/"
+                },
+                {
+                  "name": "PortSwigger Web Security Academy",
+                  "url": "https://portswigger.net/web-security"
+                }
+              ],
+              "estMinutes": 900,
+              "kind": "study",
+              "estimateUncertain": true,
+              "progress": {
+                "moduleId": "fsd-sec",
+                "estMinutes": 900,
+                "creditedMinutes": 0,
+                "remainingMinutes": 900,
+                "completed": false,
+                "manualComplete": false,
+                "percent": 0
+              },
+              "isCurrent": false
+            },
+            {
+              "id": "fsd-ddia",
+              "track": "fsd",
+              "stream": "main",
+              "phase": {
+                "id": "F3",
+                "title": "Back end and data"
+              },
+              "title": "Designing Data-Intensive Applications (Kleppmann)",
+              "resources": [
+                {
+                  "name": "Designing Data-Intensive Applications (book)",
+                  "paid": true
+                }
+              ],
+              "estMinutes": 1800,
+              "kind": "study",
+              "estimateUncertain": true,
+              "progress": {
+                "moduleId": "fsd-ddia",
+                "estMinutes": 1800,
+                "creditedMinutes": 0,
+                "remainingMinutes": 1800,
+                "completed": false,
+                "manualComplete": false,
+                "percent": 0
+              },
+              "isCurrent": false
+            }
+          ]
+        },
+        {
+          "id": "F4",
+          "title": "DevOps and cloud",
+          "modules": [
+            {
+              "id": "fsd-devops",
+              "track": "fsd",
+              "stream": "main",
+              "phase": {
+                "id": "F4",
+                "title": "DevOps and cloud"
+              },
+              "title": "Udemy Professional Certificate in DevOps",
+              "resources": [
+                {
+                  "name": "Udemy: Professional Certificate in DevOps",
+                  "url": "https://www.udemy.com/course/professional-certificate-in-devops/",
+                  "owned": true
+                }
+              ],
+              "estMinutes": 180,
+              "kind": "study",
+              "estimateUncertain": true,
+              "progress": {
+                "moduleId": "fsd-devops",
+                "estMinutes": 180,
+                "creditedMinutes": 0,
+                "remainingMinutes": 180,
+                "completed": false,
+                "manualComplete": false,
+                "percent": 0
+              },
+              "isCurrent": false
+            },
+            {
+              "id": "fsd-ibm-cloud",
+              "track": "fsd",
+              "stream": "main",
+              "phase": {
+                "id": "F4",
+                "title": "DevOps and cloud"
+              },
+              "title": "IBM courses 10-11: Containers w/ Docker, Kubernetes & OpenShift + Microservices and Serverless",
+              "resources": [
+                {
+                  "name": "IBM Full Stack Cloud Developer (Coursera), courses 10-11",
+                  "url": "https://www.coursera.org/professional-certificates/ibm-full-stack-cloud-developer",
+                  "owned": true
+                }
+              ],
+              "estMinutes": 1980,
+              "kind": "study",
+              "progress": {
+                "moduleId": "fsd-ibm-cloud",
+                "estMinutes": 1980,
+                "creditedMinutes": 0,
+                "remainingMinutes": 1980,
+                "completed": false,
+                "manualComplete": false,
+                "percent": 0
+              },
+              "isCurrent": false
+            },
+            {
+              "id": "fsd-ci",
+              "track": "fsd",
+              "stream": "main",
+              "phase": {
+                "id": "F4",
+                "title": "DevOps and cloud"
+              },
+              "title": "CI/CD with GitHub Actions",
+              "resources": [
+                {
+                  "name": "GitHub Actions docs",
+                  "url": "https://docs.github.com/en/actions"
+                }
+              ],
+              "estMinutes": 360,
+              "kind": "study",
+              "estimateUncertain": true,
+              "progress": {
+                "moduleId": "fsd-ci",
+                "estMinutes": 360,
+                "creditedMinutes": 0,
+                "remainingMinutes": 360,
+                "completed": false,
+                "manualComplete": false,
+                "percent": 0
+              },
+              "isCurrent": false
+            }
+          ]
+        },
+        {
+          "id": "F5",
+          "title": "Architecture and advanced",
+          "modules": [
+            {
+              "id": "fsd-sysdesign",
+              "track": "fsd",
+              "stream": "main",
+              "phase": {
+                "id": "F5",
+                "title": "Architecture and advanced"
+              },
+              "title": "System Design Primer",
+              "resources": [
+                {
+                  "name": "System Design Primer",
+                  "url": "https://github.com/donnemartin/system-design-primer"
+                }
+              ],
+              "estMinutes": 1500,
+              "kind": "study",
+              "estimateUncertain": true,
+              "progress": {
+                "moduleId": "fsd-sysdesign",
+                "estMinutes": 1500,
+                "creditedMinutes": 0,
+                "remainingMinutes": 1500,
+                "completed": false,
+                "manualComplete": false,
+                "percent": 0
+              },
+              "isCurrent": false
+            },
+            {
+              "id": "fsd-perf",
+              "track": "fsd",
+              "stream": "main",
+              "phase": {
+                "id": "F5",
+                "title": "Architecture and advanced"
+              },
+              "title": "Testing strategy and web performance (Core Web Vitals)",
+              "resources": [
+                {
+                  "name": "web.dev Core Web Vitals",
+                  "url": "https://web.dev/articles/vitals"
+                }
+              ],
+              "estMinutes": 600,
+              "kind": "study",
+              "estimateUncertain": true,
+              "progress": {
+                "moduleId": "fsd-perf",
+                "estMinutes": 600,
+                "creditedMinutes": 0,
+                "remainingMinutes": 600,
+                "completed": false,
+                "manualComplete": false,
+                "percent": 0
+              },
+              "isCurrent": false
+            },
+            {
+              "id": "fsd-capstone",
+              "track": "fsd",
+              "stream": "main",
+              "phase": {
+                "id": "F5",
+                "title": "Architecture and advanced"
+              },
+              "title": "Capstone: production-grade full-stack app (auth, tests, CI, deploy, monitoring)",
+              "resources": [],
+              "estMinutes": 2400,
+              "kind": "project",
+              "estimateUncertain": true,
+              "progress": {
+                "moduleId": "fsd-capstone",
+                "estMinutes": 2400,
+                "creditedMinutes": 0,
+                "remainingMinutes": 2400,
+                "completed": false,
+                "manualComplete": false,
+                "percent": 0
+              },
+              "isCurrent": false
+            }
+          ]
+        }
+      ],
+      "projection": {
+        "track": "fsd",
+        "stream": "main",
+        "totalMinutes": 21870,
+        "remainingMinutes": 21870,
+        "weeklyPlannedMinutes": 147,
+        "weeklyCreditedMinutes": 147,
+        "weeksRemaining": 148.8,
+        "projectedCompletionDate": "2029-08-11",
+        "phases": [
+          {
+            "phaseId": "F1",
+            "title": "Fundamentals rebuild",
+            "remainingMinutes": 4800,
+            "projectedCompletionDate": "2027-05-21",
+            "completed": false
+          },
+          {
+            "phaseId": "F2",
+            "title": "Front-end depth",
+            "remainingMinutes": 3000,
+            "projectedCompletionDate": "2027-10-11",
+            "completed": false
+          },
+          {
+            "phaseId": "F3",
+            "title": "Back end and data",
+            "remainingMinutes": 7050,
+            "projectedCompletionDate": "2028-09-11",
+            "completed": false
+          },
+          {
+            "phaseId": "F4",
+            "title": "DevOps and cloud",
+            "remainingMinutes": 2520,
+            "projectedCompletionDate": "2029-01-09",
+            "completed": false
+          },
+          {
+            "phaseId": "F5",
+            "title": "Architecture and advanced",
+            "remainingMinutes": 4500,
+            "projectedCompletionDate": "2029-08-11",
+            "completed": false
+          }
+        ]
+      },
+      "unscheduledResources": [
+        {
+          "track": "fsd",
+          "stream": "main",
+          "name": "Udemy: The Complete Web Development Bootcamp",
+          "url": "https://www.udemy.com/course/the-complete-web-development-bootcamp/",
+          "owned": true,
+          "note": "gap reference only"
+        },
+        {
+          "track": "fsd",
+          "stream": "main",
+          "name": "Udemy: Learn Web Design HTML/CSS/Photoshop",
+          "url": "https://www.udemy.com/course/learn-web-design-html-css-adobe-photoshop/",
+          "owned": true,
+          "note": "not scheduled: overlaps fundamentals"
+        }
+      ]
+    },
+    {
+      "track": "animation",
+      "stream": "draw",
+      "trackLabel": "Animation",
+      "streamLabel": "Drawing and animation craft",
+      "currentModuleId": "an-dab1",
+      "currentModuleTitle": "Drawabox Lessons 0-1 (lines, ellipses, boxes)",
+      "phases": [
+        {
+          "id": "N-D1",
+          "title": "Drawing fundamentals",
+          "modules": [
+            {
+              "id": "an-dab1",
+              "track": "animation",
+              "stream": "draw",
+              "phase": {
+                "id": "N-D1",
+                "title": "Drawing fundamentals"
+              },
+              "title": "Drawabox Lessons 0-1 (lines, ellipses, boxes)",
+              "resources": [
+                {
+                  "name": "Drawabox",
+                  "url": "https://drawabox.com"
+                }
+              ],
+              "estMinutes": 1200,
+              "kind": "study",
+              "estimateUncertain": true,
+              "progress": {
+                "moduleId": "an-dab1",
+                "estMinutes": 1200,
+                "creditedMinutes": 0,
+                "remainingMinutes": 1200,
+                "completed": false,
+                "manualComplete": false,
+                "percent": 0
+              },
+              "isCurrent": true
+            },
+            {
+              "id": "an-box250",
+              "track": "animation",
+              "stream": "draw",
+              "phase": {
+                "id": "N-D1",
+                "title": "Drawing fundamentals"
+              },
+              "title": "Drawabox 250 Box Challenge",
+              "resources": [
+                {
+                  "name": "Drawabox",
+                  "url": "https://drawabox.com"
+                }
+              ],
+              "estMinutes": 1500,
+              "kind": "study",
+              "estimateUncertain": true,
+              "progress": {
+                "moduleId": "an-box250",
+                "estMinutes": 1500,
+                "creditedMinutes": 0,
+                "remainingMinutes": 1500,
+                "completed": false,
+                "manualComplete": false,
+                "percent": 0
+              },
+              "isCurrent": false
+            },
+            {
+              "id": "an-figure",
+              "track": "animation",
+              "stream": "draw",
+              "phase": {
+                "id": "N-D1",
+                "title": "Drawing fundamentals"
+              },
+              "title": "Figure drawing: gesture and structure",
+              "resources": [
+                {
+                  "name": "Proko (YouTube)",
+                  "url": "https://www.youtube.com/results?search_query=proko+figure+drawing+fundamentals"
+                },
+                {
+                  "name": "Line of Action timed practice",
+                  "url": "https://line-of-action.com"
+                }
+              ],
+              "estMinutes": 2100,
+              "kind": "study",
+              "estimateUncertain": true,
+              "progress": {
+                "moduleId": "an-figure",
+                "estMinutes": 2100,
+                "creditedMinutes": 0,
+                "remainingMinutes": 2100,
+                "completed": false,
+                "manualComplete": false,
+                "percent": 0
+              },
+              "isCurrent": false
+            },
+            {
+              "id": "an-dab23",
+              "track": "animation",
+              "stream": "draw",
+              "phase": {
+                "id": "N-D1",
+                "title": "Drawing fundamentals"
+              },
+              "title": "Drawabox Lessons 2-3 (form, organic forms)",
+              "resources": [
+                {
+                  "name": "Drawabox",
+                  "url": "https://drawabox.com"
+                }
+              ],
+              "estMinutes": 1500,
+              "kind": "study",
+              "estimateUncertain": true,
+              "progress": {
+                "moduleId": "an-dab23",
+                "estMinutes": 1500,
+                "creditedMinutes": 0,
+                "remainingMinutes": 1500,
+                "completed": false,
+                "manualComplete": false,
+                "percent": 0
+              },
+              "isCurrent": false
+            }
+          ]
+        },
+        {
+          "id": "N-D2",
+          "title": "Character design",
+          "modules": [
+            {
+              "id": "an-chardesign",
+              "track": "animation",
+              "stream": "draw",
+              "phase": {
+                "id": "N-D2",
+                "title": "Character design"
+              },
+              "title": "Shape language, silhouettes, expressions, turnarounds",
+              "resources": [
+                {
+                  "name": "Sinix Design (YouTube)",
+                  "url": "https://www.youtube.com/results?search_query=sinix+design+character+design"
+                },
+                {
+                  "name": "Marc Brunet (YouTube)",
+                  "url": "https://www.youtube.com/results?search_query=marc+brunet+character+design"
+                }
+              ],
+              "estMinutes": 2400,
+              "kind": "study",
+              "estimateUncertain": true,
+              "progress": {
+                "moduleId": "an-chardesign",
+                "estMinutes": 2400,
+                "creditedMinutes": 0,
+                "remainingMinutes": 2400,
+                "completed": false,
+                "manualComplete": false,
+                "percent": 0
+              },
+              "isCurrent": false
+            }
+          ]
+        },
+        {
+          "id": "N-D3",
+          "title": "Animation craft",
+          "modules": [
+            {
+              "id": "an-principles",
+              "track": "animation",
+              "stream": "draw",
+              "phase": {
+                "id": "N-D3",
+                "title": "Animation craft"
+              },
+              "title": "12 principles + 2D exercises (bouncing ball, pendulum, flour sack, walk cycle)",
+              "resources": [
+                {
+                  "name": "Alan Becker: 12 Principles of Animation",
+                  "url": "https://www.youtube.com/results?search_query=alan+becker+12+principles+of+animation"
+                },
+                {
+                  "name": "Krita (tool)",
+                  "url": "https://krita.org"
+                },
+                {
+                  "name": "OpenToonz (tool)",
+                  "url": "https://opentoonz.github.io"
+                },
+                {
+                  "name": "The Animator's Survival Kit (optional book)",
+                  "paid": true
+                }
+              ],
+              "estMinutes": 3600,
+              "kind": "study",
+              "estimateUncertain": true,
+              "progress": {
+                "moduleId": "an-principles",
+                "estMinutes": 3600,
+                "creditedMinutes": 0,
+                "remainingMinutes": 3600,
+                "completed": false,
+                "manualComplete": false,
+                "percent": 0
+              },
+              "isCurrent": false
+            },
+            {
+              "id": "an-color",
+              "track": "animation",
+              "stream": "draw",
+              "phase": {
+                "id": "N-D3",
+                "title": "Animation craft"
+              },
+              "title": "Color and light",
+              "resources": [
+                {
+                  "name": "Ctrl+Paint",
+                  "url": "https://www.ctrlpaint.com"
+                }
+              ],
+              "estMinutes": 1200,
+              "kind": "study",
+              "estimateUncertain": true,
+              "progress": {
+                "moduleId": "an-color",
+                "estMinutes": 1200,
+                "creditedMinutes": 0,
+                "remainingMinutes": 1200,
+                "completed": false,
+                "manualComplete": false,
+                "percent": 0
+              },
+              "isCurrent": false
+            }
+          ]
+        }
+      ],
+      "projection": {
+        "track": "animation",
+        "stream": "draw",
+        "totalMinutes": 13500,
+        "remainingMinutes": 13500,
+        "weeklyPlannedMinutes": 160,
+        "weeklyCreditedMinutes": 160,
+        "weeksRemaining": 84.4,
+        "projectedCompletionDate": "2028-05-17",
+        "phases": [
+          {
+            "phaseId": "N-D1",
+            "title": "Drawing fundamentals",
+            "remainingMinutes": 6300,
+            "projectedCompletionDate": "2027-07-07",
+            "completed": false
+          },
+          {
+            "phaseId": "N-D2",
+            "title": "Character design",
+            "remainingMinutes": 2400,
+            "projectedCompletionDate": "2027-10-20",
+            "completed": false
+          },
+          {
+            "phaseId": "N-D3",
+            "title": "Animation craft",
+            "remainingMinutes": 4800,
+            "projectedCompletionDate": "2028-05-17",
+            "completed": false
+          }
+        ]
+      },
+      "unscheduledResources": []
+    },
+    {
+      "track": "animation",
+      "stream": "story",
+      "trackLabel": "Animation",
+      "streamLabel": "Story, boards and pipeline",
+      "currentModuleId": "an-pixar-story",
+      "currentModuleTitle": "Pixar in a Box: The Art of Storytelling",
+      "phases": [
+        {
+          "id": "N-S1",
+          "title": "Story for animation",
+          "modules": [
+            {
+              "id": "an-pixar-story",
+              "track": "animation",
+              "stream": "story",
+              "phase": {
+                "id": "N-S1",
+                "title": "Story for animation"
+              },
+              "title": "Pixar in a Box: The Art of Storytelling",
+              "resources": [
+                {
+                  "name": "Pixar in a Box (Khan Academy)",
+                  "url": "https://www.khanacademy.org/computing/pixar"
+                }
+              ],
+              "estMinutes": 720,
+              "kind": "study",
+              "estimateUncertain": true,
+              "progress": {
+                "moduleId": "an-pixar-story",
+                "estMinutes": 720,
+                "creditedMinutes": 0,
+                "remainingMinutes": 720,
+                "completed": false,
+                "manualComplete": false,
+                "percent": 0
+              },
+              "isCurrent": true
+            },
+            {
+              "id": "an-structure",
+              "track": "animation",
+              "stream": "story",
+              "phase": {
+                "id": "N-S1",
+                "title": "Story for animation"
+              },
+              "title": "Story structure: Pixar's 22 Rules, Save the Cat; write 5 loglines + a 1-page short script",
+              "resources": [
+                {
+                  "name": "Pixar's 22 Rules of Storytelling (Emma Coats)"
+                },
+                {
+                  "name": "Save the Cat beat sheet",
+                  "url": "https://savethecat.com"
+                }
+              ],
+              "estMinutes": 1200,
+              "kind": "project",
+              "estimateUncertain": true,
+              "progress": {
+                "moduleId": "an-structure",
+                "estMinutes": 1200,
+                "creditedMinutes": 0,
+                "remainingMinutes": 1200,
+                "completed": false,
+                "manualComplete": false,
+                "percent": 0
+              },
+              "isCurrent": false
+            },
+            {
+              "id": "an-visual",
+              "track": "animation",
+              "stream": "story",
+              "phase": {
+                "id": "N-S1",
+                "title": "Story for animation"
+              },
+              "title": "Visual storytelling: shot types, staging, continuity",
+              "resources": [
+                {
+                  "name": "StudioBinder blog",
+                  "url": "https://www.studiobinder.com/blog/"
+                }
+              ],
+              "estMinutes": 900,
+              "kind": "study",
+              "estimateUncertain": true,
+              "progress": {
+                "moduleId": "an-visual",
+                "estMinutes": 900,
+                "creditedMinutes": 0,
+                "remainingMinutes": 900,
+                "completed": false,
+                "manualComplete": false,
+                "percent": 0
+              },
+              "isCurrent": false
+            }
+          ]
+        },
+        {
+          "id": "N-S2",
+          "title": "Boards and pipeline",
+          "modules": [
+            {
+              "id": "an-boards",
+              "track": "animation",
+              "stream": "story",
+              "phase": {
+                "id": "N-S2",
+                "title": "Boards and pipeline"
+              },
+              "title": "Storyboarding and animatics: board your script and cut an animatic",
+              "resources": [
+                {
+                  "name": "Storyboarder (free)",
+                  "url": "https://wonderunit.com/storyboarder/"
+                }
+              ],
+              "estMinutes": 1800,
+              "kind": "project",
+              "estimateUncertain": true,
+              "progress": {
+                "moduleId": "an-boards",
+                "estMinutes": 1800,
+                "creditedMinutes": 0,
+                "remainingMinutes": 1800,
+                "completed": false,
+                "manualComplete": false,
+                "percent": 0
+              },
+              "isCurrent": false
+            },
+            {
+              "id": "an-pipeline",
+              "track": "animation",
+              "stream": "story",
+              "phase": {
+                "id": "N-S2",
+                "title": "Boards and pipeline"
+              },
+              "title": "Production pipeline tour: Pixar in a Box lessons + studio roles",
+              "resources": [
+                {
+                  "name": "Pixar in a Box (Khan Academy)",
+                  "url": "https://www.khanacademy.org/computing/pixar"
+                }
+              ],
+              "estMinutes": 900,
+              "kind": "study",
+              "estimateUncertain": true,
+              "progress": {
+                "moduleId": "an-pipeline",
+                "estMinutes": 900,
+                "creditedMinutes": 0,
+                "remainingMinutes": 900,
+                "completed": false,
+                "manualComplete": false,
+                "percent": 0
+              },
+              "isCurrent": false
+            },
+            {
+              "id": "an-blender",
+              "track": "animation",
+              "stream": "story",
+              "phase": {
+                "id": "N-S2",
+                "title": "Boards and pipeline"
+              },
+              "title": "3D basics for the pipeline (Blender)",
+              "resources": [
+                {
+                  "name": "Blender tutorials",
+                  "url": "https://www.blender.org/support/tutorials/"
+                }
+              ],
+              "estMinutes": 1800,
+              "kind": "study",
+              "estimateUncertain": true,
+              "progress": {
+                "moduleId": "an-blender",
+                "estMinutes": 1800,
+                "creditedMinutes": 0,
+                "remainingMinutes": 1800,
+                "completed": false,
+                "manualComplete": false,
+                "percent": 0
+              },
+              "isCurrent": false
+            },
+            {
+              "id": "an-short",
+              "track": "animation",
+              "stream": "story",
+              "phase": {
+                "id": "N-S2",
+                "title": "Boards and pipeline"
+              },
+              "title": "Capstone: 20-30 s animated short (script, boards, animatic, animation) + portfolio",
+              "resources": [],
+              "estMinutes": 3600,
+              "kind": "project",
+              "estimateUncertain": true,
+              "progress": {
+                "moduleId": "an-short",
+                "estMinutes": 3600,
+                "creditedMinutes": 0,
+                "remainingMinutes": 3600,
+                "completed": false,
+                "manualComplete": false,
+                "percent": 0
+              },
+              "isCurrent": false
+            }
+          ]
+        }
+      ],
+      "projection": {
+        "track": "animation",
+        "stream": "story",
+        "totalMinutes": 10920,
+        "remainingMinutes": 10920,
+        "weeklyPlannedMinutes": 70,
+        "weeklyCreditedMinutes": 70,
+        "weeksRemaining": 156,
+        "projectedCompletionDate": "2029-09-30",
+        "phases": [
+          {
+            "phaseId": "N-S1",
+            "title": "Story for animation",
+            "remainingMinutes": 2820,
+            "projectedCompletionDate": "2027-07-13",
+            "completed": false
+          },
+          {
+            "phaseId": "N-S2",
+            "title": "Boards and pipeline",
+            "remainingMinutes": 8100,
+            "projectedCompletionDate": "2029-09-30",
+            "completed": false
+          }
+        ]
+      },
+      "unscheduledResources": []
+    }
+  ],
+  "quran": {
+    "memorized": 0,
+    "remaining": 604,
+    "nextPage": 604,
+    "nextPageSurahs": "Al-Ikhlas, Al-Falaq, An-Nas",
+    "nextPageContents": "Al-Ikhlas 1-4, Al-Falaq 1-5, An-Nas 1-6",
+    "nextPageJuz": 30,
+    "nextSessionType": "memorize",
+    "lastCompletedSessionType": null,
+    "plannedMemorizeMinutes": 40,
+    "reviewCycleLength": 0,
+    "weeklyPlannedMinutes": 205
+  },
+  "totals": {
+    "modules": 50,
+    "completedModules": 0
+  }
+}

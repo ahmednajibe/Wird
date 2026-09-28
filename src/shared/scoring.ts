@@ -2,6 +2,7 @@
  * Deterministic, automatic points. The owner never enters points.
  *   points = round(minutes * benefit(type) * priority)
  */
+import { isQuranType } from './types.js';
 import type { TaskSource, TaskType, TrackId } from './types.js';
 
 export const BENEFIT: Record<TaskType, number> = {
@@ -39,8 +40,8 @@ export interface ScoringContext {
   memorizeSessionMinutes: number;
 }
 
-export function priorityOf(task: Pick<ScorableTask, 'track' | 'source' | 'offCurriculum'>): number {
-  if (task.track === 'quran') return PRIORITY.quran;
+export function priorityOf(task: Pick<ScorableTask, 'track' | 'type' | 'source' | 'offCurriculum'>): number {
+  if (isQuranType(task.type)) return PRIORITY.quran;
   if (task.source === 'generated') return PRIORITY.plan;
   return task.offCurriculum ? PRIORITY.manualOffCurriculum : PRIORITY.manualCurriculum;
 }

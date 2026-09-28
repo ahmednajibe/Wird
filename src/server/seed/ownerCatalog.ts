@@ -1,8 +1,11 @@
 /**
- * The curriculum, encoded as typed data. Estimated hours are stored as minutes.
- * Module order within a track/stream is the study order.
+ * The owner's catalog data: tracks, curriculum modules and the resource
+ * library. Estimated hours are stored as minutes; module order within a
+ * track/stream is the study order. Lives outside src/shared so the engine
+ * can run on any injected CatalogData.
  */
-import type { CurriculumModule, Phase, Resource, StreamId, TrackId } from './types.js';
+import type { CatalogData, LibraryResource, TrackDef } from '../../shared/catalog.js';
+import type { CurriculumModule, Phase, Resource } from '../../shared/types.js';
 
 const h = (hours: number): number => Math.round(hours * 60);
 
@@ -31,7 +34,7 @@ const drawabox: Resource = { name: 'Drawabox', url: 'https://drawabox.com' };
 const pixarInABox: Resource = { name: 'Pixar in a Box (Khan Academy)', url: 'https://www.khanacademy.org/computing/pixar' };
 const kaggleLearn: Resource = { name: 'Kaggle Learn', url: 'https://www.kaggle.com/learn' };
 
-export const CURRICULUM: readonly CurriculumModule[] = [
+const MODULES: CurriculumModule[] = [
   // ======================================================================= AI
   {
     id: 'ai-py',
@@ -669,7 +672,7 @@ export const CURRICULUM: readonly CurriculumModule[] = [
 ];
 
 /** Reference resources that are intentionally not scheduled. */
-export const UNSCHEDULED_RESOURCES: readonly (Resource & { track: TrackId; stream: StreamId })[] = [
+const LIBRARY: LibraryResource[] = [
   {
     track: 'fsd',
     stream: 'main',
@@ -688,22 +691,8 @@ export const UNSCHEDULED_RESOURCES: readonly (Resource & { track: TrackId; strea
   },
 ];
 
-const byId = new Map(CURRICULUM.map((m) => [m.id, m]));
-
-export function getModule(id: string): CurriculumModule | undefined {
-  return byId.get(id);
-}
-
-export function modulesFor(track: TrackId, stream: StreamId): CurriculumModule[] {
-  return CURRICULUM.filter((m) => m.track === track && m.stream === stream);
-}
-
-export function streamKey(track: TrackId, stream: StreamId): string {
-  return `${track}/${stream}`;
-}
-
-/** Warm-up descriptions keyed by the current draw module. */
-export const WARMUP_DESCRIPTIONS: Record<string, string> = {
+/** Warm-up descriptions keyed by the module they belong to. */
+const WARMUP_DESCRIPTIONS: Record<string, string> = {
   'an-dab1': 'Lines and ellipses: ghosted lines, superimposed lines, ellipse tables, a few rotated boxes (Drawabox Lessons 0-1).',
   'an-box250': 'Warm up with ghosted lines, then draw 5-10 boxes toward the 250 Box Challenge, checking convergence.',
   'an-figure': 'Gesture drawing with Line of Action timed poses (30 s to 2 min), focus on the line of action.',
@@ -713,4 +702,112 @@ export const WARMUP_DESCRIPTIONS: Record<string, string> = {
   'an-color': 'Quick value studies and color swatches (Ctrl+Paint exercises).',
 };
 
-export const DEFAULT_WARMUP_DESCRIPTION = 'Loose gesture sketches and line-confidence drills.';
+const DEFAULT_WARMUP_DESCRIPTION = 'Loose gesture sketches and line-confidence drills.';
+
+const TRACKS: TrackDef[] = [
+  {
+    id: 'quran',
+    kind: 'quran',
+    label: 'Quran',
+    shortLabel: 'Quran',
+    theme: 'amber',
+    icon: 'book-open',
+    typeLabels: {},
+    archived: false,
+    streams: [],
+  },
+  {
+    id: 'ai',
+    kind: 'study',
+    label: 'Artificial Intelligence',
+    shortLabel: 'AI',
+    theme: 'violet',
+    icon: 'brain',
+    typeLabels: {},
+    archived: false,
+    streams: [
+      {
+        track: 'ai',
+        id: 'main',
+        label: 'Main',
+        shortLabel: 'AI',
+        style: 'study',
+        warmupTitle: null,
+        lightTitle: null,
+        defaultDrills: null,
+        theme: null,
+        icon: null,
+        archived: false,
+      },
+    ],
+  },
+  {
+    id: 'fsd',
+    kind: 'study',
+    label: 'Full Stack Development',
+    shortLabel: 'Full Stack',
+    theme: 'blue',
+    icon: 'code',
+    typeLabels: {},
+    archived: false,
+    streams: [
+      {
+        track: 'fsd',
+        id: 'main',
+        label: 'Main',
+        shortLabel: 'Full Stack',
+        style: 'study',
+        warmupTitle: null,
+        lightTitle: null,
+        defaultDrills: null,
+        theme: null,
+        icon: null,
+        archived: false,
+      },
+    ],
+  },
+  {
+    id: 'animation',
+    kind: 'study',
+    label: 'Animation',
+    shortLabel: 'Animation',
+    theme: 'coral',
+    icon: 'paint-brush',
+    typeLabels: {},
+    archived: false,
+    streams: [
+      {
+        track: 'animation',
+        id: 'draw',
+        label: 'Drawing and animation craft',
+        shortLabel: 'Draw',
+        style: 'practice',
+        warmupTitle: 'Drawing warm-up',
+        lightTitle: 'Light drawing practice',
+        defaultDrills: DEFAULT_WARMUP_DESCRIPTION,
+        theme: null,
+        icon: 'paint-brush',
+        archived: false,
+      },
+      {
+        track: 'animation',
+        id: 'story',
+        label: 'Story, boards and pipeline',
+        shortLabel: 'Story',
+        style: 'study',
+        warmupTitle: null,
+        lightTitle: null,
+        defaultDrills: null,
+        theme: null,
+        icon: 'film-slate',
+        archived: false,
+      },
+    ],
+  },
+];
+
+export const OWNER_CATALOG_DATA: CatalogData = {
+  tracks: TRACKS,
+  modules: MODULES.map((m) => (WARMUP_DESCRIPTIONS[m.id] ? { ...m, warmupDrills: WARMUP_DESCRIPTIONS[m.id] } : m)),
+  library: LIBRARY,
+};

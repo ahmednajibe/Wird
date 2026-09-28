@@ -1,0 +1,2140 @@
+{
+  "streams": [
+    {
+      "track": "ai",
+      "stream": "main",
+      "trackLabel": "Artificial Intelligence",
+      "streamLabel": "Main",
+      "counts": {
+        "owned": 4,
+        "free": 15,
+        "paid": 0
+      },
+      "resources": [
+        {
+          "name": "Python for Data Science, AI & Development (IBM, Coursera)",
+          "url": "https://www.coursera.org/learn/python-for-applied-data-science-ai",
+          "owned": true,
+          "paid": false,
+          "access": "owned",
+          "note": null,
+          "modules": [
+            {
+              "id": "ai-py",
+              "title": "Python for Data Science, AI & Development",
+              "phaseId": "A1",
+              "phaseTitle": "Foundations: Python and math",
+              "estimateUncertain": false,
+              "completed": false
+            }
+          ]
+        },
+        {
+          "name": "3Blue1Brown: Essence of Linear Algebra",
+          "url": "https://www.3blue1brown.com/topics/linear-algebra",
+          "owned": false,
+          "paid": false,
+          "access": "free",
+          "note": null,
+          "modules": [
+            {
+              "id": "ai-linalg",
+              "title": "Linear algebra",
+              "phaseId": "A1",
+              "phaseTitle": "Foundations: Python and math",
+              "estimateUncertain": true,
+              "completed": false
+            }
+          ]
+        },
+        {
+          "name": "Khan Academy: Linear Algebra",
+          "url": "https://www.khanacademy.org/math/linear-algebra",
+          "owned": false,
+          "paid": false,
+          "access": "free",
+          "note": null,
+          "modules": [
+            {
+              "id": "ai-linalg",
+              "title": "Linear algebra",
+              "phaseId": "A1",
+              "phaseTitle": "Foundations: Python and math",
+              "estimateUncertain": true,
+              "completed": false
+            }
+          ]
+        },
+        {
+          "name": "3Blue1Brown: Essence of Calculus",
+          "url": "https://www.3blue1brown.com/topics/calculus",
+          "owned": false,
+          "paid": false,
+          "access": "free",
+          "note": null,
+          "modules": [
+            {
+              "id": "ai-calc",
+              "title": "Calculus and gradients",
+              "phaseId": "A1",
+              "phaseTitle": "Foundations: Python and math",
+              "estimateUncertain": true,
+              "completed": false
+            }
+          ]
+        },
+        {
+          "name": "Khan Academy: Multivariable Calculus",
+          "url": "https://www.khanacademy.org/math/multivariable-calculus",
+          "owned": false,
+          "paid": false,
+          "access": "free",
+          "note": null,
+          "modules": [
+            {
+              "id": "ai-calc",
+              "title": "Calculus and gradients",
+              "phaseId": "A1",
+              "phaseTitle": "Foundations: Python and math",
+              "estimateUncertain": true,
+              "completed": false
+            }
+          ]
+        },
+        {
+          "name": "Khan Academy: Statistics and Probability",
+          "url": "https://www.khanacademy.org/math/statistics-probability",
+          "owned": false,
+          "paid": false,
+          "access": "free",
+          "note": null,
+          "modules": [
+            {
+              "id": "ai-prob",
+              "title": "Probability and statistics",
+              "phaseId": "A1",
+              "phaseTitle": "Foundations: Python and math",
+              "estimateUncertain": true,
+              "completed": false
+            }
+          ]
+        },
+        {
+          "name": "StatQuest",
+          "url": "https://statquest.org",
+          "owned": false,
+          "paid": false,
+          "access": "free",
+          "note": null,
+          "modules": [
+            {
+              "id": "ai-prob",
+              "title": "Probability and statistics",
+              "phaseId": "A1",
+              "phaseTitle": "Foundations: Python and math",
+              "estimateUncertain": true,
+              "completed": false
+            }
+          ]
+        },
+        {
+          "name": "Kaggle Learn",
+          "url": "https://www.kaggle.com/learn",
+          "owned": false,
+          "paid": false,
+          "access": "free",
+          "note": null,
+          "modules": [
+            {
+              "id": "ai-data",
+              "title": "NumPy, pandas, visualization",
+              "phaseId": "A1",
+              "phaseTitle": "Foundations: Python and math",
+              "estimateUncertain": true,
+              "completed": false
+            },
+            {
+              "id": "ai-kaggle-ml",
+              "title": "Kaggle Intro + Intermediate ML, then one full tabular project",
+              "phaseId": "A2",
+              "phaseTitle": "Classical machine learning",
+              "estimateUncertain": true,
+              "completed": false
+            }
+          ]
+        },
+        {
+          "name": "Udemy: Data Science A-Z (selected sections)",
+          "url": "https://www.udemy.com/course/data_science_a_to_z/",
+          "owned": true,
+          "paid": false,
+          "access": "owned",
+          "note": null,
+          "modules": [
+            {
+              "id": "ai-data",
+              "title": "NumPy, pandas, visualization",
+              "phaseId": "A1",
+              "phaseTitle": "Foundations: Python and math",
+              "estimateUncertain": true,
+              "completed": false
+            }
+          ]
+        },
+        {
+          "name": "Machine Learning Specialization (Andrew Ng, Coursera)",
+          "url": "https://www.coursera.org/specializations/machine-learning-introduction",
+          "owned": false,
+          "paid": false,
+          "access": "free",
+          "note": null,
+          "modules": [
+            {
+              "id": "ai-mlspec",
+              "title": "Machine Learning Specialization (Andrew Ng)",
+              "phaseId": "A2",
+              "phaseTitle": "Classical machine learning",
+              "estimateUncertain": false,
+              "completed": false
+            }
+          ]
+        },
+        {
+          "name": "Udemy: Step-by-Step Guide to Machine Learning (supplement)",
+          "url": "https://www.udemy.com/course/step-by-step-guide-to-machine-learning-course/",
+          "owned": true,
+          "paid": false,
+          "access": "owned",
+          "note": "supplement",
+          "modules": [
+            {
+              "id": "ai-mlspec",
+              "title": "Machine Learning Specialization (Andrew Ng)",
+              "phaseId": "A2",
+              "phaseTitle": "Classical machine learning",
+              "estimateUncertain": false,
+              "completed": false
+            }
+          ]
+        },
+        {
+          "name": "3Blue1Brown: Neural Networks",
+          "url": "https://www.3blue1brown.com/topics/neural-networks",
+          "owned": false,
+          "paid": false,
+          "access": "free",
+          "note": null,
+          "modules": [
+            {
+              "id": "ai-nn",
+              "title": "3Blue1Brown Neural Networks series",
+              "phaseId": "A3",
+              "phaseTitle": "Deep learning",
+              "estimateUncertain": true,
+              "completed": false
+            }
+          ]
+        },
+        {
+          "name": "Neural Networks: Zero to Hero",
+          "url": "https://karpathy.ai/zero-to-hero.html",
+          "owned": false,
+          "paid": false,
+          "access": "free",
+          "note": null,
+          "modules": [
+            {
+              "id": "ai-z2h",
+              "title": "Neural Networks: Zero to Hero (Andrej Karpathy)",
+              "phaseId": "A3",
+              "phaseTitle": "Deep learning",
+              "estimateUncertain": true,
+              "completed": false
+            }
+          ]
+        },
+        {
+          "name": "fast.ai: Practical Deep Learning for Coders",
+          "url": "https://course.fast.ai",
+          "owned": false,
+          "paid": false,
+          "access": "free",
+          "note": null,
+          "modules": [
+            {
+              "id": "ai-fastai",
+              "title": "Practical Deep Learning for Coders, Part 1",
+              "phaseId": "A3",
+              "phaseTitle": "Deep learning",
+              "estimateUncertain": true,
+              "completed": false
+            }
+          ]
+        },
+        {
+          "name": "Dive into Deep Learning",
+          "url": "https://d2l.ai",
+          "owned": false,
+          "paid": false,
+          "access": "free",
+          "note": null,
+          "modules": [
+            {
+              "id": "ai-d2l",
+              "title": "Dive into Deep Learning (CNNs, RNNs, attention chapters)",
+              "phaseId": "A3",
+              "phaseTitle": "Deep learning",
+              "estimateUncertain": true,
+              "completed": false
+            }
+          ]
+        },
+        {
+          "name": "Hugging Face LLM Course",
+          "url": "https://huggingface.co/learn/llm-course",
+          "owned": false,
+          "paid": false,
+          "access": "free",
+          "note": null,
+          "modules": [
+            {
+              "id": "ai-hf",
+              "title": "Hugging Face LLM Course",
+              "phaseId": "A4",
+              "phaseTitle": "LLMs and AI engineering",
+              "estimateUncertain": false,
+              "completed": false
+            }
+          ]
+        },
+        {
+          "name": "Coursera AI Engineer program (L1 learning path)",
+          "url": "https://www.coursera.org/programs/artificial-intelligence-engineer-l1-36fji/learning-path/artificial-intelligence-engineer-1-g0gik",
+          "owned": true,
+          "paid": false,
+          "access": "owned",
+          "note": null,
+          "modules": [
+            {
+              "id": "ai-coursera",
+              "title": "Coursera AI Engineer program (L1 learning path)",
+              "phaseId": "A4",
+              "phaseTitle": "LLMs and AI engineering",
+              "estimateUncertain": true,
+              "completed": false
+            }
+          ]
+        },
+        {
+          "name": "Stanford CS229",
+          "url": "https://cs229.stanford.edu",
+          "owned": false,
+          "paid": false,
+          "access": "free",
+          "note": null,
+          "modules": [
+            {
+              "id": "ai-cs229",
+              "title": "Stanford CS229 lectures + Mathematics for Machine Learning",
+              "phaseId": "A5",
+              "phaseTitle": "Depth and research",
+              "estimateUncertain": true,
+              "completed": false
+            }
+          ]
+        },
+        {
+          "name": "Mathematics for Machine Learning (free book)",
+          "url": "https://mml-book.github.io",
+          "owned": false,
+          "paid": false,
+          "access": "free",
+          "note": null,
+          "modules": [
+            {
+              "id": "ai-cs229",
+              "title": "Stanford CS229 lectures + Mathematics for Machine Learning",
+              "phaseId": "A5",
+              "phaseTitle": "Depth and research",
+              "estimateUncertain": true,
+              "completed": false
+            }
+          ]
+        }
+      ],
+      "unscheduled": []
+    },
+    {
+      "track": "fsd",
+      "stream": "main",
+      "trackLabel": "Full Stack Development",
+      "streamLabel": "Main",
+      "counts": {
+        "owned": 3,
+        "free": 16,
+        "paid": 1
+      },
+      "resources": [
+        {
+          "name": "CS50x",
+          "url": "https://cs50.harvard.edu/x/",
+          "owned": false,
+          "paid": false,
+          "access": "free",
+          "note": null,
+          "modules": [
+            {
+              "id": "fsd-cs50",
+              "title": "CS50x weeks 0-5 (C, memory, data structures, algorithms)",
+              "phaseId": "F1",
+              "phaseTitle": "Fundamentals rebuild",
+              "estimateUncertain": true,
+              "completed": false
+            }
+          ]
+        },
+        {
+          "name": "The Missing Semester",
+          "url": "https://missing.csail.mit.edu",
+          "owned": false,
+          "paid": false,
+          "access": "free",
+          "note": null,
+          "modules": [
+            {
+              "id": "fsd-missing",
+              "title": "The Missing Semester (shell, git, debugging)",
+              "phaseId": "F1",
+              "phaseTitle": "Fundamentals rebuild",
+              "estimateUncertain": true,
+              "completed": false
+            }
+          ]
+        },
+        {
+          "name": "MDN HTTP",
+          "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP",
+          "owned": false,
+          "paid": false,
+          "access": "free",
+          "note": null,
+          "modules": [
+            {
+              "id": "fsd-http",
+              "title": "How the web works: HTTP, DNS, TLS, browsers",
+              "phaseId": "F1",
+              "phaseTitle": "Fundamentals rebuild",
+              "estimateUncertain": true,
+              "completed": true
+            }
+          ]
+        },
+        {
+          "name": "javascript.info",
+          "url": "https://javascript.info",
+          "owned": false,
+          "paid": false,
+          "access": "free",
+          "note": null,
+          "modules": [
+            {
+              "id": "fsd-js",
+              "title": "JavaScript in depth (closures, prototypes, event loop, async)",
+              "phaseId": "F1",
+              "phaseTitle": "Fundamentals rebuild",
+              "estimateUncertain": true,
+              "completed": false
+            }
+          ]
+        },
+        {
+          "name": "web.dev Learn CSS",
+          "url": "https://web.dev/learn/css",
+          "owned": false,
+          "paid": false,
+          "access": "free",
+          "note": null,
+          "modules": [
+            {
+              "id": "fsd-css",
+              "title": "Modern CSS layout and responsive design",
+              "phaseId": "F2",
+              "phaseTitle": "Front-end depth",
+              "estimateUncertain": true,
+              "completed": false
+            }
+          ]
+        },
+        {
+          "name": "web.dev Learn Accessibility",
+          "url": "https://web.dev/learn/accessibility",
+          "owned": false,
+          "paid": false,
+          "access": "free",
+          "note": null,
+          "modules": [
+            {
+              "id": "fsd-a11y",
+              "title": "Accessibility",
+              "phaseId": "F2",
+              "phaseTitle": "Front-end depth",
+              "estimateUncertain": true,
+              "completed": false
+            }
+          ]
+        },
+        {
+          "name": "TypeScript Handbook",
+          "url": "https://www.typescriptlang.org/docs/handbook/intro.html",
+          "owned": false,
+          "paid": false,
+          "access": "free",
+          "note": null,
+          "modules": [
+            {
+              "id": "fsd-ts",
+              "title": "TypeScript Handbook",
+              "phaseId": "F2",
+              "phaseTitle": "Front-end depth",
+              "estimateUncertain": true,
+              "completed": false
+            }
+          ]
+        },
+        {
+          "name": "react.dev Learn",
+          "url": "https://react.dev/learn",
+          "owned": false,
+          "paid": false,
+          "access": "free",
+          "note": null,
+          "modules": [
+            {
+              "id": "fsd-react",
+              "title": "React in depth (react.dev Learn incl. escape hatches)",
+              "phaseId": "F2",
+              "phaseTitle": "Front-end depth",
+              "estimateUncertain": true,
+              "completed": false
+            }
+          ]
+        },
+        {
+          "name": "Udemy: SEO Strategy (selected sections)",
+          "url": "https://www.udemy.com/course/seo-strategy/learn",
+          "owned": true,
+          "paid": false,
+          "access": "owned",
+          "note": null,
+          "modules": [
+            {
+              "id": "fsd-seo",
+              "title": "Technical SEO essentials",
+              "phaseId": "F2",
+              "phaseTitle": "Front-end depth",
+              "estimateUncertain": true,
+              "completed": false
+            }
+          ]
+        },
+        {
+          "name": "Full Stack Open",
+          "url": "https://fullstackopen.com/en/",
+          "owned": false,
+          "paid": false,
+          "access": "free",
+          "note": null,
+          "modules": [
+            {
+              "id": "fsd-fso",
+              "title": "Full Stack Open parts 3-5 (Node/Express, testing, auth)",
+              "phaseId": "F3",
+              "phaseTitle": "Back end and data",
+              "estimateUncertain": false,
+              "completed": false
+            }
+          ]
+        },
+        {
+          "name": "SQLBolt",
+          "url": "https://sqlbolt.com",
+          "owned": false,
+          "paid": false,
+          "access": "free",
+          "note": null,
+          "modules": [
+            {
+              "id": "fsd-sql",
+              "title": "SQL and PostgreSQL in depth (indexes, transactions, query plans)",
+              "phaseId": "F3",
+              "phaseTitle": "Back end and data",
+              "estimateUncertain": true,
+              "completed": false
+            }
+          ]
+        },
+        {
+          "name": "PostgreSQL tutorial",
+          "url": "https://www.postgresql.org/docs/current/tutorial.html",
+          "owned": false,
+          "paid": false,
+          "access": "free",
+          "note": null,
+          "modules": [
+            {
+              "id": "fsd-sql",
+              "title": "SQL and PostgreSQL in depth (indexes, transactions, query plans)",
+              "phaseId": "F3",
+              "phaseTitle": "Back end and data",
+              "estimateUncertain": true,
+              "completed": false
+            }
+          ]
+        },
+        {
+          "name": "OWASP Top 10",
+          "url": "https://owasp.org/www-project-top-ten/",
+          "owned": false,
+          "paid": false,
+          "access": "free",
+          "note": null,
+          "modules": [
+            {
+              "id": "fsd-sec",
+              "title": "Web security: OWASP Top 10 + PortSwigger Web Security Academy",
+              "phaseId": "F3",
+              "phaseTitle": "Back end and data",
+              "estimateUncertain": true,
+              "completed": false
+            }
+          ]
+        },
+        {
+          "name": "PortSwigger Web Security Academy",
+          "url": "https://portswigger.net/web-security",
+          "owned": false,
+          "paid": false,
+          "access": "free",
+          "note": null,
+          "modules": [
+            {
+              "id": "fsd-sec",
+              "title": "Web security: OWASP Top 10 + PortSwigger Web Security Academy",
+              "phaseId": "F3",
+              "phaseTitle": "Back end and data",
+              "estimateUncertain": true,
+              "completed": false
+            }
+          ]
+        },
+        {
+          "name": "Designing Data-Intensive Applications (book)",
+          "url": null,
+          "owned": false,
+          "paid": true,
+          "access": "paid",
+          "note": null,
+          "modules": [
+            {
+              "id": "fsd-ddia",
+              "title": "Designing Data-Intensive Applications (Kleppmann)",
+              "phaseId": "F3",
+              "phaseTitle": "Back end and data",
+              "estimateUncertain": true,
+              "completed": false
+            }
+          ]
+        },
+        {
+          "name": "Udemy: Professional Certificate in DevOps",
+          "url": "https://www.udemy.com/course/professional-certificate-in-devops/",
+          "owned": true,
+          "paid": false,
+          "access": "owned",
+          "note": null,
+          "modules": [
+            {
+              "id": "fsd-devops",
+              "title": "Udemy Professional Certificate in DevOps",
+              "phaseId": "F4",
+              "phaseTitle": "DevOps and cloud",
+              "estimateUncertain": true,
+              "completed": false
+            }
+          ]
+        },
+        {
+          "name": "IBM Full Stack Cloud Developer (Coursera), courses 10-11",
+          "url": "https://www.coursera.org/professional-certificates/ibm-full-stack-cloud-developer",
+          "owned": true,
+          "paid": false,
+          "access": "owned",
+          "note": null,
+          "modules": [
+            {
+              "id": "fsd-ibm-cloud",
+              "title": "IBM courses 10-11: Containers w/ Docker, Kubernetes & OpenShift + Microservices and Serverless",
+              "phaseId": "F4",
+              "phaseTitle": "DevOps and cloud",
+              "estimateUncertain": false,
+              "completed": false
+            }
+          ]
+        },
+        {
+          "name": "GitHub Actions docs",
+          "url": "https://docs.github.com/en/actions",
+          "owned": false,
+          "paid": false,
+          "access": "free",
+          "note": null,
+          "modules": [
+            {
+              "id": "fsd-ci",
+              "title": "CI/CD with GitHub Actions",
+              "phaseId": "F4",
+              "phaseTitle": "DevOps and cloud",
+              "estimateUncertain": true,
+              "completed": false
+            }
+          ]
+        },
+        {
+          "name": "System Design Primer",
+          "url": "https://github.com/donnemartin/system-design-primer",
+          "owned": false,
+          "paid": false,
+          "access": "free",
+          "note": null,
+          "modules": [
+            {
+              "id": "fsd-sysdesign",
+              "title": "System Design Primer",
+              "phaseId": "F5",
+              "phaseTitle": "Architecture and advanced",
+              "estimateUncertain": true,
+              "completed": false
+            }
+          ]
+        },
+        {
+          "name": "web.dev Core Web Vitals",
+          "url": "https://web.dev/articles/vitals",
+          "owned": false,
+          "paid": false,
+          "access": "free",
+          "note": null,
+          "modules": [
+            {
+              "id": "fsd-perf",
+              "title": "Testing strategy and web performance (Core Web Vitals)",
+              "phaseId": "F5",
+              "phaseTitle": "Architecture and advanced",
+              "estimateUncertain": true,
+              "completed": false
+            }
+          ]
+        }
+      ],
+      "unscheduled": [
+        {
+          "name": "Udemy: The Complete Web Development Bootcamp",
+          "url": "https://www.udemy.com/course/the-complete-web-development-bootcamp/",
+          "owned": true,
+          "paid": false,
+          "access": "owned",
+          "note": "gap reference only"
+        },
+        {
+          "name": "Udemy: Learn Web Design HTML/CSS/Photoshop",
+          "url": "https://www.udemy.com/course/learn-web-design-html-css-adobe-photoshop/",
+          "owned": true,
+          "paid": false,
+          "access": "owned",
+          "note": "not scheduled: overlaps fundamentals"
+        }
+      ]
+    },
+    {
+      "track": "animation",
+      "stream": "draw",
+      "trackLabel": "Animation",
+      "streamLabel": "Drawing and animation craft",
+      "counts": {
+        "owned": 0,
+        "free": 9,
+        "paid": 1
+      },
+      "resources": [
+        {
+          "name": "Drawabox",
+          "url": "https://drawabox.com",
+          "owned": false,
+          "paid": false,
+          "access": "free",
+          "note": null,
+          "modules": [
+            {
+              "id": "an-dab1",
+              "title": "Drawabox Lessons 0-1 (lines, ellipses, boxes)",
+              "phaseId": "N-D1",
+              "phaseTitle": "Drawing fundamentals",
+              "estimateUncertain": true,
+              "completed": false
+            },
+            {
+              "id": "an-box250",
+              "title": "Drawabox 250 Box Challenge",
+              "phaseId": "N-D1",
+              "phaseTitle": "Drawing fundamentals",
+              "estimateUncertain": true,
+              "completed": false
+            },
+            {
+              "id": "an-dab23",
+              "title": "Drawabox Lessons 2-3 (form, organic forms)",
+              "phaseId": "N-D1",
+              "phaseTitle": "Drawing fundamentals",
+              "estimateUncertain": true,
+              "completed": false
+            }
+          ]
+        },
+        {
+          "name": "Proko (YouTube)",
+          "url": "https://www.youtube.com/results?search_query=proko+figure+drawing+fundamentals",
+          "owned": false,
+          "paid": false,
+          "access": "free",
+          "note": null,
+          "modules": [
+            {
+              "id": "an-figure",
+              "title": "Figure drawing: gesture and structure",
+              "phaseId": "N-D1",
+              "phaseTitle": "Drawing fundamentals",
+              "estimateUncertain": true,
+              "completed": false
+            }
+          ]
+        },
+        {
+          "name": "Line of Action timed practice",
+          "url": "https://line-of-action.com",
+          "owned": false,
+          "paid": false,
+          "access": "free",
+          "note": null,
+          "modules": [
+            {
+              "id": "an-figure",
+              "title": "Figure drawing: gesture and structure",
+              "phaseId": "N-D1",
+              "phaseTitle": "Drawing fundamentals",
+              "estimateUncertain": true,
+              "completed": false
+            }
+          ]
+        },
+        {
+          "name": "Sinix Design (YouTube)",
+          "url": "https://www.youtube.com/results?search_query=sinix+design+character+design",
+          "owned": false,
+          "paid": false,
+          "access": "free",
+          "note": null,
+          "modules": [
+            {
+              "id": "an-chardesign",
+              "title": "Shape language, silhouettes, expressions, turnarounds",
+              "phaseId": "N-D2",
+              "phaseTitle": "Character design",
+              "estimateUncertain": true,
+              "completed": false
+            }
+          ]
+        },
+        {
+          "name": "Marc Brunet (YouTube)",
+          "url": "https://www.youtube.com/results?search_query=marc+brunet+character+design",
+          "owned": false,
+          "paid": false,
+          "access": "free",
+          "note": null,
+          "modules": [
+            {
+              "id": "an-chardesign",
+              "title": "Shape language, silhouettes, expressions, turnarounds",
+              "phaseId": "N-D2",
+              "phaseTitle": "Character design",
+              "estimateUncertain": true,
+              "completed": false
+            }
+          ]
+        },
+        {
+          "name": "Alan Becker: 12 Principles of Animation",
+          "url": "https://www.youtube.com/results?search_query=alan+becker+12+principles+of+animation",
+          "owned": false,
+          "paid": false,
+          "access": "free",
+          "note": null,
+          "modules": [
+            {
+              "id": "an-principles",
+              "title": "12 principles + 2D exercises (bouncing ball, pendulum, flour sack, walk cycle)",
+              "phaseId": "N-D3",
+              "phaseTitle": "Animation craft",
+              "estimateUncertain": true,
+              "completed": false
+            }
+          ]
+        },
+        {
+          "name": "Krita (tool)",
+          "url": "https://krita.org",
+          "owned": false,
+          "paid": false,
+          "access": "free",
+          "note": null,
+          "modules": [
+            {
+              "id": "an-principles",
+              "title": "12 principles + 2D exercises (bouncing ball, pendulum, flour sack, walk cycle)",
+              "phaseId": "N-D3",
+              "phaseTitle": "Animation craft",
+              "estimateUncertain": true,
+              "completed": false
+            }
+          ]
+        },
+        {
+          "name": "OpenToonz (tool)",
+          "url": "https://opentoonz.github.io",
+          "owned": false,
+          "paid": false,
+          "access": "free",
+          "note": null,
+          "modules": [
+            {
+              "id": "an-principles",
+              "title": "12 principles + 2D exercises (bouncing ball, pendulum, flour sack, walk cycle)",
+              "phaseId": "N-D3",
+              "phaseTitle": "Animation craft",
+              "estimateUncertain": true,
+              "completed": false
+            }
+          ]
+        },
+        {
+          "name": "The Animator's Survival Kit (optional book)",
+          "url": null,
+          "owned": false,
+          "paid": true,
+          "access": "paid",
+          "note": null,
+          "modules": [
+            {
+              "id": "an-principles",
+              "title": "12 principles + 2D exercises (bouncing ball, pendulum, flour sack, walk cycle)",
+              "phaseId": "N-D3",
+              "phaseTitle": "Animation craft",
+              "estimateUncertain": true,
+              "completed": false
+            }
+          ]
+        },
+        {
+          "name": "Ctrl+Paint",
+          "url": "https://www.ctrlpaint.com",
+          "owned": false,
+          "paid": false,
+          "access": "free",
+          "note": null,
+          "modules": [
+            {
+              "id": "an-color",
+              "title": "Color and light",
+              "phaseId": "N-D3",
+              "phaseTitle": "Animation craft",
+              "estimateUncertain": true,
+              "completed": false
+            }
+          ]
+        }
+      ],
+      "unscheduled": []
+    },
+    {
+      "track": "animation",
+      "stream": "story",
+      "trackLabel": "Animation",
+      "streamLabel": "Story, boards and pipeline",
+      "counts": {
+        "owned": 0,
+        "free": 6,
+        "paid": 0
+      },
+      "resources": [
+        {
+          "name": "Pixar in a Box (Khan Academy)",
+          "url": "https://www.khanacademy.org/computing/pixar",
+          "owned": false,
+          "paid": false,
+          "access": "free",
+          "note": null,
+          "modules": [
+            {
+              "id": "an-pixar-story",
+              "title": "Pixar in a Box: The Art of Storytelling",
+              "phaseId": "N-S1",
+              "phaseTitle": "Story for animation",
+              "estimateUncertain": true,
+              "completed": false
+            },
+            {
+              "id": "an-pipeline",
+              "title": "Production pipeline tour: Pixar in a Box lessons + studio roles",
+              "phaseId": "N-S2",
+              "phaseTitle": "Boards and pipeline",
+              "estimateUncertain": true,
+              "completed": false
+            }
+          ]
+        },
+        {
+          "name": "Pixar's 22 Rules of Storytelling (Emma Coats)",
+          "url": null,
+          "owned": false,
+          "paid": false,
+          "access": "free",
+          "note": null,
+          "modules": [
+            {
+              "id": "an-structure",
+              "title": "Story structure: Pixar's 22 Rules, Save the Cat; write 5 loglines + a 1-page short script",
+              "phaseId": "N-S1",
+              "phaseTitle": "Story for animation",
+              "estimateUncertain": true,
+              "completed": false
+            }
+          ]
+        },
+        {
+          "name": "Save the Cat beat sheet",
+          "url": "https://savethecat.com",
+          "owned": false,
+          "paid": false,
+          "access": "free",
+          "note": null,
+          "modules": [
+            {
+              "id": "an-structure",
+              "title": "Story structure: Pixar's 22 Rules, Save the Cat; write 5 loglines + a 1-page short script",
+              "phaseId": "N-S1",
+              "phaseTitle": "Story for animation",
+              "estimateUncertain": true,
+              "completed": false
+            }
+          ]
+        },
+        {
+          "name": "StudioBinder blog",
+          "url": "https://www.studiobinder.com/blog/",
+          "owned": false,
+          "paid": false,
+          "access": "free",
+          "note": null,
+          "modules": [
+            {
+              "id": "an-visual",
+              "title": "Visual storytelling: shot types, staging, continuity",
+              "phaseId": "N-S1",
+              "phaseTitle": "Story for animation",
+              "estimateUncertain": true,
+              "completed": false
+            }
+          ]
+        },
+        {
+          "name": "Storyboarder (free)",
+          "url": "https://wonderunit.com/storyboarder/",
+          "owned": false,
+          "paid": false,
+          "access": "free",
+          "note": null,
+          "modules": [
+            {
+              "id": "an-boards",
+              "title": "Storyboarding and animatics: board your script and cut an animatic",
+              "phaseId": "N-S2",
+              "phaseTitle": "Boards and pipeline",
+              "estimateUncertain": true,
+              "completed": false
+            }
+          ]
+        },
+        {
+          "name": "Blender tutorials",
+          "url": "https://www.blender.org/support/tutorials/",
+          "owned": false,
+          "paid": false,
+          "access": "free",
+          "note": null,
+          "modules": [
+            {
+              "id": "an-blender",
+              "title": "3D basics for the pipeline (Blender)",
+              "phaseId": "N-S2",
+              "phaseTitle": "Boards and pipeline",
+              "estimateUncertain": true,
+              "completed": false
+            }
+          ]
+        }
+      ],
+      "unscheduled": []
+    }
+  ],
+  "modules": [
+    {
+      "id": "ai-py",
+      "track": "ai",
+      "stream": "main",
+      "title": "Python for Data Science, AI & Development",
+      "phaseId": "A1",
+      "phaseTitle": "Foundations: Python and math",
+      "estimateUncertain": false,
+      "resources": [
+        {
+          "name": "Python for Data Science, AI & Development (IBM, Coursera)",
+          "url": "https://www.coursera.org/learn/python-for-applied-data-science-ai",
+          "owned": true,
+          "paid": false,
+          "access": "owned",
+          "note": null
+        }
+      ]
+    },
+    {
+      "id": "ai-linalg",
+      "track": "ai",
+      "stream": "main",
+      "title": "Linear algebra",
+      "phaseId": "A1",
+      "phaseTitle": "Foundations: Python and math",
+      "estimateUncertain": true,
+      "resources": [
+        {
+          "name": "3Blue1Brown: Essence of Linear Algebra",
+          "url": "https://www.3blue1brown.com/topics/linear-algebra",
+          "owned": false,
+          "paid": false,
+          "access": "free",
+          "note": null
+        },
+        {
+          "name": "Khan Academy: Linear Algebra",
+          "url": "https://www.khanacademy.org/math/linear-algebra",
+          "owned": false,
+          "paid": false,
+          "access": "free",
+          "note": null
+        }
+      ]
+    },
+    {
+      "id": "ai-calc",
+      "track": "ai",
+      "stream": "main",
+      "title": "Calculus and gradients",
+      "phaseId": "A1",
+      "phaseTitle": "Foundations: Python and math",
+      "estimateUncertain": true,
+      "resources": [
+        {
+          "name": "3Blue1Brown: Essence of Calculus",
+          "url": "https://www.3blue1brown.com/topics/calculus",
+          "owned": false,
+          "paid": false,
+          "access": "free",
+          "note": null
+        },
+        {
+          "name": "Khan Academy: Multivariable Calculus",
+          "url": "https://www.khanacademy.org/math/multivariable-calculus",
+          "owned": false,
+          "paid": false,
+          "access": "free",
+          "note": null
+        }
+      ]
+    },
+    {
+      "id": "ai-prob",
+      "track": "ai",
+      "stream": "main",
+      "title": "Probability and statistics",
+      "phaseId": "A1",
+      "phaseTitle": "Foundations: Python and math",
+      "estimateUncertain": true,
+      "resources": [
+        {
+          "name": "Khan Academy: Statistics and Probability",
+          "url": "https://www.khanacademy.org/math/statistics-probability",
+          "owned": false,
+          "paid": false,
+          "access": "free",
+          "note": null
+        },
+        {
+          "name": "StatQuest",
+          "url": "https://statquest.org",
+          "owned": false,
+          "paid": false,
+          "access": "free",
+          "note": null
+        }
+      ]
+    },
+    {
+      "id": "ai-data",
+      "track": "ai",
+      "stream": "main",
+      "title": "NumPy, pandas, visualization",
+      "phaseId": "A1",
+      "phaseTitle": "Foundations: Python and math",
+      "estimateUncertain": true,
+      "resources": [
+        {
+          "name": "Kaggle Learn",
+          "url": "https://www.kaggle.com/learn",
+          "owned": false,
+          "paid": false,
+          "access": "free",
+          "note": null
+        },
+        {
+          "name": "Udemy: Data Science A-Z (selected sections)",
+          "url": "https://www.udemy.com/course/data_science_a_to_z/",
+          "owned": true,
+          "paid": false,
+          "access": "owned",
+          "note": null
+        }
+      ]
+    },
+    {
+      "id": "ai-mlspec",
+      "track": "ai",
+      "stream": "main",
+      "title": "Machine Learning Specialization (Andrew Ng)",
+      "phaseId": "A2",
+      "phaseTitle": "Classical machine learning",
+      "estimateUncertain": false,
+      "resources": [
+        {
+          "name": "Machine Learning Specialization (Andrew Ng, Coursera)",
+          "url": "https://www.coursera.org/specializations/machine-learning-introduction",
+          "owned": false,
+          "paid": false,
+          "access": "free",
+          "note": null
+        },
+        {
+          "name": "Udemy: Step-by-Step Guide to Machine Learning (supplement)",
+          "url": "https://www.udemy.com/course/step-by-step-guide-to-machine-learning-course/",
+          "owned": true,
+          "paid": false,
+          "access": "owned",
+          "note": "supplement"
+        }
+      ]
+    },
+    {
+      "id": "ai-kaggle-ml",
+      "track": "ai",
+      "stream": "main",
+      "title": "Kaggle Intro + Intermediate ML, then one full tabular project",
+      "phaseId": "A2",
+      "phaseTitle": "Classical machine learning",
+      "estimateUncertain": true,
+      "resources": [
+        {
+          "name": "Kaggle Learn",
+          "url": "https://www.kaggle.com/learn",
+          "owned": false,
+          "paid": false,
+          "access": "free",
+          "note": null
+        }
+      ]
+    },
+    {
+      "id": "ai-nn",
+      "track": "ai",
+      "stream": "main",
+      "title": "3Blue1Brown Neural Networks series",
+      "phaseId": "A3",
+      "phaseTitle": "Deep learning",
+      "estimateUncertain": true,
+      "resources": [
+        {
+          "name": "3Blue1Brown: Neural Networks",
+          "url": "https://www.3blue1brown.com/topics/neural-networks",
+          "owned": false,
+          "paid": false,
+          "access": "free",
+          "note": null
+        }
+      ]
+    },
+    {
+      "id": "ai-z2h",
+      "track": "ai",
+      "stream": "main",
+      "title": "Neural Networks: Zero to Hero (Andrej Karpathy)",
+      "phaseId": "A3",
+      "phaseTitle": "Deep learning",
+      "estimateUncertain": true,
+      "resources": [
+        {
+          "name": "Neural Networks: Zero to Hero",
+          "url": "https://karpathy.ai/zero-to-hero.html",
+          "owned": false,
+          "paid": false,
+          "access": "free",
+          "note": null
+        }
+      ]
+    },
+    {
+      "id": "ai-fastai",
+      "track": "ai",
+      "stream": "main",
+      "title": "Practical Deep Learning for Coders, Part 1",
+      "phaseId": "A3",
+      "phaseTitle": "Deep learning",
+      "estimateUncertain": true,
+      "resources": [
+        {
+          "name": "fast.ai: Practical Deep Learning for Coders",
+          "url": "https://course.fast.ai",
+          "owned": false,
+          "paid": false,
+          "access": "free",
+          "note": null
+        }
+      ]
+    },
+    {
+      "id": "ai-d2l",
+      "track": "ai",
+      "stream": "main",
+      "title": "Dive into Deep Learning (CNNs, RNNs, attention chapters)",
+      "phaseId": "A3",
+      "phaseTitle": "Deep learning",
+      "estimateUncertain": true,
+      "resources": [
+        {
+          "name": "Dive into Deep Learning",
+          "url": "https://d2l.ai",
+          "owned": false,
+          "paid": false,
+          "access": "free",
+          "note": null
+        }
+      ]
+    },
+    {
+      "id": "ai-hf",
+      "track": "ai",
+      "stream": "main",
+      "title": "Hugging Face LLM Course",
+      "phaseId": "A4",
+      "phaseTitle": "LLMs and AI engineering",
+      "estimateUncertain": false,
+      "resources": [
+        {
+          "name": "Hugging Face LLM Course",
+          "url": "https://huggingface.co/learn/llm-course",
+          "owned": false,
+          "paid": false,
+          "access": "free",
+          "note": null
+        }
+      ]
+    },
+    {
+      "id": "ai-coursera",
+      "track": "ai",
+      "stream": "main",
+      "title": "Coursera AI Engineer program (L1 learning path)",
+      "phaseId": "A4",
+      "phaseTitle": "LLMs and AI engineering",
+      "estimateUncertain": true,
+      "resources": [
+        {
+          "name": "Coursera AI Engineer program (L1 learning path)",
+          "url": "https://www.coursera.org/programs/artificial-intelligence-engineer-l1-36fji/learning-path/artificial-intelligence-engineer-1-g0gik",
+          "owned": true,
+          "paid": false,
+          "access": "owned",
+          "note": null
+        }
+      ]
+    },
+    {
+      "id": "ai-build",
+      "track": "ai",
+      "stream": "main",
+      "title": "Build two AI-powered full-stack apps (RAG + agent)",
+      "phaseId": "A4",
+      "phaseTitle": "LLMs and AI engineering",
+      "estimateUncertain": true,
+      "resources": []
+    },
+    {
+      "id": "ai-cs229",
+      "track": "ai",
+      "stream": "main",
+      "title": "Stanford CS229 lectures + Mathematics for Machine Learning",
+      "phaseId": "A5",
+      "phaseTitle": "Depth and research",
+      "estimateUncertain": true,
+      "resources": [
+        {
+          "name": "Stanford CS229",
+          "url": "https://cs229.stanford.edu",
+          "owned": false,
+          "paid": false,
+          "access": "free",
+          "note": null
+        },
+        {
+          "name": "Mathematics for Machine Learning (free book)",
+          "url": "https://mml-book.github.io",
+          "owned": false,
+          "paid": false,
+          "access": "free",
+          "note": null
+        }
+      ]
+    },
+    {
+      "id": "ai-papers",
+      "track": "ai",
+      "stream": "main",
+      "title": "Read and implement key papers (Attention Is All You Need, ResNet, ...)",
+      "phaseId": "A5",
+      "phaseTitle": "Depth and research",
+      "estimateUncertain": true,
+      "resources": []
+    },
+    {
+      "id": "ai-capstone",
+      "track": "ai",
+      "stream": "main",
+      "title": "Capstone: train/fine-tune and deploy a model end-to-end",
+      "phaseId": "A5",
+      "phaseTitle": "Depth and research",
+      "estimateUncertain": true,
+      "resources": []
+    },
+    {
+      "id": "fsd-cs50",
+      "track": "fsd",
+      "stream": "main",
+      "title": "CS50x weeks 0-5 (C, memory, data structures, algorithms)",
+      "phaseId": "F1",
+      "phaseTitle": "Fundamentals rebuild",
+      "estimateUncertain": true,
+      "resources": [
+        {
+          "name": "CS50x",
+          "url": "https://cs50.harvard.edu/x/",
+          "owned": false,
+          "paid": false,
+          "access": "free",
+          "note": null
+        }
+      ]
+    },
+    {
+      "id": "fsd-missing",
+      "track": "fsd",
+      "stream": "main",
+      "title": "The Missing Semester (shell, git, debugging)",
+      "phaseId": "F1",
+      "phaseTitle": "Fundamentals rebuild",
+      "estimateUncertain": true,
+      "resources": [
+        {
+          "name": "The Missing Semester",
+          "url": "https://missing.csail.mit.edu",
+          "owned": false,
+          "paid": false,
+          "access": "free",
+          "note": null
+        }
+      ]
+    },
+    {
+      "id": "fsd-http",
+      "track": "fsd",
+      "stream": "main",
+      "title": "How the web works: HTTP, DNS, TLS, browsers",
+      "phaseId": "F1",
+      "phaseTitle": "Fundamentals rebuild",
+      "estimateUncertain": true,
+      "resources": [
+        {
+          "name": "MDN HTTP",
+          "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP",
+          "owned": false,
+          "paid": false,
+          "access": "free",
+          "note": null
+        }
+      ]
+    },
+    {
+      "id": "fsd-js",
+      "track": "fsd",
+      "stream": "main",
+      "title": "JavaScript in depth (closures, prototypes, event loop, async)",
+      "phaseId": "F1",
+      "phaseTitle": "Fundamentals rebuild",
+      "estimateUncertain": true,
+      "resources": [
+        {
+          "name": "javascript.info",
+          "url": "https://javascript.info",
+          "owned": false,
+          "paid": false,
+          "access": "free",
+          "note": null
+        }
+      ]
+    },
+    {
+      "id": "fsd-css",
+      "track": "fsd",
+      "stream": "main",
+      "title": "Modern CSS layout and responsive design",
+      "phaseId": "F2",
+      "phaseTitle": "Front-end depth",
+      "estimateUncertain": true,
+      "resources": [
+        {
+          "name": "web.dev Learn CSS",
+          "url": "https://web.dev/learn/css",
+          "owned": false,
+          "paid": false,
+          "access": "free",
+          "note": null
+        }
+      ]
+    },
+    {
+      "id": "fsd-a11y",
+      "track": "fsd",
+      "stream": "main",
+      "title": "Accessibility",
+      "phaseId": "F2",
+      "phaseTitle": "Front-end depth",
+      "estimateUncertain": true,
+      "resources": [
+        {
+          "name": "web.dev Learn Accessibility",
+          "url": "https://web.dev/learn/accessibility",
+          "owned": false,
+          "paid": false,
+          "access": "free",
+          "note": null
+        }
+      ]
+    },
+    {
+      "id": "fsd-ts",
+      "track": "fsd",
+      "stream": "main",
+      "title": "TypeScript Handbook",
+      "phaseId": "F2",
+      "phaseTitle": "Front-end depth",
+      "estimateUncertain": true,
+      "resources": [
+        {
+          "name": "TypeScript Handbook",
+          "url": "https://www.typescriptlang.org/docs/handbook/intro.html",
+          "owned": false,
+          "paid": false,
+          "access": "free",
+          "note": null
+        }
+      ]
+    },
+    {
+      "id": "fsd-react",
+      "track": "fsd",
+      "stream": "main",
+      "title": "React in depth (react.dev Learn incl. escape hatches)",
+      "phaseId": "F2",
+      "phaseTitle": "Front-end depth",
+      "estimateUncertain": true,
+      "resources": [
+        {
+          "name": "react.dev Learn",
+          "url": "https://react.dev/learn",
+          "owned": false,
+          "paid": false,
+          "access": "free",
+          "note": null
+        }
+      ]
+    },
+    {
+      "id": "fsd-seo",
+      "track": "fsd",
+      "stream": "main",
+      "title": "Technical SEO essentials",
+      "phaseId": "F2",
+      "phaseTitle": "Front-end depth",
+      "estimateUncertain": true,
+      "resources": [
+        {
+          "name": "Udemy: SEO Strategy (selected sections)",
+          "url": "https://www.udemy.com/course/seo-strategy/learn",
+          "owned": true,
+          "paid": false,
+          "access": "owned",
+          "note": null
+        }
+      ]
+    },
+    {
+      "id": "fsd-fso",
+      "track": "fsd",
+      "stream": "main",
+      "title": "Full Stack Open parts 3-5 (Node/Express, testing, auth)",
+      "phaseId": "F3",
+      "phaseTitle": "Back end and data",
+      "estimateUncertain": false,
+      "resources": [
+        {
+          "name": "Full Stack Open",
+          "url": "https://fullstackopen.com/en/",
+          "owned": false,
+          "paid": false,
+          "access": "free",
+          "note": null
+        }
+      ]
+    },
+    {
+      "id": "fsd-sql",
+      "track": "fsd",
+      "stream": "main",
+      "title": "SQL and PostgreSQL in depth (indexes, transactions, query plans)",
+      "phaseId": "F3",
+      "phaseTitle": "Back end and data",
+      "estimateUncertain": true,
+      "resources": [
+        {
+          "name": "SQLBolt",
+          "url": "https://sqlbolt.com",
+          "owned": false,
+          "paid": false,
+          "access": "free",
+          "note": null
+        },
+        {
+          "name": "PostgreSQL tutorial",
+          "url": "https://www.postgresql.org/docs/current/tutorial.html",
+          "owned": false,
+          "paid": false,
+          "access": "free",
+          "note": null
+        }
+      ]
+    },
+    {
+      "id": "fsd-sec",
+      "track": "fsd",
+      "stream": "main",
+      "title": "Web security: OWASP Top 10 + PortSwigger Web Security Academy",
+      "phaseId": "F3",
+      "phaseTitle": "Back end and data",
+      "estimateUncertain": true,
+      "resources": [
+        {
+          "name": "OWASP Top 10",
+          "url": "https://owasp.org/www-project-top-ten/",
+          "owned": false,
+          "paid": false,
+          "access": "free",
+          "note": null
+        },
+        {
+          "name": "PortSwigger Web Security Academy",
+          "url": "https://portswigger.net/web-security",
+          "owned": false,
+          "paid": false,
+          "access": "free",
+          "note": null
+        }
+      ]
+    },
+    {
+      "id": "fsd-ddia",
+      "track": "fsd",
+      "stream": "main",
+      "title": "Designing Data-Intensive Applications (Kleppmann)",
+      "phaseId": "F3",
+      "phaseTitle": "Back end and data",
+      "estimateUncertain": true,
+      "resources": [
+        {
+          "name": "Designing Data-Intensive Applications (book)",
+          "url": null,
+          "owned": false,
+          "paid": true,
+          "access": "paid",
+          "note": null
+        }
+      ]
+    },
+    {
+      "id": "fsd-devops",
+      "track": "fsd",
+      "stream": "main",
+      "title": "Udemy Professional Certificate in DevOps",
+      "phaseId": "F4",
+      "phaseTitle": "DevOps and cloud",
+      "estimateUncertain": true,
+      "resources": [
+        {
+          "name": "Udemy: Professional Certificate in DevOps",
+          "url": "https://www.udemy.com/course/professional-certificate-in-devops/",
+          "owned": true,
+          "paid": false,
+          "access": "owned",
+          "note": null
+        }
+      ]
+    },
+    {
+      "id": "fsd-ibm-cloud",
+      "track": "fsd",
+      "stream": "main",
+      "title": "IBM courses 10-11: Containers w/ Docker, Kubernetes & OpenShift + Microservices and Serverless",
+      "phaseId": "F4",
+      "phaseTitle": "DevOps and cloud",
+      "estimateUncertain": false,
+      "resources": [
+        {
+          "name": "IBM Full Stack Cloud Developer (Coursera), courses 10-11",
+          "url": "https://www.coursera.org/professional-certificates/ibm-full-stack-cloud-developer",
+          "owned": true,
+          "paid": false,
+          "access": "owned",
+          "note": null
+        }
+      ]
+    },
+    {
+      "id": "fsd-ci",
+      "track": "fsd",
+      "stream": "main",
+      "title": "CI/CD with GitHub Actions",
+      "phaseId": "F4",
+      "phaseTitle": "DevOps and cloud",
+      "estimateUncertain": true,
+      "resources": [
+        {
+          "name": "GitHub Actions docs",
+          "url": "https://docs.github.com/en/actions",
+          "owned": false,
+          "paid": false,
+          "access": "free",
+          "note": null
+        }
+      ]
+    },
+    {
+      "id": "fsd-sysdesign",
+      "track": "fsd",
+      "stream": "main",
+      "title": "System Design Primer",
+      "phaseId": "F5",
+      "phaseTitle": "Architecture and advanced",
+      "estimateUncertain": true,
+      "resources": [
+        {
+          "name": "System Design Primer",
+          "url": "https://github.com/donnemartin/system-design-primer",
+          "owned": false,
+          "paid": false,
+          "access": "free",
+          "note": null
+        }
+      ]
+    },
+    {
+      "id": "fsd-perf",
+      "track": "fsd",
+      "stream": "main",
+      "title": "Testing strategy and web performance (Core Web Vitals)",
+      "phaseId": "F5",
+      "phaseTitle": "Architecture and advanced",
+      "estimateUncertain": true,
+      "resources": [
+        {
+          "name": "web.dev Core Web Vitals",
+          "url": "https://web.dev/articles/vitals",
+          "owned": false,
+          "paid": false,
+          "access": "free",
+          "note": null
+        }
+      ]
+    },
+    {
+      "id": "fsd-capstone",
+      "track": "fsd",
+      "stream": "main",
+      "title": "Capstone: production-grade full-stack app (auth, tests, CI, deploy, monitoring)",
+      "phaseId": "F5",
+      "phaseTitle": "Architecture and advanced",
+      "estimateUncertain": true,
+      "resources": []
+    },
+    {
+      "id": "an-dab1",
+      "track": "animation",
+      "stream": "draw",
+      "title": "Drawabox Lessons 0-1 (lines, ellipses, boxes)",
+      "phaseId": "N-D1",
+      "phaseTitle": "Drawing fundamentals",
+      "estimateUncertain": true,
+      "resources": [
+        {
+          "name": "Drawabox",
+          "url": "https://drawabox.com",
+          "owned": false,
+          "paid": false,
+          "access": "free",
+          "note": null
+        }
+      ]
+    },
+    {
+      "id": "an-box250",
+      "track": "animation",
+      "stream": "draw",
+      "title": "Drawabox 250 Box Challenge",
+      "phaseId": "N-D1",
+      "phaseTitle": "Drawing fundamentals",
+      "estimateUncertain": true,
+      "resources": [
+        {
+          "name": "Drawabox",
+          "url": "https://drawabox.com",
+          "owned": false,
+          "paid": false,
+          "access": "free",
+          "note": null
+        }
+      ]
+    },
+    {
+      "id": "an-figure",
+      "track": "animation",
+      "stream": "draw",
+      "title": "Figure drawing: gesture and structure",
+      "phaseId": "N-D1",
+      "phaseTitle": "Drawing fundamentals",
+      "estimateUncertain": true,
+      "resources": [
+        {
+          "name": "Proko (YouTube)",
+          "url": "https://www.youtube.com/results?search_query=proko+figure+drawing+fundamentals",
+          "owned": false,
+          "paid": false,
+          "access": "free",
+          "note": null
+        },
+        {
+          "name": "Line of Action timed practice",
+          "url": "https://line-of-action.com",
+          "owned": false,
+          "paid": false,
+          "access": "free",
+          "note": null
+        }
+      ]
+    },
+    {
+      "id": "an-dab23",
+      "track": "animation",
+      "stream": "draw",
+      "title": "Drawabox Lessons 2-3 (form, organic forms)",
+      "phaseId": "N-D1",
+      "phaseTitle": "Drawing fundamentals",
+      "estimateUncertain": true,
+      "resources": [
+        {
+          "name": "Drawabox",
+          "url": "https://drawabox.com",
+          "owned": false,
+          "paid": false,
+          "access": "free",
+          "note": null
+        }
+      ]
+    },
+    {
+      "id": "an-chardesign",
+      "track": "animation",
+      "stream": "draw",
+      "title": "Shape language, silhouettes, expressions, turnarounds",
+      "phaseId": "N-D2",
+      "phaseTitle": "Character design",
+      "estimateUncertain": true,
+      "resources": [
+        {
+          "name": "Sinix Design (YouTube)",
+          "url": "https://www.youtube.com/results?search_query=sinix+design+character+design",
+          "owned": false,
+          "paid": false,
+          "access": "free",
+          "note": null
+        },
+        {
+          "name": "Marc Brunet (YouTube)",
+          "url": "https://www.youtube.com/results?search_query=marc+brunet+character+design",
+          "owned": false,
+          "paid": false,
+          "access": "free",
+          "note": null
+        }
+      ]
+    },
+    {
+      "id": "an-principles",
+      "track": "animation",
+      "stream": "draw",
+      "title": "12 principles + 2D exercises (bouncing ball, pendulum, flour sack, walk cycle)",
+      "phaseId": "N-D3",
+      "phaseTitle": "Animation craft",
+      "estimateUncertain": true,
+      "resources": [
+        {
+          "name": "Alan Becker: 12 Principles of Animation",
+          "url": "https://www.youtube.com/results?search_query=alan+becker+12+principles+of+animation",
+          "owned": false,
+          "paid": false,
+          "access": "free",
+          "note": null
+        },
+        {
+          "name": "Krita (tool)",
+          "url": "https://krita.org",
+          "owned": false,
+          "paid": false,
+          "access": "free",
+          "note": null
+        },
+        {
+          "name": "OpenToonz (tool)",
+          "url": "https://opentoonz.github.io",
+          "owned": false,
+          "paid": false,
+          "access": "free",
+          "note": null
+        },
+        {
+          "name": "The Animator's Survival Kit (optional book)",
+          "url": null,
+          "owned": false,
+          "paid": true,
+          "access": "paid",
+          "note": null
+        }
+      ]
+    },
+    {
+      "id": "an-color",
+      "track": "animation",
+      "stream": "draw",
+      "title": "Color and light",
+      "phaseId": "N-D3",
+      "phaseTitle": "Animation craft",
+      "estimateUncertain": true,
+      "resources": [
+        {
+          "name": "Ctrl+Paint",
+          "url": "https://www.ctrlpaint.com",
+          "owned": false,
+          "paid": false,
+          "access": "free",
+          "note": null
+        }
+      ]
+    },
+    {
+      "id": "an-pixar-story",
+      "track": "animation",
+      "stream": "story",
+      "title": "Pixar in a Box: The Art of Storytelling",
+      "phaseId": "N-S1",
+      "phaseTitle": "Story for animation",
+      "estimateUncertain": true,
+      "resources": [
+        {
+          "name": "Pixar in a Box (Khan Academy)",
+          "url": "https://www.khanacademy.org/computing/pixar",
+          "owned": false,
+          "paid": false,
+          "access": "free",
+          "note": null
+        }
+      ]
+    },
+    {
+      "id": "an-structure",
+      "track": "animation",
+      "stream": "story",
+      "title": "Story structure: Pixar's 22 Rules, Save the Cat; write 5 loglines + a 1-page short script",
+      "phaseId": "N-S1",
+      "phaseTitle": "Story for animation",
+      "estimateUncertain": true,
+      "resources": [
+        {
+          "name": "Pixar's 22 Rules of Storytelling (Emma Coats)",
+          "url": null,
+          "owned": false,
+          "paid": false,
+          "access": "free",
+          "note": null
+        },
+        {
+          "name": "Save the Cat beat sheet",
+          "url": "https://savethecat.com",
+          "owned": false,
+          "paid": false,
+          "access": "free",
+          "note": null
+        }
+      ]
+    },
+    {
+      "id": "an-visual",
+      "track": "animation",
+      "stream": "story",
+      "title": "Visual storytelling: shot types, staging, continuity",
+      "phaseId": "N-S1",
+      "phaseTitle": "Story for animation",
+      "estimateUncertain": true,
+      "resources": [
+        {
+          "name": "StudioBinder blog",
+          "url": "https://www.studiobinder.com/blog/",
+          "owned": false,
+          "paid": false,
+          "access": "free",
+          "note": null
+        }
+      ]
+    },
+    {
+      "id": "an-boards",
+      "track": "animation",
+      "stream": "story",
+      "title": "Storyboarding and animatics: board your script and cut an animatic",
+      "phaseId": "N-S2",
+      "phaseTitle": "Boards and pipeline",
+      "estimateUncertain": true,
+      "resources": [
+        {
+          "name": "Storyboarder (free)",
+          "url": "https://wonderunit.com/storyboarder/",
+          "owned": false,
+          "paid": false,
+          "access": "free",
+          "note": null
+        }
+      ]
+    },
+    {
+      "id": "an-pipeline",
+      "track": "animation",
+      "stream": "story",
+      "title": "Production pipeline tour: Pixar in a Box lessons + studio roles",
+      "phaseId": "N-S2",
+      "phaseTitle": "Boards and pipeline",
+      "estimateUncertain": true,
+      "resources": [
+        {
+          "name": "Pixar in a Box (Khan Academy)",
+          "url": "https://www.khanacademy.org/computing/pixar",
+          "owned": false,
+          "paid": false,
+          "access": "free",
+          "note": null
+        }
+      ]
+    },
+    {
+      "id": "an-blender",
+      "track": "animation",
+      "stream": "story",
+      "title": "3D basics for the pipeline (Blender)",
+      "phaseId": "N-S2",
+      "phaseTitle": "Boards and pipeline",
+      "estimateUncertain": true,
+      "resources": [
+        {
+          "name": "Blender tutorials",
+          "url": "https://www.blender.org/support/tutorials/",
+          "owned": false,
+          "paid": false,
+          "access": "free",
+          "note": null
+        }
+      ]
+    },
+    {
+      "id": "an-short",
+      "track": "animation",
+      "stream": "story",
+      "title": "Capstone: 20-30 s animated short (script, boards, animatic, animation) + portfolio",
+      "phaseId": "N-S2",
+      "phaseTitle": "Boards and pipeline",
+      "estimateUncertain": true,
+      "resources": []
+    }
+  ],
+  "unscheduled": [
+    {
+      "track": "fsd",
+      "stream": "main",
+      "name": "Udemy: The Complete Web Development Bootcamp",
+      "url": "https://www.udemy.com/course/the-complete-web-development-bootcamp/",
+      "owned": true,
+      "paid": false,
+      "access": "owned",
+      "note": "gap reference only"
+    },
+    {
+      "track": "fsd",
+      "stream": "main",
+      "name": "Udemy: Learn Web Design HTML/CSS/Photoshop",
+      "url": "https://www.udemy.com/course/learn-web-design-html-css-adobe-photoshop/",
+      "owned": true,
+      "paid": false,
+      "access": "owned",
+      "note": "not scheduled: overlaps fundamentals"
+    }
+  ]
+}

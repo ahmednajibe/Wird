@@ -2,9 +2,9 @@
  * Read models for the API (dashboard, week, tracks, quran, stats, calendar).
  */
 import { dayCapacity, fastingInfo, toHijri } from '../shared/calendar.js';
-import { CURRICULUM, UNSCHEDULED_RESOURCES, modulesFor } from '../shared/curriculum.js';
 import { addDays, dateRange, dayOfWeek, DOW_NAMES, maxDate, minDate, weekStart } from '../shared/dates.js';
 import { normalWeekPlan, weeklyMinutesByStream } from '../shared/planner.js';
+import { ModuleLedger } from '../shared/progress.js';
 import { quranProjection, streamProjections } from '../shared/projections.js';
 import {
   buildSession,
@@ -18,7 +18,7 @@ import {
 import { JUZ, juzOfPage, pageContents, pageContentsLabel, QURAN_ATTRIBUTION, QURAN_PAGES, SURAHS, surahLabelForPage } from '../shared/quranData.js';
 import { computeStreak, dayCounts, levelFor } from '../shared/streak.js';
 import type { IsoDate, Resource } from '../shared/types.js';
-import { STREAM_LABELS, STUDY_TRACK_STREAMS, TRACK_LABELS } from '../shared/types.js';
+import { isQuranType } from '../shared/types.js';
 import type { LearningService } from './service.js';
 
 function quranSummary(service: LearningService) {
@@ -54,8 +54,8 @@ export function dashboard(service: LearningService, date: IsoDate) {
   const streak = computeStreak(service.streakRecords(asOf), asOf);
   const week = service.dayViews(weekStart(date), addDays(weekStart(date), 6));
   const tasks = [...day.tasks].sort((a, b) => {
-    const qa = a.track === 'quran' ? 0 : 1;
-    const qb = b.track === 'quran' ? 0 : 1;
+    const qa = isQuranType(a.type) ? 0 : 1;
+    const qb = isQuranType(b.type) ? 0 : 1;
     if (qa !== qb) return qa - qb;
     if (a.source !== b.source) return a.source === 'generated' ? -1 : 1;
     return a.sortOrder - b.sortOrder || a.id - b.id;
@@ -128,11 +128,12 @@ export function tracks(service: LearningService) {
   const t = service.today();
   const settings = service.settings();
   const ledger = service.ledger();
-  const normal = normalWeekPlan(settings);
+  const catalog = service.catalog;
+  const normal = normalWeekPlan(settings, new ModuleLedger(catalog));
   const projections = streamProjections(ledger, normal, service.planFloor());
   const weekly = weeklyMinutesByStream(normal);
-  const groups = STUDY_TRACK_STREAMS.map(({ track, stream }) => {
-    const modules = modulesFor(track, stream);
+  const groups = catalog.studyStreams().map(({ track, stream }) => {
+    const modules = catalog.modulesFor(track, stream);
     const current = ledger.current(track, stream);
     const phases: { id: string; title: string; modules: unknown[] }[] = [];
     for (const m of modules) {
@@ -141,21 +142,22 @@ export function tracks(service: LearningService) {
         ph = { id: m.phase.id, title: m.phase.title, modules: [] };
         phases.push(ph);
       }
-      ph.modules.push({ ...m, progress: ledger.progress(m.id), isCurrent: current?.id === m.id });
+      const { warmupDrills: _warmup, archived: _archived, ...moduleView } = m;
+      ph.modules.push({ ...moduleView, progress: ledger.progress(m.id), isCurrent: current?.id === m.id });
     }
     return {
       track,
       stream,
-      trackLabel: TRACK_LABELS[track],
-      streamLabel: STREAM_LABELS[stream],
+      trackLabel: catalog.track(track)?.label ?? track,
+      streamLabel: catalog.stream(track, stream)?.label ?? stream,
       currentModuleId: current?.id ?? null,
       currentModuleTitle: current?.title ?? null,
       phases,
       projection: projections.find((p) => p.track === track && p.stream === stream) ?? null,
-      unscheduledResources: UNSCHEDULED_RESOURCES.filter((r) => r.track === track && r.stream === stream),
+      unscheduledResources: catalog.data.library.filter((r) => r.track === track && r.stream === stream),
     };
   });
-  const quranWeekly = weekly.find((w) => w.track === 'quran');
+  const quranWeekly = weekly.find((w) => catalog.kindOf(w.track) === 'quran');
   return {
     today: t,
     normalWeekMinutes: weekly,
@@ -164,13 +166,13 @@ export function tracks(service: LearningService) {
       quranReserveMinutes: normal.reduce((a, d) => a + d.quranReserve, 0),
       quranPlannedMinutes: quranWeekly?.plannedMinutes ?? 0,
       bufferMinutes: normal.reduce((a, d) => a + d.bufferMinutes, 0),
-      studyMinutes: weekly.filter((w) => w.track !== 'quran').reduce((a, w) => a + w.plannedMinutes, 0),
+      studyMinutes: weekly.filter((w) => catalog.kindOf(w.track) !== 'quran').reduce((a, w) => a + w.plannedMinutes, 0),
     },
     streams: groups,
     quran: { ...quranSummary(service), weeklyPlannedMinutes: quranWeekly?.plannedMinutes ?? 0 },
     totals: {
-      modules: CURRICULUM.length,
-      completedModules: CURRICULUM.filter((m) => ledger.isComplete(m.id)).length,
+      modules: catalog.data.modules.length,
+      completedModules: catalog.data.modules.filter((m) => ledger.isComplete(m.id)).length,
     },
   };
 }
@@ -284,14 +286,15 @@ function normalizeResource(r: Resource) {
  */
 export function resources(service: LearningService) {
   const ledger = service.ledger();
-  const streams = STUDY_TRACK_STREAMS.map(({ track, stream }) => {
+  const catalog = service.catalog;
+  const streams = catalog.studyStreams().map(({ track, stream }) => {
     const byKey = new Map<
       string,
       ReturnType<typeof normalizeResource> & {
         modules: { id: string; title: string; phaseId: string; phaseTitle: string; estimateUncertain: boolean; completed: boolean }[];
       }
     >();
-    for (const m of modulesFor(track, stream)) {
+    for (const m of catalog.modulesFor(track, stream)) {
       for (const r of m.resources) {
         const key = r.url ?? r.name;
         const entry = byKey.get(key) ?? { ...normalizeResource(r), modules: [] };
@@ -307,12 +310,12 @@ export function resources(service: LearningService) {
       }
     }
     const list = [...byKey.values()];
-    const unscheduled = UNSCHEDULED_RESOURCES.filter((r) => r.track === track && r.stream === stream).map(normalizeResource);
+    const unscheduled = catalog.data.library.filter((r) => r.track === track && r.stream === stream).map(normalizeResource);
     return {
       track,
       stream,
-      trackLabel: TRACK_LABELS[track],
-      streamLabel: STREAM_LABELS[stream],
+      trackLabel: catalog.track(track)?.label ?? track,
+      streamLabel: catalog.stream(track, stream)?.label ?? stream,
       counts: {
         owned: list.filter((r) => r.access === 'owned').length,
         free: list.filter((r) => r.access === 'free').length,
@@ -324,7 +327,7 @@ export function resources(service: LearningService) {
   });
   return {
     streams,
-    modules: CURRICULUM.map((m) => ({
+    modules: catalog.data.modules.map((m) => ({
       id: m.id,
       track: m.track,
       stream: m.stream,
@@ -334,7 +337,7 @@ export function resources(service: LearningService) {
       estimateUncertain: Boolean(m.estimateUncertain),
       resources: m.resources.map(normalizeResource),
     })),
-    unscheduled: UNSCHEDULED_RESOURCES.map((r) => ({ track: r.track, stream: r.stream, ...normalizeResource(r) })),
+    unscheduled: catalog.data.library.map((r) => ({ track: r.track, stream: r.stream, ...normalizeResource(r) })),
   };
 }
 

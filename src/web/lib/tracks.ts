@@ -82,7 +82,7 @@ const meta: Record<TrackKey, TrackMeta> = {
 
 export function trackKey(track: TrackId, stream: StreamId): TrackKey {
   if (track === 'animation') return stream === 'story' ? 'story' : 'draw';
-  return track;
+  return track as TrackKey;
 }
 
 export function trackMeta(track: TrackId, stream: StreamId = 'main'): TrackMeta {

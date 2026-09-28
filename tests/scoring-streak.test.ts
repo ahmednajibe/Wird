@@ -3,6 +3,10 @@ import { addDays, dateRange } from '../src/shared/dates.js';
 import { completionPoints, effectiveMinutes, plannedPoints, priorityOf, type ScorableTask } from '../src/shared/scoring.js';
 import { DEFAULT_SETTINGS } from '../src/shared/settings.js';
 import { baselineFor, computeBaseline, computeStreak, levelFor, levelThreshold, type DayRecord } from '../src/shared/streak.js';
+import { buildCatalog } from '../src/shared/catalog.js';
+import { OWNER_CATALOG_DATA } from '../src/server/seed/ownerCatalog.js';
+
+const CATALOG = buildCatalog(OWNER_CATALOG_DATA);
 
 const ctx = { memorizeSessionMinutes: 40 };
 const gen = (p: Partial<ScorableTask> & Pick<ScorableTask, 'type' | 'plannedMinutes' | 'track'>): ScorableTask => ({
@@ -26,10 +30,10 @@ describe('scoring', () => {
   });
 
   it('priorities', () => {
-    expect(priorityOf({ track: 'quran', source: 'manual', offCurriculum: false })).toBe(1.25);
-    expect(priorityOf({ track: 'ai', source: 'generated', offCurriculum: false })).toBe(1);
-    expect(priorityOf({ track: 'ai', source: 'manual', offCurriculum: false })).toBe(1);
-    expect(priorityOf({ track: 'ai', source: 'manual', offCurriculum: true })).toBe(0.85);
+    expect(priorityOf({ track: 'quran', type: 'quran-memorize', source: 'manual', offCurriculum: false })).toBe(1.25);
+    expect(priorityOf({ track: 'ai', type: 'learn', source: 'generated', offCurriculum: false })).toBe(1);
+    expect(priorityOf({ track: 'ai', type: 'learn', source: 'manual', offCurriculum: false })).toBe(1);
+    expect(priorityOf({ track: 'ai', type: 'learn', source: 'manual', offCurriculum: true })).toBe(0.85);
     expect(plannedPoints({ track: 'fsd', type: 'build', source: 'manual', offCurriculum: true, plannedMinutes: 60 }, ctx).points).toBe(66);
   });
 
@@ -52,7 +56,7 @@ describe('scoring', () => {
 });
 
 describe('baseline', () => {
-  const b = computeBaseline(DEFAULT_SETTINGS);
+  const b = computeBaseline(DEFAULT_SETTINGS, CATALOG);
 
   it('is derived from the normal-week plan with factor 0.28', () => {
     console.log('Baseline:', JSON.stringify({ avg: b.avgDailyPlannedPoints, week: b.normalWeekPlannedPoints, normal: b.normal, fasting: b.fasting, perDay: b.perDay.map((d) => d.plannedPoints) }));

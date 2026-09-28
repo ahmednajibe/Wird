@@ -5,38 +5,24 @@
 
 export type IsoDate = string;
 
-export type TrackId = 'quran' | 'fsd' | 'ai' | 'animation';
-export type StreamId = 'main' | 'draw' | 'story';
+/** Track and stream ids come from the catalog; they are plain strings. */
+export type TrackId = string;
+export type StreamId = string;
 
-/** A track/stream pair. Quran, FSD and AI only have the 'main' stream. */
+/** A track/stream pair. */
 export interface TrackStream {
   track: TrackId;
   stream: StreamId;
 }
 
-export const STUDY_TRACK_STREAMS: readonly TrackStream[] = [
-  { track: 'ai', stream: 'main' },
-  { track: 'fsd', stream: 'main' },
-  { track: 'animation', stream: 'draw' },
-  { track: 'animation', stream: 'story' },
-] as const;
-
-export const TRACK_LABELS: Record<TrackId, string> = {
-  quran: 'Quran',
-  fsd: 'Full Stack Development',
-  ai: 'Artificial Intelligence',
-  animation: 'Animation',
-};
-
-export const STREAM_LABELS: Record<StreamId, string> = {
-  main: 'Main',
-  draw: 'Drawing and animation craft',
-  story: 'Story, boards and pipeline',
-};
-
 export type StudyTaskType = 'learn' | 'build' | 'practice' | 'review';
 export type QuranTaskType = 'quran-memorize' | 'quran-review';
 export type TaskType = StudyTaskType | QuranTaskType;
+
+/** Whether a task type is a Quran session type. */
+export function isQuranType(type: TaskType): boolean {
+  return type === 'quran-memorize' || type === 'quran-review';
+}
 
 export type Intensity = 'deep' | 'normal' | 'light';
 export type TaskSource = 'generated' | 'manual';
@@ -67,7 +53,7 @@ export interface Phase {
 
 export interface CurriculumModule {
   id: string;
-  track: Exclude<TrackId, 'quran'>;
+  track: TrackId;
   stream: StreamId;
   phase: Phase;
   title: string;
@@ -76,6 +62,10 @@ export interface CurriculumModule {
   kind: ModuleKind;
   note?: string;
   estimateUncertain?: boolean;
+  /** Warm-up drill description for this module (overrides the stream default). */
+  warmupDrills?: string;
+  /** Archived modules stay in the data but are never scheduled or listed. */
+  archived?: boolean;
 }
 
 /** A task as the engine sees it (mapped from DB rows by the server). */

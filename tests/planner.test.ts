@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { getModule } from '../src/shared/curriculum.js';
+import { buildCatalog } from '../src/shared/catalog.js';
 import {
   CONSOLIDATE_MIN_CREDIT,
   distributeSlots,
@@ -14,7 +14,9 @@ import {
 import { ModuleLedger } from '../src/shared/progress.js';
 import { DEFAULT_SETTINGS } from '../src/shared/settings.js';
 import type { QuranSessionPlan } from '../src/shared/types.js';
+import { OWNER_CATALOG_DATA } from '../src/server/seed/ownerCatalog.js';
 
+const CATALOG = buildCatalog(OWNER_CATALOG_DATA);
 const S = DEFAULT_SETTINGS;
 const R = 40;
 const memorize: QuranSessionPlan = { type: 'memorize', pages: [604], minutes: 40, title: 'Memorize page 604', description: '' };
@@ -27,7 +29,7 @@ const day = (p: Omit<PlanDayInput, 'quranReserve' | 'kept'> & Partial<Pick<PlanD
 const study = (tasks: ReturnType<typeof planDay>) => tasks.filter((t) => t.track !== 'quran');
 
 describe('normal week', () => {
-  const week = normalWeekPlan(S);
+  const week = normalWeekPlan(S, new ModuleLedger(CATALOG));
 
   it('capacity is 864; every day is R + study slots = capacity; the rest of R is buffer', () => {
     expect(week.map((d) => d.capacity)).toEqual([120, 72, 120, 120, 72, 180, 180]);
@@ -111,7 +113,7 @@ describe('normal week', () => {
   });
 
   it('fasting Friday: the drawing study block is light practice too', () => {
-    const tasks = planDay(day({ date: '2026-09-25', isFasting: true, totalMinutes: 108, quran: memorize }), S, new ModuleLedger());
+    const tasks = planDay(day({ date: '2026-09-25', isFasting: true, totalMinutes: 108, quran: memorize }), S, new ModuleLedger(CATALOG));
     const draw = tasks.filter((t) => t.stream === 'draw');
     expect(draw.map((t) => [t.type, t.intensity, t.plannedMinutes])).toEqual([['practice', 'light', 35]]);
     expect(draw[0]?.title).toMatch(/^Light drawing practice: /);
@@ -127,9 +129,9 @@ describe('fixed daily caps', () => {
       ['2026-10-02', false, 180],
       ['2026-10-03', false, 180],
     ] as const) {
-      const withMemorize = planDay(day({ date, isFasting, totalMinutes: total, quran: memorize }), S, new ModuleLedger());
-      const withReview = planDay(day({ date, isFasting, totalMinutes: total, quran: review }), S, new ModuleLedger());
-      const withShortReview = planDay(day({ date, isFasting, totalMinutes: total, quran: { ...review, minutes: 10 } }), S, new ModuleLedger());
+      const withMemorize = planDay(day({ date, isFasting, totalMinutes: total, quran: memorize }), S, new ModuleLedger(CATALOG));
+      const withReview = planDay(day({ date, isFasting, totalMinutes: total, quran: review }), S, new ModuleLedger(CATALOG));
+      const withShortReview = planDay(day({ date, isFasting, totalMinutes: total, quran: { ...review, minutes: 10 } }), S, new ModuleLedger(CATALOG));
       expect(study(withReview), date).toEqual(study(withMemorize));
       expect(study(withShortReview), date).toEqual(study(withMemorize));
       const studyMinutes = study(withMemorize).reduce((a, t) => a + t.plannedMinutes, 0);
@@ -140,7 +142,7 @@ describe('fixed daily caps', () => {
   });
 
   it('a capacity below R reserves the whole day for Quran', () => {
-    const tasks = planDay(day({ date: '2026-09-27', isFasting: false, totalMinutes: 30, quran: memorize }), S, new ModuleLedger());
+    const tasks = planDay(day({ date: '2026-09-27', isFasting: false, totalMinutes: 30, quran: memorize }), S, new ModuleLedger(CATALOG));
     expect(tasks.map((t) => t.track)).toEqual(['quran']);
   });
 });
@@ -178,7 +180,7 @@ describe('slot distribution', () => {
     expect(splitMinutes(80, 75, 5)).toEqual([40, 40]);
     expect(splitMinutes(151, 75, 5)).toEqual([50, 50, 51]);
     expect(splitMinutes(165, 75, 5)).toEqual([55, 55, 55]);
-    const tasks = planDay(day({ date: '2026-10-03', isFasting: false, totalMinutes: 300, quran: memorize }), S, new ModuleLedger());
+    const tasks = planDay(day({ date: '2026-10-03', isFasting: false, totalMinutes: 300, quran: memorize }), S, new ModuleLedger(CATALOG));
     for (const t of tasks) expect(t.plannedMinutes).toBeLessThanOrEqual(75);
     expect(tasks.reduce((a, t) => a + t.plannedMinutes, 0)).toBe(300);
     // Each chunk is its own numbered session of the stream.
@@ -188,8 +190,8 @@ describe('slot distribution', () => {
 
 describe('simulated module consumption', () => {
   it('a later day already points at the next module', () => {
-    const ledger = new ModuleLedger();
-    const py = getModule('ai-py');
+    const ledger = new ModuleLedger(CATALOG);
+    const py = CATALOG.module('ai-py');
     expect(py).toBeDefined();
     // 30 minutes left on ai-py.
     ledger.apply('ai-py', (py?.estMinutes ?? 0) - 30);
@@ -208,13 +210,13 @@ describe('simulated module consumption', () => {
   });
 
   it('fasting-day credit: drawing practice and light study 100%, consolidation 50%', () => {
-    const fresh = new ModuleLedger();
+    const fresh = new ModuleLedger(CATALOG);
     planDay(day({ date: '2026-09-28', isFasting: true, totalMinutes: 72, quran: review }), S, fresh);
     // Monday fasting: 72 - R 40 = 32: warm-up 15 practice, fsd 17 light study (module not started).
     expect(fresh.creditedOf('an-dab1')).toBe(15);
     expect(fresh.creditedOf('fsd-cs50')).toBe(17);
 
-    const started = new ModuleLedger();
+    const started = new ModuleLedger(CATALOG);
     started.apply('fsd-cs50', CONSOLIDATE_MIN_CREDIT);
     const tasks = planDay(day({ date: '2026-09-28', isFasting: true, totalMinutes: 72, quran: review }), S, started);
     expect(tasks.find((t) => t.track === 'fsd')?.type).toBe('review');
@@ -222,7 +224,7 @@ describe('simulated module consumption', () => {
   });
 
   it('no-module fallback is open practice (light on fasting days)', () => {
-    const ledger = new ModuleLedger();
+    const ledger = new ModuleLedger(CATALOG);
     for (const id of ['fsd-cs50', 'fsd-missing', 'fsd-http', 'fsd-js', 'fsd-css', 'fsd-a11y', 'fsd-ts', 'fsd-react', 'fsd-seo', 'fsd-fso', 'fsd-sql', 'fsd-sec', 'fsd-ddia', 'fsd-devops', 'fsd-ibm-cloud', 'fsd-ci', 'fsd-sysdesign', 'fsd-perf', 'fsd-capstone']) {
       ledger.apply(id, 100_000);
     }
@@ -248,14 +250,14 @@ describe('simulated module consumption', () => {
         ],
       }),
       S,
-      new ModuleLedger(),
+      new ModuleLedger(CATALOG),
     );
     expect(tasks.map((t) => [t.slotKey, t.plannedMinutes])).toEqual([['ai/main/focus', 60]]);
     // A kept task whose slot does not exist that day never eats another track's slot.
     const unmatched = planDay(
       day({ date: '2026-09-27', isFasting: false, totalMinutes: 120, quran: memorize, kept: [{ slotKey: 'fsd/main/focus', minutes: 45 }] }),
       S,
-      new ModuleLedger(),
+      new ModuleLedger(CATALOG),
     );
     expect(unmatched.map((t) => [t.slotKey, t.plannedMinutes])).toEqual([
       ['quran', 40],
@@ -265,7 +267,7 @@ describe('simulated module consumption', () => {
   });
 
   it('capacity 0 (rest day) plans nothing', () => {
-    expect(planDay(day({ date: '2026-09-27', isFasting: false, totalMinutes: 0, quran: memorize }), S, new ModuleLedger())).toEqual([]);
+    expect(planDay(day({ date: '2026-09-27', isFasting: false, totalMinutes: 0, quran: memorize }), S, new ModuleLedger(CATALOG))).toEqual([]);
   });
 });
 
@@ -275,13 +277,13 @@ describe('stream re-plan (roll-forward)', () => {
       { date: '2026-09-30', slotKey: 'ai/main/focus', plannedMinutes: 60, isFasting: false },
       { date: '2026-10-01', slotKey: 'ai/main/focus', plannedMinutes: 17, isFasting: true },
     ];
-    const out = replanStream(items, new ModuleLedger(), 1);
+    const out = replanStream(items, new ModuleLedger(CATALOG), 1);
     expect(out.map((c) => [c.sessionNo, c.moduleId, c.type, c.intensity])).toEqual([
       [1, 'ai-py', 'learn', 'deep'],
       [2, 'ai-py', 'review', 'light'],
     ]);
     expect(out[0]?.title).toBe('Deep study: Python for Data Science, AI & Development (session 1)');
-    const warm = replanStream([{ date: '2026-09-30', slotKey: 'animation/draw/warmup', plannedMinutes: 20, isFasting: false }], new ModuleLedger(), 4);
+    const warm = replanStream([{ date: '2026-09-30', slotKey: 'animation/draw/warmup', plannedMinutes: 20, isFasting: false }], new ModuleLedger(CATALOG), 4);
     expect(warm[0]?.title).toBe('Drawing warm-up, 20 min (session 4)');
   });
 });

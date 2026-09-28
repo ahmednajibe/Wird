@@ -1,0 +1,128 @@
+{
+  "date": "2026-10-08",
+  "dow": 4,
+  "dayName": "Thursday",
+  "hijri": {
+    "year": 1448,
+    "month": 4,
+    "day": 27,
+    "monthName": "Rabi' al-Thani",
+    "label": "27 Rabi' al-Thani 1448 AH"
+  },
+  "fasting": {
+    "isFasting": true,
+    "reasons": [
+      "Thursday"
+    ],
+    "codes": [
+      "thursday"
+    ],
+    "blockedBy": null,
+    "overridden": false
+  },
+  "capacity": {
+    "base": 120,
+    "override": null,
+    "isFasting": true,
+    "total": 72,
+    "isRestDay": false
+  },
+  "override": null,
+  "isPast": false,
+  "isToday": false,
+  "tasks": [
+    {
+      "id": 13,
+      "date": "2026-10-08",
+      "track": "quran",
+      "stream": "main",
+      "type": "quran-memorize",
+      "intensity": "normal",
+      "title": "Memorize page 602",
+      "description": "Quraysh 1-4, Al-Ma'un 1-7, Al-Kawthar 1-3 (Juz 30). Listen to a reciter, repeat line by line, then recite the whole page from memory.",
+      "plannedMinutes": 40,
+      "actualMinutes": null,
+      "source": "generated",
+      "status": "pending",
+      "completedDate": null,
+      "completedAt": null,
+      "moduleId": null,
+      "slotKey": "quran",
+      "sortOrder": 0,
+      "sessionNo": null,
+      "quranPages": [
+        602
+      ],
+      "pagesCount": null,
+      "offCurriculum": false,
+      "points": null,
+      "plannedPoints": 75,
+      "earnedPoints": null
+    },
+    {
+      "id": 14,
+      "date": "2026-10-08",
+      "track": "animation",
+      "stream": "draw",
+      "type": "practice",
+      "intensity": "light",
+      "title": "Light drawing practice: Drawabox Lessons 0-1 (lines, ellipses, boxes) (session 5)",
+      "description": "Fasting day: short, relaxed drills. Lines and ellipses: ghosted lines, superimposed lines, ellipse tables, a few rotated boxes (Drawabox Lessons 0-1). Counts toward: Drawabox Lessons 0-1 (lines, ellipses, boxes).",
+      "plannedMinutes": 15,
+      "actualMinutes": null,
+      "source": "generated",
+      "status": "pending",
+      "completedDate": null,
+      "completedAt": null,
+      "moduleId": "an-dab1",
+      "slotKey": "animation/draw/warmup",
+      "sortOrder": 1,
+      "sessionNo": 5,
+      "quranPages": [],
+      "pagesCount": null,
+      "offCurriculum": false,
+      "points": null,
+      "plannedPoints": 17,
+      "earnedPoints": null
+    },
+    {
+      "id": 15,
+      "date": "2026-10-08",
+      "track": "ai",
+      "stream": "main",
+      "type": "review",
+      "intensity": "light",
+      "title": "Consolidate: Python for Data Science, AI & Development (session 3)",
+      "description": "Fasting day: re-read your notes and redo one small exercise. A1 Foundations: Python and math. Remaining before this session: about 23 h.",
+      "plannedMinutes": 17,
+      "actualMinutes": null,
+      "source": "generated",
+      "status": "pending",
+      "completedDate": null,
+      "completedAt": null,
+      "moduleId": "ai-py",
+      "slotKey": "ai/main/focus",
+      "sortOrder": 2,
+      "sessionNo": 3,
+      "quranPages": [],
+      "pagesCount": null,
+      "offCurriculum": false,
+      "points": null,
+      "plannedPoints": 15,
+      "earnedPoints": null
+    }
+  ],
+  "plannedMinutes": 72,
+  "plannedPoints": 107,
+  "earnedPoints": 0,
+  "bufferMinutes": 0,
+  "beforeStart": false,
+  "baseline": 25,
+  "baselineSnapshot": {
+    "baseline": 25,
+    "isRestDay": false,
+    "isFasting": true,
+    "frozen": false
+  },
+  "counts": false
+}

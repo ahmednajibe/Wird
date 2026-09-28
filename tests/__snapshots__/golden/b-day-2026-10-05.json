@@ -1,0 +1,128 @@
+{
+  "date": "2026-10-05",
+  "dow": 1,
+  "dayName": "Monday",
+  "hijri": {
+    "year": 1448,
+    "month": 4,
+    "day": 24,
+    "monthName": "Rabi' al-Thani",
+    "label": "24 Rabi' al-Thani 1448 AH"
+  },
+  "fasting": {
+    "isFasting": true,
+    "reasons": [
+      "Monday"
+    ],
+    "codes": [
+      "monday"
+    ],
+    "blockedBy": null,
+    "overridden": false
+  },
+  "capacity": {
+    "base": 120,
+    "override": null,
+    "isFasting": true,
+    "total": 72,
+    "isRestDay": false
+  },
+  "override": null,
+  "isPast": true,
+  "isToday": false,
+  "tasks": [
+    {
+      "id": 4,
+      "date": "2026-10-05",
+      "track": "quran",
+      "stream": "main",
+      "type": "quran-review",
+      "intensity": "normal",
+      "title": "Review 1 page",
+      "description": "Review all memorized pages: 604.",
+      "plannedMinutes": 10,
+      "actualMinutes": null,
+      "source": "generated",
+      "status": "missed",
+      "completedDate": null,
+      "completedAt": null,
+      "moduleId": null,
+      "slotKey": "quran",
+      "sortOrder": 0,
+      "sessionNo": null,
+      "quranPages": [
+        604
+      ],
+      "pagesCount": null,
+      "offCurriculum": false,
+      "points": null,
+      "plannedPoints": 16,
+      "earnedPoints": null
+    },
+    {
+      "id": 5,
+      "date": "2026-10-05",
+      "track": "animation",
+      "stream": "draw",
+      "type": "practice",
+      "intensity": "light",
+      "title": "Light drawing practice: Drawabox Lessons 0-1 (lines, ellipses, boxes) (session 2)",
+      "description": "Fasting day: short, relaxed drills. Lines and ellipses: ghosted lines, superimposed lines, ellipse tables, a few rotated boxes (Drawabox Lessons 0-1). Counts toward: Drawabox Lessons 0-1 (lines, ellipses, boxes).",
+      "plannedMinutes": 15,
+      "actualMinutes": null,
+      "source": "generated",
+      "status": "rolled",
+      "completedDate": null,
+      "completedAt": null,
+      "moduleId": "an-dab1",
+      "slotKey": "animation/draw/warmup",
+      "sortOrder": 1,
+      "sessionNo": 2,
+      "quranPages": [],
+      "pagesCount": null,
+      "offCurriculum": false,
+      "points": null,
+      "plannedPoints": 0,
+      "earnedPoints": null
+    },
+    {
+      "id": 6,
+      "date": "2026-10-05",
+      "track": "fsd",
+      "stream": "main",
+      "type": "learn",
+      "intensity": "light",
+      "title": "Light study: CS50x weeks 0-5 (C, memory, data structures, algorithms) (session 1)",
+      "description": "Fasting day: relaxed pace. Watch or read and take notes; skip heavy exercises. F1 Fundamentals rebuild. Resources: CS50x <https://cs50.harvard.edu/x/>. Remaining before this session: about 35 h.",
+      "plannedMinutes": 17,
+      "actualMinutes": null,
+      "source": "generated",
+      "status": "rolled",
+      "completedDate": null,
+      "completedAt": null,
+      "moduleId": "fsd-cs50",
+      "slotKey": "fsd/main/focus",
+      "sortOrder": 2,
+      "sessionNo": 1,
+      "quranPages": [],
+      "pagesCount": null,
+      "offCurriculum": false,
+      "points": null,
+      "plannedPoints": 0,
+      "earnedPoints": null
+    }
+  ],
+  "plannedMinutes": 10,
+  "plannedPoints": 16,
+  "earnedPoints": 0,
+  "bufferMinutes": 30,
+  "beforeStart": false,
+  "baseline": 25,
+  "baselineSnapshot": {
+    "baseline": 25,
+    "isRestDay": false,
+    "isFasting": true,
+    "frozen": true
+  },
+  "counts": false
+}

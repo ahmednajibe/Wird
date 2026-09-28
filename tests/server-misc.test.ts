@@ -5,7 +5,10 @@ import { afterAll, describe, expect, it } from 'vitest';
 import { createApp } from '../src/server/app.js';
 import { backupIfDue } from '../src/server/backup.js';
 import { openDb } from '../src/server/db.js';
-import { CURRICULUM, modulesFor } from '../src/shared/curriculum.js';
+import { buildCatalog } from '../src/shared/catalog.js';
+import { OWNER_CATALOG_DATA } from '../src/server/seed/ownerCatalog.js';
+
+const CATALOG = buildCatalog(OWNER_CATALOG_DATA);
 
 const dir = mkdtempSync(join(tmpdir(), 'learning-misc-'));
 afterAll(() => rmSync(dir, { recursive: true, force: true }));
@@ -13,12 +16,12 @@ afterAll(() => rmSync(dir, { recursive: true, force: true }));
 describe('curriculum data', () => {
   it('matches the stated totals per track/stream', () => {
     const hours = (track: string, stream: string) =>
-      modulesFor(track as never, stream as never).reduce((a, m) => a + m.estMinutes, 0) / 60;
+      CATALOG.modulesFor(track, stream).reduce((a, m) => a + m.estMinutes, 0) / 60;
     expect(hours('ai', 'main')).toBeCloseTo(663.1, 1);
     expect(hours('fsd', 'main')).toBeCloseTo(364.5, 1);
     expect(hours('animation', 'draw')).toBe(225);
     expect(hours('animation', 'story')).toBe(182);
-    expect(new Set(CURRICULUM.map((m) => m.id)).size).toBe(CURRICULUM.length);
+    expect(new Set(OWNER_CATALOG_DATA.modules.map((m) => m.id)).size).toBe(OWNER_CATALOG_DATA.modules.length);
   });
 });
 
