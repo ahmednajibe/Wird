@@ -1,0 +1,2968 @@
+{
+  "today": "2026-10-07",
+  "trackingStartDate": "2026-10-04",
+  "daily": [
+    {
+      "date": "2025-10-08",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2025-10-09",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2025-10-10",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2025-10-11",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2025-10-12",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2025-10-13",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2025-10-14",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2025-10-15",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2025-10-16",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2025-10-17",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2025-10-18",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2025-10-19",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2025-10-20",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2025-10-21",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2025-10-22",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2025-10-23",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2025-10-24",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2025-10-25",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2025-10-26",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2025-10-27",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2025-10-28",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2025-10-29",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2025-10-30",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2025-10-31",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2025-11-01",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2025-11-02",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2025-11-03",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2025-11-04",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2025-11-05",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2025-11-06",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2025-11-07",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2025-11-08",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2025-11-09",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2025-11-10",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2025-11-11",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2025-11-12",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2025-11-13",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2025-11-14",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2025-11-15",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2025-11-16",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2025-11-17",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2025-11-18",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2025-11-19",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2025-11-20",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2025-11-21",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2025-11-22",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2025-11-23",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2025-11-24",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2025-11-25",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2025-11-26",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2025-11-27",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2025-11-28",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2025-11-29",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2025-11-30",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2025-12-01",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2025-12-02",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2025-12-03",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2025-12-04",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2025-12-05",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2025-12-06",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2025-12-07",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2025-12-08",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2025-12-09",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2025-12-10",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2025-12-11",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2025-12-12",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2025-12-13",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2025-12-14",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2025-12-15",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2025-12-16",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2025-12-17",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2025-12-18",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2025-12-19",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2025-12-20",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2025-12-21",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2025-12-22",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2025-12-23",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2025-12-24",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2025-12-25",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2025-12-26",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2025-12-27",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2025-12-28",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2025-12-29",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2025-12-30",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2025-12-31",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-01-01",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-01-02",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-01-03",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-01-04",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-01-05",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-01-06",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-01-07",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-01-08",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-01-09",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-01-10",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-01-11",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-01-12",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-01-13",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-01-14",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-01-15",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-01-16",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-01-17",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-01-18",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-01-19",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-01-20",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-01-21",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-01-22",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-01-23",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-01-24",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-01-25",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-01-26",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-01-27",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-01-28",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-01-29",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-01-30",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-01-31",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-02-01",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-02-02",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-02-03",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-02-04",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-02-05",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-02-06",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-02-07",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-02-08",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-02-09",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-02-10",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-02-11",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-02-12",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-02-13",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-02-14",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-02-15",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-02-16",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-02-17",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-02-18",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-02-19",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-02-20",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-02-21",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-02-22",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-02-23",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-02-24",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-02-25",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-02-26",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-02-27",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-02-28",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-03-01",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-03-02",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-03-03",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-03-04",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-03-05",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-03-06",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-03-07",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-03-08",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-03-09",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-03-10",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-03-11",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-03-12",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-03-13",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-03-14",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-03-15",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-03-16",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-03-17",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-03-18",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-03-19",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-03-20",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-03-21",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-03-22",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-03-23",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-03-24",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-03-25",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-03-26",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-03-27",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-03-28",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-03-29",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-03-30",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-03-31",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-04-01",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-04-02",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-04-03",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-04-04",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-04-05",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-04-06",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-04-07",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-04-08",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-04-09",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-04-10",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-04-11",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-04-12",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-04-13",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-04-14",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-04-15",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-04-16",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-04-17",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-04-18",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-04-19",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-04-20",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-04-21",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-04-22",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-04-23",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-04-24",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-04-25",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-04-26",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-04-27",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-04-28",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-04-29",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-04-30",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-05-01",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-05-02",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-05-03",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-05-04",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-05-05",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-05-06",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-05-07",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-05-08",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-05-09",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-05-10",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-05-11",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-05-12",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-05-13",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-05-14",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-05-15",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-05-16",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-05-17",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-05-18",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-05-19",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-05-20",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-05-21",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-05-22",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-05-23",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-05-24",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-05-25",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-05-26",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-05-27",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-05-28",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-05-29",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-05-30",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-05-31",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-06-01",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-06-02",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-06-03",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-06-04",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-06-05",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-06-06",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-06-07",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-06-08",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-06-09",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-06-10",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-06-11",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-06-12",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-06-13",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-06-14",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-06-15",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-06-16",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-06-17",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-06-18",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-06-19",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-06-20",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-06-21",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-06-22",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-06-23",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-06-24",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-06-25",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-06-26",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-06-27",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-06-28",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-06-29",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-06-30",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-07-01",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-07-02",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-07-03",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-07-04",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-07-05",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-07-06",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-07-07",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-07-08",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-07-09",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-07-10",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-07-11",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-07-12",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-07-13",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-07-14",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-07-15",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-07-16",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-07-17",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-07-18",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-07-19",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-07-20",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-07-21",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-07-22",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-07-23",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-07-24",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-07-25",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-07-26",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-07-27",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-07-28",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-07-29",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-07-30",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-07-31",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-08-01",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-08-02",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-08-03",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-08-04",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-08-05",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-08-06",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-08-07",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-08-08",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-08-09",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-08-10",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-08-11",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-08-12",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-08-13",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-08-14",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-08-15",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-08-16",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-08-17",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-08-18",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-08-19",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-08-20",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-08-21",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-08-22",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-08-23",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-08-24",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-08-25",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-08-26",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-08-27",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-08-28",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-08-29",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-08-30",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-08-31",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-09-01",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-09-02",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-09-03",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-09-04",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-09-05",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-09-06",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-09-07",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-09-08",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-09-09",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-09-10",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-09-11",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-09-12",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-09-13",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-09-14",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-09-15",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-09-16",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-09-17",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-09-18",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-09-19",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-09-20",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-09-21",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-09-22",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-09-23",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-09-24",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-09-25",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-09-26",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-09-27",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-09-28",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-09-29",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-09-30",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-10-01",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-10-02",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-10-03",
+      "points": 0,
+      "baseline": 0,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": true
+    },
+    {
+      "date": "2026-10-04",
+      "points": 93,
+      "baseline": 42,
+      "counts": true,
+      "isRestDay": false,
+      "beforeStart": false
+    },
+    {
+      "date": "2026-10-05",
+      "points": 0,
+      "baseline": 25,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": false
+    },
+    {
+      "date": "2026-10-06",
+      "points": 0,
+      "baseline": 42,
+      "counts": false,
+      "isRestDay": false,
+      "beforeStart": false
+    },
+    {
+      "date": "2026-10-07",
+      "points": 66,
+      "baseline": 42,
+      "counts": true,
+      "isRestDay": false,
+      "beforeStart": false
+    }
+  ],
+  "weekly": [
+    {
+      "weekStart": "2026-10-04",
+      "points": 159,
+      "minutes": 108,
+      "tasks": 4
+    }
+  ],
+  "perTrack": [
+    {
+      "track": "quran",
+      "stream": "main",
+      "points": 104,
+      "minutes": 58,
+      "tasks": 2
+    },
+    {
+      "track": "animation",
+      "stream": "draw",
+      "points": 55,
+      "minutes": 50,
+      "tasks": 2
+    }
+  ],
+  "totals": {
+    "points": 159,
+    "daysCounted": 2
+  },
+  "streak": {
+    "current": 1,
+    "longest": 1,
+    "todayCounts": true
+  },
+  "level": {
+    "level": 1,
+    "totalPoints": 159,
+    "pointsIntoLevel": 159,
+    "pointsForNextLevel": 300,
+    "pointsToNextLevel": 141,
+    "currentLevelStart": 0,
+    "nextLevelStart": 300
+  }
+}

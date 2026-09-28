@@ -10,37 +10,19 @@ import { calendar, dashboard, quran, resources, stats, tracks, week } from './vi
 
 const isoDate = z.string().refine(isIsoDate, { message: 'expected a valid date YYYY-MM-DD' });
 
-const manualTaskSchema = z
-  .object({
-    date: isoDate.optional(),
-    track: z.enum(['quran', 'fsd', 'ai', 'animation']),
-    stream: z.enum(['main', 'draw', 'story']).optional(),
-    title: z.string().trim().min(1, 'title is required').max(200),
-    description: z.string().max(2000).optional(),
-    minutes: z.number().int().min(1).max(600),
-    type: z.enum(['learn', 'practice', 'build', 'review', 'memorize']),
-    pagesCount: z.number().int().min(1).max(20).nullable().optional(),
-    offCurriculum: z.boolean().optional(),
-    completed: z.boolean().optional(),
-    actualMinutes: z.number().int().min(1).max(600).nullable().optional(),
-  })
-  .superRefine((v, ctx) => {
-    if (v.track === 'quran' && v.type !== 'memorize' && v.type !== 'review') {
-      ctx.addIssue({ code: 'custom', path: ['type'], message: "quran tasks must be 'memorize' or 'review'" });
-    }
-    if (v.track !== 'quran' && v.type === 'memorize') {
-      ctx.addIssue({ code: 'custom', path: ['type'], message: "'memorize' is only valid for the quran track" });
-    }
-    if (v.track === 'animation' && v.stream !== 'draw' && v.stream !== 'story') {
-      ctx.addIssue({ code: 'custom', path: ['stream'], message: "animation tasks need stream 'draw' or 'story'" });
-    }
-    if (v.track !== 'animation' && v.stream !== undefined && v.stream !== 'main') {
-      ctx.addIssue({ code: 'custom', path: ['stream'], message: `track '${v.track}' only has stream 'main'` });
-    }
-    if (v.pagesCount != null && !(v.track === 'quran' && v.type === 'memorize')) {
-      ctx.addIssue({ code: 'custom', path: ['pagesCount'], message: 'pagesCount is only valid for quran memorize' });
-    }
-  });
+const manualTaskSchema = z.object({
+  date: isoDate.optional(),
+  track: z.string(),
+  stream: z.string().optional(),
+  title: z.string().trim().min(1, 'title is required').max(200),
+  description: z.string().max(2000).optional(),
+  minutes: z.number().int().min(1).max(600),
+  type: z.enum(['learn', 'practice', 'build', 'review', 'memorize']),
+  pagesCount: z.number().int().min(1).max(20).nullable().optional(),
+  offCurriculum: z.boolean().optional(),
+  completed: z.boolean().optional(),
+  actualMinutes: z.number().int().min(1).max(600).nullable().optional(),
+});
 
 const completeSchema = z.object({ actualMinutes: z.number().int().min(1).max(600).nullable().optional() });
 const regenerateSchema = z.object({ from: isoDate.optional() });

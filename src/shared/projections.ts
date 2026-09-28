@@ -3,7 +3,6 @@
  * Progress uses credited minutes (review counts 50%), so weekly pace is the
  * credited pace, not the raw scheduled minutes.
  */
-import { modulesFor } from './curriculum.js';
 import { addDays, diffDays } from './dates.js';
 import type { NormalWeekDay, StreamWeekly } from './planner.js';
 import { weeklyMinutesByStream } from './planner.js';
@@ -11,7 +10,6 @@ import type { ModuleLedger } from './progress.js';
 import { memorizedCount, memorizedPages, type QuranProjection, type QuranState } from './quran.js';
 import { QURAN_PAGES } from './quranData.js';
 import type { IsoDate, StreamId, TrackId } from './types.js';
-import { STUDY_TRACK_STREAMS } from './types.js';
 
 export interface PhaseProjection {
   phaseId: string;
@@ -45,14 +43,14 @@ export function streamProjections(
   today: IsoDate,
 ): StreamProjection[] {
   const weekly = weeklyMinutesByStream(normalWeek);
-  return STUDY_TRACK_STREAMS.map(({ track, stream }) => {
+  return ledger.catalog.studyStreams().map(({ track, stream }) => {
     const w: StreamWeekly = weekly.find((x) => x.track === track && x.stream === stream) ?? {
       track,
       stream,
       plannedMinutes: 0,
       creditedMinutes: 0,
     };
-    const modules = modulesFor(track, stream);
+    const modules = ledger.catalog.modulesFor(track, stream);
     const phases: PhaseProjection[] = [];
     let cumulative = 0;
     for (const m of modules) {

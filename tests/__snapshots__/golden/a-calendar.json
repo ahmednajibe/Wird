@@ -1,0 +1,401 @@
+{
+  "from": "2026-10-04",
+  "to": "2026-10-17",
+  "hijriOffsetDays": 0,
+  "days": [
+    {
+      "date": "2026-10-04",
+      "dow": 0,
+      "dayName": "Sunday",
+      "hijri": {
+        "year": 1448,
+        "month": 4,
+        "day": 23,
+        "monthName": "Rabi' al-Thani",
+        "label": "23 Rabi' al-Thani 1448 AH"
+      },
+      "fasting": {
+        "isFasting": false,
+        "reasons": [],
+        "codes": [],
+        "blockedBy": null,
+        "overridden": false
+      },
+      "capacity": {
+        "base": 120,
+        "override": null,
+        "isFasting": false,
+        "total": 120,
+        "isRestDay": false
+      },
+      "override": null
+    },
+    {
+      "date": "2026-10-05",
+      "dow": 1,
+      "dayName": "Monday",
+      "hijri": {
+        "year": 1448,
+        "month": 4,
+        "day": 24,
+        "monthName": "Rabi' al-Thani",
+        "label": "24 Rabi' al-Thani 1448 AH"
+      },
+      "fasting": {
+        "isFasting": true,
+        "reasons": [
+          "Monday"
+        ],
+        "codes": [
+          "monday"
+        ],
+        "blockedBy": null,
+        "overridden": false
+      },
+      "capacity": {
+        "base": 120,
+        "override": null,
+        "isFasting": true,
+        "total": 72,
+        "isRestDay": false
+      },
+      "override": null
+    },
+    {
+      "date": "2026-10-06",
+      "dow": 2,
+      "dayName": "Tuesday",
+      "hijri": {
+        "year": 1448,
+        "month": 4,
+        "day": 25,
+        "monthName": "Rabi' al-Thani",
+        "label": "25 Rabi' al-Thani 1448 AH"
+      },
+      "fasting": {
+        "isFasting": false,
+        "reasons": [],
+        "codes": [],
+        "blockedBy": null,
+        "overridden": false
+      },
+      "capacity": {
+        "base": 120,
+        "override": null,
+        "isFasting": false,
+        "total": 120,
+        "isRestDay": false
+      },
+      "override": null
+    },
+    {
+      "date": "2026-10-07",
+      "dow": 3,
+      "dayName": "Wednesday",
+      "hijri": {
+        "year": 1448,
+        "month": 4,
+        "day": 26,
+        "monthName": "Rabi' al-Thani",
+        "label": "26 Rabi' al-Thani 1448 AH"
+      },
+      "fasting": {
+        "isFasting": false,
+        "reasons": [],
+        "codes": [],
+        "blockedBy": null,
+        "overridden": false
+      },
+      "capacity": {
+        "base": 120,
+        "override": null,
+        "isFasting": false,
+        "total": 120,
+        "isRestDay": false
+      },
+      "override": null
+    },
+    {
+      "date": "2026-10-08",
+      "dow": 4,
+      "dayName": "Thursday",
+      "hijri": {
+        "year": 1448,
+        "month": 4,
+        "day": 27,
+        "monthName": "Rabi' al-Thani",
+        "label": "27 Rabi' al-Thani 1448 AH"
+      },
+      "fasting": {
+        "isFasting": true,
+        "reasons": [
+          "Thursday"
+        ],
+        "codes": [
+          "thursday"
+        ],
+        "blockedBy": null,
+        "overridden": false
+      },
+      "capacity": {
+        "base": 120,
+        "override": null,
+        "isFasting": true,
+        "total": 72,
+        "isRestDay": false
+      },
+      "override": null
+    },
+    {
+      "date": "2026-10-09",
+      "dow": 5,
+      "dayName": "Friday",
+      "hijri": {
+        "year": 1448,
+        "month": 4,
+        "day": 28,
+        "monthName": "Rabi' al-Thani",
+        "label": "28 Rabi' al-Thani 1448 AH"
+      },
+      "fasting": {
+        "isFasting": false,
+        "reasons": [],
+        "codes": [],
+        "blockedBy": null,
+        "overridden": false
+      },
+      "capacity": {
+        "base": 180,
+        "override": null,
+        "isFasting": false,
+        "total": 180,
+        "isRestDay": false
+      },
+      "override": null
+    },
+    {
+      "date": "2026-10-10",
+      "dow": 6,
+      "dayName": "Saturday",
+      "hijri": {
+        "year": 1448,
+        "month": 4,
+        "day": 29,
+        "monthName": "Rabi' al-Thani",
+        "label": "29 Rabi' al-Thani 1448 AH"
+      },
+      "fasting": {
+        "isFasting": false,
+        "reasons": [],
+        "codes": [],
+        "blockedBy": null,
+        "overridden": false
+      },
+      "capacity": {
+        "base": 180,
+        "override": null,
+        "isFasting": false,
+        "total": 180,
+        "isRestDay": false
+      },
+      "override": null
+    },
+    {
+      "date": "2026-10-11",
+      "dow": 0,
+      "dayName": "Sunday",
+      "hijri": {
+        "year": 1448,
+        "month": 4,
+        "day": 30,
+        "monthName": "Rabi' al-Thani",
+        "label": "30 Rabi' al-Thani 1448 AH"
+      },
+      "fasting": {
+        "isFasting": false,
+        "reasons": [],
+        "codes": [],
+        "blockedBy": null,
+        "overridden": false
+      },
+      "capacity": {
+        "base": 120,
+        "override": null,
+        "isFasting": false,
+        "total": 120,
+        "isRestDay": false
+      },
+      "override": null
+    },
+    {
+      "date": "2026-10-12",
+      "dow": 1,
+      "dayName": "Monday",
+      "hijri": {
+        "year": 1448,
+        "month": 5,
+        "day": 1,
+        "monthName": "Jumada al-Ula",
+        "label": "1 Jumada al-Ula 1448 AH"
+      },
+      "fasting": {
+        "isFasting": true,
+        "reasons": [
+          "Monday"
+        ],
+        "codes": [
+          "monday"
+        ],
+        "blockedBy": null,
+        "overridden": false
+      },
+      "capacity": {
+        "base": 120,
+        "override": null,
+        "isFasting": true,
+        "total": 72,
+        "isRestDay": false
+      },
+      "override": null
+    },
+    {
+      "date": "2026-10-13",
+      "dow": 2,
+      "dayName": "Tuesday",
+      "hijri": {
+        "year": 1448,
+        "month": 5,
+        "day": 2,
+        "monthName": "Jumada al-Ula",
+        "label": "2 Jumada al-Ula 1448 AH"
+      },
+      "fasting": {
+        "isFasting": false,
+        "reasons": [],
+        "codes": [],
+        "blockedBy": null,
+        "overridden": false
+      },
+      "capacity": {
+        "base": 120,
+        "override": null,
+        "isFasting": false,
+        "total": 120,
+        "isRestDay": false
+      },
+      "override": null
+    },
+    {
+      "date": "2026-10-14",
+      "dow": 3,
+      "dayName": "Wednesday",
+      "hijri": {
+        "year": 1448,
+        "month": 5,
+        "day": 3,
+        "monthName": "Jumada al-Ula",
+        "label": "3 Jumada al-Ula 1448 AH"
+      },
+      "fasting": {
+        "isFasting": false,
+        "reasons": [],
+        "codes": [],
+        "blockedBy": null,
+        "overridden": false
+      },
+      "capacity": {
+        "base": 120,
+        "override": null,
+        "isFasting": false,
+        "total": 120,
+        "isRestDay": false
+      },
+      "override": null
+    },
+    {
+      "date": "2026-10-15",
+      "dow": 4,
+      "dayName": "Thursday",
+      "hijri": {
+        "year": 1448,
+        "month": 5,
+        "day": 4,
+        "monthName": "Jumada al-Ula",
+        "label": "4 Jumada al-Ula 1448 AH"
+      },
+      "fasting": {
+        "isFasting": true,
+        "reasons": [
+          "Thursday"
+        ],
+        "codes": [
+          "thursday"
+        ],
+        "blockedBy": null,
+        "overridden": false
+      },
+      "capacity": {
+        "base": 120,
+        "override": null,
+        "isFasting": true,
+        "total": 72,
+        "isRestDay": false
+      },
+      "override": null
+    },
+    {
+      "date": "2026-10-16",
+      "dow": 5,
+      "dayName": "Friday",
+      "hijri": {
+        "year": 1448,
+        "month": 5,
+        "day": 5,
+        "monthName": "Jumada al-Ula",
+        "label": "5 Jumada al-Ula 1448 AH"
+      },
+      "fasting": {
+        "isFasting": false,
+        "reasons": [],
+        "codes": [],
+        "blockedBy": null,
+        "overridden": false
+      },
+      "capacity": {
+        "base": 180,
+        "override": null,
+        "isFasting": false,
+        "total": 180,
+        "isRestDay": false
+      },
+      "override": null
+    },
+    {
+      "date": "2026-10-17",
+      "dow": 6,
+      "dayName": "Saturday",
+      "hijri": {
+        "year": 1448,
+        "month": 5,
+        "day": 6,
+        "monthName": "Jumada al-Ula",
+        "label": "6 Jumada al-Ula 1448 AH"
+      },
+      "fasting": {
+        "isFasting": false,
+        "reasons": [],
+        "codes": [],
+        "blockedBy": null,
+        "overridden": false
+      },
+      "capacity": {
+        "base": 180,
+        "override": null,
+        "isFasting": false,
+        "total": 180,
+        "isRestDay": false
+      },
+      "override": null
+    }
+  ]
+}

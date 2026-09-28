@@ -1,8 +1,10 @@
 /**
  * Daily baseline (derived from real planned capacity), streaks and levels.
  */
+import type { Catalog } from './catalog.js';
 import { DOW_NAMES } from './dates.js';
 import { normalWeekPlan } from './planner.js';
+import { ModuleLedger } from './progress.js';
 import { effectiveReviewCapMinutes, quranReserveMinutes } from './quran.js';
 import { plannedPoints, type ScoringContext } from './scoring.js';
 import type { Settings } from './settings.js';
@@ -27,8 +29,8 @@ export interface BaselineExplanation {
   rationale: string;
 }
 
-export function computeBaseline(settings: Settings): BaselineExplanation {
-  const week = normalWeekPlan(settings);
+export function computeBaseline(settings: Settings, catalog: Catalog): BaselineExplanation {
+  const week = normalWeekPlan(settings, new ModuleLedger(catalog));
   const ctx: ScoringContext = { memorizeSessionMinutes: settings.quran.memorizeMinutes };
   const perDay = week.map((d) => ({
     dow: d.dow,

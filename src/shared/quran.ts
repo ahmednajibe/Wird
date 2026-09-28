@@ -4,6 +4,7 @@
  */
 import { juzOfPage, pageContentsLabel, QURAN_PAGES } from './quranData.js';
 import type { Settings } from './settings.js';
+import { isQuranType } from './types.js';
 import type { IsoDate, QuranPageState, QuranSessionPlan, QuranSessionType, Task } from './types.js';
 
 export type MemorizationOrder = Settings['quran']['memorizationOrder'];
@@ -312,7 +313,7 @@ export function projectSessions(
  */
 export function deriveQuranState(tasks: readonly Task[]): QuranState {
   const done = tasks
-    .filter((t) => t.track === 'quran' && t.status === 'completed' && t.completedDate !== null)
+    .filter((t) => isQuranType(t.type) && t.status === 'completed' && t.completedDate !== null)
     .sort((a, b) => {
       const ka = `${a.completedDate}|${a.completedAt ?? ''}`;
       const kb = `${b.completedDate}|${b.completedAt ?? ''}`;

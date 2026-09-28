@@ -2,7 +2,7 @@
  * Day and week planner. Pure: takes capacities, Quran sessions and a module
  * ledger (which is mutated to simulate consumption across days).
  */
-import { DEFAULT_WARMUP_DESCRIPTION, WARMUP_DESCRIPTIONS } from './curriculum.js';
+import { QURAN_TRACK_ID, streamKey, type Catalog, type StreamDef } from './catalog.js';
 import { dayOfWeek } from './dates.js';
 import { creditMinutes, ModuleLedger } from './progress.js';
 import { effectiveReviewCapMinutes, quranReserveMinutes, reviewMinutesFor } from './quran.js';
@@ -18,10 +18,10 @@ import type {
   TaskType,
   TrackId,
 } from './types.js';
-import { TRACK_LABELS } from './types.js';
+import { isQuranType } from './types.js';
 
 export interface PlanSlot {
-  track: Exclude<TrackId, 'quran'>;
+  track: TrackId;
   stream: StreamId;
   role: Exclude<SlotRole, 'quran'>;
   minutes: number;
@@ -54,7 +54,7 @@ export interface PlanDayInput {
 export type SessionCounters = Map<string, number>;
 
 export function streamKeyOf(track: TrackId, stream: StreamId): string {
-  return `${track}/${stream}`;
+  return streamKey(track, stream);
 }
 
 function takeSession(counters: SessionCounters, track: TrackId, stream: StreamId): number {
@@ -67,9 +67,9 @@ function takeSession(counters: SessionCounters, track: TrackId, stream: StreamId
 /** Parses 'track/stream/role' (null for the Quran slot or malformed keys). */
 export function parseSlotKey(slotKey: string): Pick<PlanSlot, 'track' | 'stream' | 'role'> | null {
   const [track, stream, role] = slotKey.split('/');
-  if (!track || !stream || !role || track === 'quran') return null;
+  if (!track || !stream || !role) return null;
   if (role !== 'warmup' && role !== 'focus') return null;
-  return { track: track as PlanSlot['track'], stream: stream as StreamId, role };
+  return { track, stream, role };
 }
 
 export const QURAN_SLOT_KEY = 'quran';
@@ -217,12 +217,12 @@ interface TaskShape {
  */
 export const CONSOLIDATE_MIN_CREDIT = 60;
 
-function isDrawSlot(slot: Pick<PlanSlot, 'track' | 'stream'>): boolean {
-  return slot.track === 'animation' && slot.stream === 'draw';
+function isDrawSlot(catalog: Catalog, slot: Pick<PlanSlot, 'track' | 'stream'>): boolean {
+  return catalog.stream(slot.track, slot.stream)?.style === 'practice';
 }
 
-function drillsFor(module: CurriculumModule | null): string {
-  return (module && WARMUP_DESCRIPTIONS[module.id]) ?? DEFAULT_WARMUP_DESCRIPTION;
+function drillsFor(module: CurriculumModule | null, streamDef: StreamDef | undefined): string {
+  return module?.warmupDrills ?? streamDef?.defaultDrills ?? 'Short warm-up drills.';
 }
 
 function shapeTask(
@@ -234,29 +234,31 @@ function shapeTask(
   ledger: ModuleLedger,
 ): TaskShape {
   const sessionSuffix = ` (session ${sessionNo})`;
+  const catalog = ledger.catalog;
+  const streamDef = catalog.stream(slot.track, slot.stream);
 
   // Drawing is a motor skill: it is always practised, never "reviewed".
-  if (isDrawSlot(slot) && isFasting) {
+  if (isDrawSlot(catalog, slot) && isFasting) {
     return {
       type: 'practice',
       intensity: 'light',
-      title: `Light drawing practice: ${module ? module.title : 'open practice'}${sessionSuffix}`,
-      description: `Fasting day: short, relaxed drills. ${drillsFor(module)}${module ? ` Counts toward: ${module.title}.` : ''}`,
+      title: `${streamDef?.lightTitle ?? 'Light practice'}: ${module ? module.title : 'open practice'}${sessionSuffix}`,
+      description: `Fasting day: short, relaxed drills. ${drillsFor(module, streamDef)}${module ? ` Counts toward: ${module.title}.` : ''}`,
     };
   }
   if (slot.role === 'warmup') {
     return {
       type: 'practice',
       intensity: 'normal',
-      title: `Drawing warm-up, ${chunk} min${sessionSuffix}`,
-      description: `${drillsFor(module)}${module ? ` Counts toward: ${module.title}.` : ''}`,
+      title: `${streamDef?.warmupTitle ?? 'Warm-up'}, ${chunk} min${sessionSuffix}`,
+      description: `${drillsFor(module, streamDef)}${module ? ` Counts toward: ${module.title}.` : ''}`,
     };
   }
   if (!module) {
     return {
       type: 'practice',
       intensity: isFasting ? 'light' : 'normal',
-      title: `Open practice${isFasting ? ' (light)' : ''}: ${TRACK_LABELS[slot.track]}${sessionSuffix}`,
+      title: `Open practice${isFasting ? ' (light)' : ''}: ${catalog.track(slot.track)?.label ?? slot.track}${sessionSuffix}`,
       description: 'All scheduled modules in this stream are complete. Consolidate, polish portfolio pieces, or pick a new resource.',
     };
   }
@@ -287,7 +289,7 @@ function shapeTask(
       description: `Fasting day: relaxed pace. Watch or read and take notes; skip heavy exercises. ${phase}${resourceLine(module)}${remainingLine}${finishing}${note}`,
     };
   }
-  const warmupHint = isDrawSlot(slot) ? ` Start with 10 minutes of warm-up: ${drillsFor(module)}` : '';
+  const warmupHint = isDrawSlot(catalog, slot) ? ` Start with 10 minutes of warm-up: ${drillsFor(module, streamDef)}` : '';
   return {
     type,
     intensity: 'deep',
@@ -319,7 +321,7 @@ export function planDay(
   if (!keptByKey.has(QURAN_SLOT_KEY) && input.quran) {
     tasks.push({
       date: input.date,
-      track: 'quran',
+      track: QURAN_TRACK_ID,
       stream: 'main',
       type: input.quran.type === 'memorize' ? 'quran-memorize' : 'quran-review',
       intensity: 'normal',
@@ -419,7 +421,7 @@ export function replanStream(items: readonly StreamSlotItem[], ledger: ModuleLed
   let sessionNo = firstSessionNo;
   return items.map((item) => {
     const slot = parseSlotKey(item.slotKey);
-    if (!slot) throw new Error(`Not a study slot: ${item.slotKey}`);
+    if (!slot || ledger.catalog.kindOf(slot.track) !== 'study') throw new Error(`Not a study slot: ${item.slotKey}`);
     const module = ledger.current(slot.track, slot.stream);
     const shape = shapeTask(slot, item.plannedMinutes, sessionNo, module, item.isFasting, ledger);
     if (module) ledger.apply(module.id, creditMinutes(shape.type, item.plannedMinutes));
@@ -451,7 +453,7 @@ export interface NormalWeekDay {
  * 15 min with defaults, never more than R), starting with memorize on Sunday.
  * Every day reserves R for Quran; the study slots share the rest.
  */
-export function normalWeekPlan(settings: Settings, ledger: ModuleLedger = new ModuleLedger()): NormalWeekDay[] {
+export function normalWeekPlan(settings: Settings, ledger: ModuleLedger): NormalWeekDay[] {
   const q = settings.quran;
   const reserve = quranReserveMinutes(null, q);
   const reviewMinutes = reviewMinutesFor(q.nearPages, q, effectiveReviewCapMinutes(q, reserve));
@@ -468,7 +470,7 @@ export function normalWeekPlan(settings: Settings, ledger: ModuleLedger = new Mo
       : { type: 'review', pages: [], minutes: reviewMinutes, title: 'Review', description: '' };
     const tasks = planDay({ date, isFasting, totalMinutes: capacity, quranReserve: reserve, quran, kept: [] }, settings, ledger, sessions);
     const dayReserve = capacity > 0 ? Math.min(reserve, capacity) : 0;
-    const quranMinutes = tasks.filter((t) => t.track === 'quran').reduce((a, t) => a + t.plannedMinutes, 0);
+    const quranMinutes = tasks.filter((t) => isQuranType(t.type)).reduce((a, t) => a + t.plannedMinutes, 0);
     days.push({ date, dow, isFasting, capacity, quranReserve: dayReserve, bufferMinutes: Math.max(0, dayReserve - quranMinutes), tasks });
   }
   return days;

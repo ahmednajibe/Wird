@@ -6,6 +6,7 @@ import { today as cairoToday } from '../../shared/dates.js';
 import { settingsSchema } from '../../shared/settings.js';
 import { computeBaseline } from '../../shared/streak.js';
 import { ApiError, errorMessage } from '../client/client';
+import { CATALOG } from '../lib/catalog';
 import { useSaveSettings, useSettings } from '../client/hooks';
 import type { Settings } from '../client/types';
 import { Button } from '../components/ui/Button';
@@ -130,7 +131,7 @@ function SettingsForm({ initial }: { initial: Settings }) {
 
   const dirty = JSON.stringify(editable(draft)) !== JSON.stringify(editable(initial));
   const parsed = useMemo(() => settingsSchema.safeParse(draft), [draft]);
-  const preview = parsed.success ? computeBaseline(parsed.data) : null;
+  const preview = parsed.success ? computeBaseline(parsed.data, CATALOG) : null;
 
   const set = <K extends keyof Settings>(k: K, v: Settings[K]) => setDraft((d) => ({ ...d, [k]: v }));
   const setQuran = <K extends keyof Settings['quran']>(k: K, v: Settings['quran'][K]) => setDraft((d) => ({ ...d, quran: { ...d.quran, [k]: v } }));
@@ -149,7 +150,7 @@ function SettingsForm({ initial }: { initial: Settings }) {
     setErrors({});
     try {
       const res = await save.mutateAsync(editable(parsed.data));
-      setSavedText(computeBaseline(res.settings).text);
+      setSavedText(computeBaseline(res.settings, CATALOG).text);
       toast({ title: 'Settings saved', body: res.regenerated ? 'The plan from today was refreshed.' : 'No plan changes were needed.' });
     } catch (err) {
       if (err instanceof ApiError && err.details.length > 0) {

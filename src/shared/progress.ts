@@ -4,7 +4,7 @@
  * that a long session that finishes a module also starts the next one.
  * The same ledger is used for real progress and for planning simulations.
  */
-import { CURRICULUM, getModule, modulesFor, streamKey } from './curriculum.js';
+import { streamKey, type Catalog } from './catalog.js';
 import type { CurriculumModule, StreamId, TaskType, TrackId } from './types.js';
 
 /** Fraction of minutes credited toward a module by task type. */
@@ -52,7 +52,10 @@ export class ModuleLedger {
   private readonly manual = new Set<string>();
   private readonly resetAt = new Map<string, string>();
 
-  constructor(states: readonly ModuleStateRecord[] = []) {
+  constructor(
+    readonly catalog: Catalog,
+    states: readonly ModuleStateRecord[] = [],
+  ) {
     for (const s of states) {
       if (s.manualComplete) this.manual.add(s.moduleId);
       if (s.resetAt) this.resetAt.set(s.moduleId, s.resetAt);
@@ -60,7 +63,7 @@ export class ModuleLedger {
   }
 
   clone(): ModuleLedger {
-    const c = new ModuleLedger();
+    const c = new ModuleLedger(this.catalog);
     for (const [k, v] of this.credited) c.credited.set(k, v);
     for (const k of this.manual) c.manual.add(k);
     for (const [k, v] of this.resetAt) c.resetAt.set(k, v);
@@ -73,26 +76,26 @@ export class ModuleLedger {
 
   isComplete(id: string): boolean {
     if (this.manual.has(id)) return true;
-    const m = getModule(id);
+    const m = this.catalog.module(id);
     return m !== undefined && this.creditedOf(id) >= m.estMinutes;
   }
 
   remainingOf(id: string): number {
-    const m = getModule(id);
+    const m = this.catalog.module(id);
     if (!m || this.isComplete(id)) return 0;
     return Math.max(0, m.estMinutes - this.creditedOf(id));
   }
 
   current(track: TrackId, stream: StreamId): CurriculumModule | null {
-    for (const m of modulesFor(track, stream)) if (!this.isComplete(m.id)) return m;
+    for (const m of this.catalog.modulesFor(track, stream)) if (!this.isComplete(m.id)) return m;
     return null;
   }
 
   /** The module after `id` in the same stream that is not yet complete. */
   nextAfter(id: string): CurriculumModule | null {
-    const m = getModule(id);
+    const m = this.catalog.module(id);
     if (!m) return null;
-    const list = modulesFor(m.track, m.stream);
+    const list = this.catalog.modulesFor(m.track, m.stream);
     const idx = list.findIndex((x) => x.id === id);
     for (let i = idx + 1; i < list.length; i++) {
       const cand = list[i];
@@ -107,11 +110,11 @@ export class ModuleLedger {
    */
   apply(moduleId: string, minutes: number, at?: string): void {
     if (minutes <= 0) return;
-    const target = getModule(moduleId);
+    const target = this.catalog.module(moduleId);
     if (!target) return;
     const resetTarget = this.resetAt.get(moduleId);
     if (at !== undefined && resetTarget !== undefined && at < resetTarget) return;
-    const list = modulesFor(target.track, target.stream);
+    const list = this.catalog.modulesFor(target.track, target.stream);
     let left = minutes;
     let lastCredited: string | null = null;
     for (let i = list.findIndex((x) => x.id === moduleId); i < list.length && left > 0; i++) {
@@ -132,7 +135,7 @@ export class ModuleLedger {
   }
 
   progress(id: string): ModuleProgress {
-    const m = getModule(id);
+    const m = this.catalog.module(id);
     if (!m) throw new Error(`Unknown module ${id}`);
     const credited = this.creditedOf(id);
     const completed = this.isComplete(id);
@@ -148,17 +151,21 @@ export class ModuleLedger {
   }
 
   remainingForStream(track: TrackId, stream: StreamId): number {
-    return modulesFor(track, stream).reduce((sum, m) => sum + this.remainingOf(m.id), 0);
+    return this.catalog.modulesFor(track, stream).reduce((sum, m) => sum + this.remainingOf(m.id), 0);
   }
 }
 
-export function buildLedger(states: readonly ModuleStateRecord[], events: readonly CreditEvent[]): ModuleLedger {
-  const ledger = new ModuleLedger(states);
+export function buildLedger(
+  catalog: Catalog,
+  states: readonly ModuleStateRecord[],
+  events: readonly CreditEvent[],
+): ModuleLedger {
+  const ledger = new ModuleLedger(catalog, states);
   const sorted = [...events].sort((a, b) => (a.at < b.at ? -1 : a.at > b.at ? 1 : 0));
   for (const e of sorted) ledger.apply(e.moduleId, e.minutes, e.at);
   return ledger;
 }
 
-export function allStreamKeys(): string[] {
-  return [...new Set(CURRICULUM.map((m) => streamKey(m.track, m.stream)))];
+export function allStreamKeys(catalog: Catalog): string[] {
+  return [...new Set(catalog.activeModules().map((m) => streamKey(m.track, m.stream)))];
 }

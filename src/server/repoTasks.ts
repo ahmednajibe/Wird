@@ -80,14 +80,14 @@ export class TaskRepo {
 
   byDate(date: IsoDate): Task[] {
     return this.all(
-      "SELECT * FROM tasks WHERE date = ? ORDER BY CASE WHEN track = 'quran' THEN 0 ELSE 1 END, source DESC, sort_order, id",
+      "SELECT * FROM tasks WHERE date = ? ORDER BY CASE WHEN type IN ('quran-memorize','quran-review') THEN 0 ELSE 1 END, source DESC, sort_order, id",
       date,
     );
   }
 
   byDateRange(from: IsoDate, to: IsoDate): Task[] {
     return this.all(
-      "SELECT * FROM tasks WHERE date BETWEEN ? AND ? ORDER BY date, CASE WHEN track = 'quran' THEN 0 ELSE 1 END, source DESC, sort_order, id",
+      "SELECT * FROM tasks WHERE date BETWEEN ? AND ? ORDER BY date, CASE WHEN type IN ('quran-memorize','quran-review') THEN 0 ELSE 1 END, source DESC, sort_order, id",
       from,
       to,
     );
@@ -99,7 +99,7 @@ export class TaskRepo {
 
   completedQuran(): Task[] {
     return this.all(
-      "SELECT * FROM tasks WHERE status = 'completed' AND track = 'quran' ORDER BY completed_date, completed_at, id",
+      "SELECT * FROM tasks WHERE status = 'completed' AND type IN ('quran-memorize','quran-review') ORDER BY completed_date, completed_at, id",
     );
   }
 
@@ -231,7 +231,7 @@ export class TaskRepo {
    */
   rollCandidates(from: IsoDate, before: IsoDate): Task[] {
     return this.all(
-      `SELECT * FROM tasks WHERE source = 'generated' AND track <> 'quran' AND date >= ?
+      `SELECT * FROM tasks WHERE source = 'generated' AND type NOT IN ('quran-memorize','quran-review') AND date >= ?
          AND ((status = 'pending' AND date < ?) OR status = 'skipped')
        ORDER BY date, sort_order, id`,
       from,
