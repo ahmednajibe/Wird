@@ -47,7 +47,7 @@ export const CURRICULUM: readonly CurriculumModule[] = [
         owned: true,
       },
     ],
-    estMinutes: h(30),
+    estMinutes: h(25),
     kind: 'study',
   },
   {
@@ -62,6 +62,7 @@ export const CURRICULUM: readonly CurriculumModule[] = [
     ],
     estMinutes: h(25),
     kind: 'study',
+    estimateUncertain: true,
   },
   {
     id: 'ai-calc',
@@ -75,6 +76,7 @@ export const CURRICULUM: readonly CurriculumModule[] = [
     ],
     estMinutes: h(25),
     kind: 'study',
+    estimateUncertain: true,
   },
   {
     id: 'ai-prob',
@@ -88,6 +90,7 @@ export const CURRICULUM: readonly CurriculumModule[] = [
     ],
     estMinutes: h(30),
     kind: 'study',
+    estimateUncertain: true,
   },
   {
     id: 'ai-data',
@@ -105,6 +108,7 @@ export const CURRICULUM: readonly CurriculumModule[] = [
     ],
     estMinutes: h(15),
     kind: 'study',
+    estimateUncertain: true,
   },
   {
     id: 'ai-mlspec',
@@ -125,7 +129,7 @@ export const CURRICULUM: readonly CurriculumModule[] = [
         note: 'supplement',
       },
     ],
-    estMinutes: h(80),
+    estMinutes: h(95),
     kind: 'study',
   },
   {
@@ -137,6 +141,7 @@ export const CURRICULUM: readonly CurriculumModule[] = [
     resources: [kaggleLearn],
     estMinutes: h(25),
     kind: 'project',
+    estimateUncertain: true,
   },
   {
     id: 'ai-nn',
@@ -147,6 +152,7 @@ export const CURRICULUM: readonly CurriculumModule[] = [
     resources: [{ name: '3Blue1Brown: Neural Networks', url: 'https://www.3blue1brown.com/topics/neural-networks' }],
     estMinutes: h(5),
     kind: 'study',
+    estimateUncertain: true,
   },
   {
     id: 'ai-z2h',
@@ -156,8 +162,9 @@ export const CURRICULUM: readonly CurriculumModule[] = [
     title: 'Neural Networks: Zero to Hero (Andrej Karpathy)',
     note: 'Code along every lecture.',
     resources: [{ name: 'Neural Networks: Zero to Hero', url: 'https://karpathy.ai/zero-to-hero.html' }],
-    estMinutes: h(60),
+    estMinutes: h(43.6),
     kind: 'study',
+    estimateUncertain: true,
   },
   {
     id: 'ai-fastai',
@@ -166,8 +173,9 @@ export const CURRICULUM: readonly CurriculumModule[] = [
     phase: A3,
     title: 'Practical Deep Learning for Coders, Part 1',
     resources: [{ name: 'fast.ai: Practical Deep Learning for Coders', url: 'https://course.fast.ai' }],
-    estMinutes: h(50),
+    estMinutes: h(40.5),
     kind: 'study',
+    estimateUncertain: true,
   },
   {
     id: 'ai-d2l',
@@ -178,6 +186,7 @@ export const CURRICULUM: readonly CurriculumModule[] = [
     resources: [{ name: 'Dive into Deep Learning', url: 'https://d2l.ai' }],
     estMinutes: h(30),
     kind: 'study',
+    estimateUncertain: true,
   },
   {
     id: 'ai-hf',
@@ -186,7 +195,7 @@ export const CURRICULUM: readonly CurriculumModule[] = [
     phase: A4,
     title: 'Hugging Face LLM Course',
     resources: [{ name: 'Hugging Face LLM Course', url: 'https://huggingface.co/learn/llm-course' }],
-    estMinutes: h(40),
+    estMinutes: h(84),
     kind: 'study',
   },
   {
@@ -215,6 +224,7 @@ export const CURRICULUM: readonly CurriculumModule[] = [
     resources: [],
     estMinutes: h(40),
     kind: 'project',
+    estimateUncertain: true,
   },
   {
     id: 'ai-cs229',
@@ -228,6 +238,7 @@ export const CURRICULUM: readonly CurriculumModule[] = [
     ],
     estMinutes: h(50),
     kind: 'study',
+    estimateUncertain: true,
   },
   {
     id: 'ai-papers',
@@ -238,6 +249,7 @@ export const CURRICULUM: readonly CurriculumModule[] = [
     resources: [],
     estMinutes: h(40),
     kind: 'study',
+    estimateUncertain: true,
   },
   {
     id: 'ai-capstone',
@@ -248,6 +260,7 @@ export const CURRICULUM: readonly CurriculumModule[] = [
     resources: [],
     estMinutes: h(50),
     kind: 'project',
+    estimateUncertain: true,
   },
 
   // ====================================================================== FSD
@@ -260,6 +273,7 @@ export const CURRICULUM: readonly CurriculumModule[] = [
     resources: [{ name: 'CS50x', url: 'https://cs50.harvard.edu/x/' }],
     estMinutes: h(35),
     kind: 'study',
+    estimateUncertain: true,
   },
   {
     id: 'fsd-missing',
@@ -270,6 +284,7 @@ export const CURRICULUM: readonly CurriculumModule[] = [
     resources: [{ name: 'The Missing Semester', url: 'https://missing.csail.mit.edu' }],
     estMinutes: h(12),
     kind: 'study',
+    estimateUncertain: true,
   },
   {
     id: 'fsd-http',
@@ -280,6 +295,7 @@ export const CURRICULUM: readonly CurriculumModule[] = [
     resources: [{ name: 'MDN HTTP', url: 'https://developer.mozilla.org/en-US/docs/Web/HTTP' }],
     estMinutes: h(8),
     kind: 'study',
+    estimateUncertain: true,
   },
   {
     id: 'fsd-js',
@@ -290,6 +306,7 @@ export const CURRICULUM: readonly CurriculumModule[] = [
     resources: [{ name: 'javascript.info', url: 'https://javascript.info' }],
     estMinutes: h(25),
     kind: 'study',
+    estimateUncertain: true,
   },
   {
     id: 'fsd-css',
@@ -300,6 +317,7 @@ export const CURRICULUM: readonly CurriculumModule[] = [
     resources: [{ name: 'web.dev Learn CSS', url: 'https://web.dev/learn/css' }],
     estMinutes: h(12),
     kind: 'study',
+    estimateUncertain: true,
   },
   {
     id: 'fsd-a11y',
@@ -310,6 +328,7 @@ export const CURRICULUM: readonly CurriculumModule[] = [
     resources: [{ name: 'web.dev Learn Accessibility', url: 'https://web.dev/learn/accessibility' }],
     estMinutes: h(8),
     kind: 'study',
+    estimateUncertain: true,
   },
   {
     id: 'fsd-ts',
@@ -320,6 +339,7 @@ export const CURRICULUM: readonly CurriculumModule[] = [
     resources: [{ name: 'TypeScript Handbook', url: 'https://www.typescriptlang.org/docs/handbook/intro.html' }],
     estMinutes: h(12),
     kind: 'study',
+    estimateUncertain: true,
   },
   {
     id: 'fsd-react',
@@ -330,6 +350,7 @@ export const CURRICULUM: readonly CurriculumModule[] = [
     resources: [{ name: 'react.dev Learn', url: 'https://react.dev/learn' }],
     estMinutes: h(15),
     kind: 'study',
+    estimateUncertain: true,
   },
   {
     id: 'fsd-seo',
@@ -340,8 +361,9 @@ export const CURRICULUM: readonly CurriculumModule[] = [
     resources: [
       { name: 'Udemy: SEO Strategy (selected sections)', url: 'https://www.udemy.com/course/seo-strategy/learn', owned: true },
     ],
-    estMinutes: h(6),
+    estMinutes: h(3),
     kind: 'study',
+    estimateUncertain: true,
   },
   {
     id: 'fsd-fso',
@@ -350,7 +372,7 @@ export const CURRICULUM: readonly CurriculumModule[] = [
     phase: F3,
     title: 'Full Stack Open parts 3-5 (Node/Express, testing, auth)',
     resources: [{ name: 'Full Stack Open', url: 'https://fullstackopen.com/en/' }],
-    estMinutes: h(30),
+    estMinutes: h(52.5),
     kind: 'study',
   },
   {
@@ -365,6 +387,7 @@ export const CURRICULUM: readonly CurriculumModule[] = [
     ],
     estMinutes: h(20),
     kind: 'study',
+    estimateUncertain: true,
   },
   {
     id: 'fsd-sec',
@@ -378,6 +401,7 @@ export const CURRICULUM: readonly CurriculumModule[] = [
     ],
     estMinutes: h(15),
     kind: 'study',
+    estimateUncertain: true,
   },
   {
     id: 'fsd-ddia',
@@ -388,6 +412,7 @@ export const CURRICULUM: readonly CurriculumModule[] = [
     resources: [{ name: 'Designing Data-Intensive Applications (book)', paid: true }],
     estMinutes: h(30),
     kind: 'study',
+    estimateUncertain: true,
   },
   {
     id: 'fsd-devops',
@@ -402,7 +427,7 @@ export const CURRICULUM: readonly CurriculumModule[] = [
         owned: true,
       },
     ],
-    estMinutes: h(25),
+    estMinutes: h(3),
     kind: 'study',
     estimateUncertain: true,
   },
@@ -431,6 +456,7 @@ export const CURRICULUM: readonly CurriculumModule[] = [
     resources: [{ name: 'GitHub Actions docs', url: 'https://docs.github.com/en/actions' }],
     estMinutes: h(6),
     kind: 'study',
+    estimateUncertain: true,
   },
   {
     id: 'fsd-sysdesign',
@@ -441,6 +467,7 @@ export const CURRICULUM: readonly CurriculumModule[] = [
     resources: [{ name: 'System Design Primer', url: 'https://github.com/donnemartin/system-design-primer' }],
     estMinutes: h(25),
     kind: 'study',
+    estimateUncertain: true,
   },
   {
     id: 'fsd-perf',
@@ -451,6 +478,7 @@ export const CURRICULUM: readonly CurriculumModule[] = [
     resources: [{ name: 'web.dev Core Web Vitals', url: 'https://web.dev/articles/vitals' }],
     estMinutes: h(10),
     kind: 'study',
+    estimateUncertain: true,
   },
   {
     id: 'fsd-capstone',
@@ -461,6 +489,7 @@ export const CURRICULUM: readonly CurriculumModule[] = [
     resources: [],
     estMinutes: h(40),
     kind: 'project',
+    estimateUncertain: true,
   },
 
   // ========================================================= Animation: draw
@@ -473,6 +502,7 @@ export const CURRICULUM: readonly CurriculumModule[] = [
     resources: [drawabox],
     estMinutes: h(20),
     kind: 'study',
+    estimateUncertain: true,
   },
   {
     id: 'an-box250',
@@ -483,6 +513,7 @@ export const CURRICULUM: readonly CurriculumModule[] = [
     resources: [drawabox],
     estMinutes: h(25),
     kind: 'study',
+    estimateUncertain: true,
   },
   {
     id: 'an-figure',
@@ -496,6 +527,7 @@ export const CURRICULUM: readonly CurriculumModule[] = [
     ],
     estMinutes: h(35),
     kind: 'study',
+    estimateUncertain: true,
   },
   {
     id: 'an-dab23',
@@ -506,6 +538,7 @@ export const CURRICULUM: readonly CurriculumModule[] = [
     resources: [drawabox],
     estMinutes: h(25),
     kind: 'study',
+    estimateUncertain: true,
   },
   {
     id: 'an-chardesign',
@@ -519,6 +552,7 @@ export const CURRICULUM: readonly CurriculumModule[] = [
     ],
     estMinutes: h(40),
     kind: 'study',
+    estimateUncertain: true,
   },
   {
     id: 'an-principles',
@@ -537,6 +571,7 @@ export const CURRICULUM: readonly CurriculumModule[] = [
     ],
     estMinutes: h(60),
     kind: 'study',
+    estimateUncertain: true,
   },
   {
     id: 'an-color',
@@ -547,6 +582,7 @@ export const CURRICULUM: readonly CurriculumModule[] = [
     resources: [{ name: 'Ctrl+Paint', url: 'https://www.ctrlpaint.com' }],
     estMinutes: h(20),
     kind: 'study',
+    estimateUncertain: true,
   },
 
   // ======================================================== Animation: story
@@ -559,6 +595,7 @@ export const CURRICULUM: readonly CurriculumModule[] = [
     resources: [pixarInABox],
     estMinutes: h(12),
     kind: 'study',
+    estimateUncertain: true,
   },
   {
     id: 'an-structure',
@@ -572,6 +609,7 @@ export const CURRICULUM: readonly CurriculumModule[] = [
     ],
     estMinutes: h(20),
     kind: 'project',
+    estimateUncertain: true,
   },
   {
     id: 'an-visual',
@@ -582,6 +620,7 @@ export const CURRICULUM: readonly CurriculumModule[] = [
     resources: [{ name: 'StudioBinder blog', url: 'https://www.studiobinder.com/blog/' }],
     estMinutes: h(15),
     kind: 'study',
+    estimateUncertain: true,
   },
   {
     id: 'an-boards',
@@ -592,6 +631,7 @@ export const CURRICULUM: readonly CurriculumModule[] = [
     resources: [{ name: 'Storyboarder (free)', url: 'https://wonderunit.com/storyboarder/' }],
     estMinutes: h(30),
     kind: 'project',
+    estimateUncertain: true,
   },
   {
     id: 'an-pipeline',
@@ -602,6 +642,7 @@ export const CURRICULUM: readonly CurriculumModule[] = [
     resources: [pixarInABox],
     estMinutes: h(15),
     kind: 'study',
+    estimateUncertain: true,
   },
   {
     id: 'an-blender',
@@ -612,6 +653,7 @@ export const CURRICULUM: readonly CurriculumModule[] = [
     resources: [{ name: 'Blender tutorials', url: 'https://www.blender.org/support/tutorials/' }],
     estMinutes: h(30),
     kind: 'study',
+    estimateUncertain: true,
   },
   {
     id: 'an-short',
@@ -622,6 +664,7 @@ export const CURRICULUM: readonly CurriculumModule[] = [
     resources: [],
     estMinutes: h(60),
     kind: 'project',
+    estimateUncertain: true,
   },
 ];
 
