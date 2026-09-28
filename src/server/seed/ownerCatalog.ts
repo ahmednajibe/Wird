@@ -5,7 +5,8 @@
  * can run on any injected CatalogData.
  */
 import type { CatalogData, LibraryResource, TrackDef } from '../../shared/catalog.js';
-import type { TemplateSlot } from '../../shared/settings.js';
+import { catalogToPack, type PlanPack } from '../../shared/pack.js';
+import { DEFAULT_SETTINGS, type TemplateSlot } from '../../shared/settings.js';
 import type { CurriculumModule, Phase, Resource } from '../../shared/types.js';
 
 const h = (hours: number): number => Math.round(hours * 60);
@@ -840,3 +841,10 @@ export const OWNER_WEEKLY_TEMPLATE: TemplateSlot[][] = [
     { track: 'fsd', stream: 'main', role: 'focus', kind: 'rest' },
   ],
 ];
+
+/** The owner plan as an importable pack (used by the import/export tests). */
+export const OWNER_PACK: PlanPack = catalogToPack(
+  OWNER_CATALOG_DATA,
+  { ...DEFAULT_SETTINGS, weeklyTemplate: OWNER_WEEKLY_TEMPLATE },
+  'Owner plan',
+);

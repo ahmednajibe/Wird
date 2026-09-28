@@ -6,6 +6,8 @@ import { addDays, dateRange, dayOfWeek, DOW_NAMES, maxDate, minDate, weekStart }
 import { normalWeekPlan, weeklyMinutesByStream } from '../shared/planner.js';
 import { ModuleLedger } from '../shared/progress.js';
 import { quranProjection, streamProjections } from '../shared/projections.js';
+import { catalogToPack, ICONS, THEMES, type PlanPack } from '../shared/pack.js';
+import { CatalogRepo } from './repoCatalog.js';
 import {
   buildSession,
   memorizationOrder,
@@ -361,4 +363,27 @@ export function calendar(service: LearningService, from: IsoDate, to: IsoDate) {
       };
     }),
   };
+}
+
+/** Plan catalog read model: the plan_* tables plus plan metadata. */
+export function catalogView(service: LearningService) {
+  const latest = new CatalogRepo(service.db).latestImport();
+  const settings = service.settings();
+  const tracks = service.catalog.data.tracks;
+  return {
+    hasPlan: tracks.some((t) => t.kind === 'study' && !t.archived),
+    planName: latest?.packName ?? null,
+    importedAt: latest?.importedAt ?? null,
+    quranEnabled: settings.quran.enabled,
+    timezone: settings.timezone,
+    themes: THEMES,
+    icons: ICONS,
+    tracks,
+  };
+}
+
+/** The current plan as a plan pack (active entities only), for re-importing. */
+export function planPack(service: LearningService): PlanPack {
+  const latest = new CatalogRepo(service.db).latestImport();
+  return catalogToPack(service.catalog.data, service.settings(), latest?.packName ?? 'My plan');
 }

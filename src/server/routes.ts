@@ -5,8 +5,9 @@ import { Hono, type Context } from 'hono';
 import { z } from 'zod';
 import { dayOfWeek, diffDays, isIsoDate } from '../shared/dates.js';
 import { ApiError, badRequest } from './errors.js';
+import { commitImport, previewImport } from './importer.js';
 import type { LearningService, ManualTaskInput } from './service.js';
-import { calendar, dashboard, quran, resources, stats, tracks, week } from './views.js';
+import { calendar, catalogView, dashboard, planPack, quran, resources, stats, tracks, week } from './views.js';
 
 const isoDate = z.string().refine(isIsoDate, { message: 'expected a valid date YYYY-MM-DD' });
 
@@ -26,6 +27,8 @@ const manualTaskSchema = z.object({
 
 const completeSchema = z.object({ actualMinutes: z.number().int().min(1).max(600).nullable().optional() });
 const regenerateSchema = z.object({ from: isoDate.optional() });
+const importPreviewSchema = z.object({ pack: z.unknown(), mode: z.enum(['update', 'fresh']) });
+const importSchema = importPreviewSchema.extend({ onIdReuse: z.enum(['reset', 'keep']).optional() });
 const daySchema = z.object({
   fasting: z.boolean().nullable(),
   capacityOverride: z.number().int().min(0).max(960).nullable(),
@@ -139,6 +142,18 @@ export function apiRoutes(service: LearningService): Hono {
     const body = await jsonBody(c);
     if (typeof body !== 'object' || body === null || Array.isArray(body)) throw badRequest('Settings must be an object');
     return c.json(service.updateSettings(body));
+  });
+
+  api.get('/catalog', (c) => c.json(catalogView(service)));
+  api.get('/plan-pack', (c) => c.json(planPack(service)));
+
+  api.post('/import/preview', async (c) => {
+    const body = parse(importPreviewSchema, await jsonBody(c));
+    return c.json(previewImport(service, body.pack, body.mode));
+  });
+  api.post('/import', async (c) => {
+    const body = parse(importSchema, await jsonBody(c));
+    return c.json(commitImport(service, body));
   });
 
   api.get('/days/:date', (c) => {

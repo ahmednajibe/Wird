@@ -38,8 +38,9 @@ const MIME: Record<string, string> = {
 };
 
 export function createApp(options: AppOptions = {}): { app: Hono; service: LearningService; db: Db } {
-  const db = options.db ?? openDb(options.dbPath ?? join(process.cwd(), 'data', 'learning.db'));
-  const service = new LearningService(db, options.clock ?? systemClock);
+  const dbPath = options.dbPath ?? (options.db ? null : join(process.cwd(), 'data', 'learning.db'));
+  const db = options.db ?? openDb(dbPath as string);
+  const service = new LearningService(db, options.clock ?? systemClock, dbPath);
   const app = new Hono();
 
   app.onError((err, c) => {

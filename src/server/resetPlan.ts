@@ -3,9 +3,8 @@
  * tracking today. Used by scripts/reset-plan.ts; kept here so it is testable
  * with an injected date.
  */
-import { join } from 'node:path';
-import { mkdirSync } from 'node:fs';
 import type { IsoDate } from '../shared/types.js';
+import { backupStamp, snapshotDb } from './backup.js';
 import { transaction, type Db } from './db.js';
 import { MetaRepo } from './repoMisc.js';
 import { TRACKING_START_KEY } from './service.js';
@@ -48,19 +47,9 @@ export function resetPlan(db: Db, today: IsoDate): ResetResult {
   return { before, after: tableCounts(db), trackingStartDate: today };
 }
 
-function pad(n: number): string {
-  return String(n).padStart(2, '0');
-}
-
-/** 'YYYYMMDD-HHMMSS' in local time. */
-export function backupStamp(now: Date): string {
-  return `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;
-}
+export { backupStamp };
 
 /** Writes `pre-reset-YYYYMMDD-HHMMSS.db` into `dir` via VACUUM INTO and returns its path. */
 export function backupBeforeReset(db: Db, dir: string, now: Date = new Date()): string {
-  mkdirSync(dir, { recursive: true });
-  const file = join(dir, `pre-reset-${backupStamp(now)}.db`);
-  db.prepare('VACUUM INTO ?').run(file);
-  return file;
+  return snapshotDb(db, dir, 'pre-reset', now);
 }

@@ -106,7 +106,8 @@ export interface ManualTaskInput {
   actualMinutes?: number | null;
 }
 
-const PLANNING_KEYS = [
+/** Settings keys that change what gets planned (import regenerates when they differ). */
+export const PLANNING_KEYS = [
   'capacityByDow',
   'fastingReductionPct',
   'fastingRules',
@@ -130,6 +131,7 @@ export class LearningService {
   constructor(
     readonly db: Db,
     readonly clock: Clock = systemClock,
+    readonly dbPath: string | null = null,
   ) {
     this._catalog = buildCatalog(new CatalogRepo(db).load());
     this.tasks = new TaskRepo(db);
@@ -675,16 +677,33 @@ export class LearningService {
     }
     const changed = PLANNING_KEYS.some((k) => JSON.stringify(current[k]) !== JSON.stringify(next[k]));
     return transaction(this.db, () => {
-      // Freeze past days under the settings that were in effect for them.
-      this.freezePastDays();
-      this.settingsRepo.save(next, this.nowIso());
-      if (changed) {
-        const t = this.today();
-        this.regenerate(t, maxDate(weekEnd(t), this.plannedDays.maxPlanned() ?? t));
-      }
-      this.freezePastDays();
+      this.applySettingsChange(next, changed);
       return { settings: next, regenerated: changed };
     });
+  }
+
+  /**
+   * Saves settings and regenerates today onward when `regenerate` is true.
+   * Past days are frozen first so they keep the values computed under the
+   * settings that were in effect for them. Must run inside a transaction.
+   */
+  private applySettingsChange(next: Settings, regenerate: boolean): void {
+    this.freezePastDays();
+    this.settingsRepo.save(next, this.nowIso());
+    if (regenerate) {
+      const t = this.today();
+      this.regenerate(t, maxDate(weekEnd(t), this.plannedDays.maxPlanned() ?? t));
+    }
+    this.freezePastDays();
+  }
+
+  /**
+   * Settings part of a pack import. The caller freezes past days before
+   * rewriting the catalog and reloads the catalog before calling this, so
+   * regeneration plans with the imported data.
+   */
+  applyImportedSettings(next: Settings, regenerate: boolean): void {
+    this.applySettingsChange(next, regenerate);
   }
 
   updateDay(date: IsoDate, body: { fasting: boolean | null; capacityOverride: number | null; note: string | null }): DayView {
@@ -757,7 +776,10 @@ export class LearningService {
         continue;
       }
       const cap = dayCapacity(d, settings, overrides.get(d));
-      const snap: DaySnapshot = { baseline: baselineFor(expl, cap), isRestDay: cap.isRestDay, isFasting: cap.isFasting };
+      const baseline = baselineFor(expl, cap);
+      // Nothing to do -> rest day: no capacity, or a zero baseline (empty
+      // plan with Quran off). Such days neither count nor break a streak.
+      const snap: DaySnapshot = { baseline, isRestDay: cap.isRestDay || baseline <= 0, isFasting: cap.isFasting };
       const persist = d >= first && d <= t;
       if (persist && d < t) this.summary.insertSnapshotIfMissing(d, snap, t, nowIso);
       if (persist && d === t) this.summary.upsertSnapshot(d, snap, t, nowIso);
