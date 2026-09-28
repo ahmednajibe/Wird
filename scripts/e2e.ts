@@ -15,6 +15,8 @@ import { createServer } from 'node:net';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { chromium, type Browser, type BrowserContext, type Page } from 'playwright-core';
+import { openDb } from '../src/server/db.js';
+import { seedOwnerPlan } from '../src/server/seed/seed.js';
 
 const root = resolve(import.meta.dirname, '..');
 const shotsDir = join(root, 'screenshots');
@@ -92,11 +94,18 @@ async function run(): Promise<void> {
     throw new Error('dist is missing: run `npm run build` first (npm run e2e does this)');
   }
   const tmp = mkdtempSync(join(tmpdir(), 'learning-e2e-'));
+  const dbPath = join(tmp, 'e2e.db');
+  // Fresh installs have no study curriculum; seed the owner plan like a migrated DB.
+  {
+    const db = openDb(dbPath);
+    seedOwnerPlan(db);
+    db.close();
+  }
   const port = await freePort();
   const base = `http://127.0.0.1:${port}`;
   const server = spawn(process.execPath, ['--no-warnings=ExperimentalWarning', 'dist/server/index.js'], {
     cwd: root,
-    env: { ...process.env, PORT: String(port), LEARNING_DB_PATH: join(tmp, 'e2e.db') },
+    env: { ...process.env, PORT: String(port), LEARNING_DB_PATH: dbPath },
     stdio: ['ignore', 'pipe', 'pipe'],
   });
   let serverLog = '';

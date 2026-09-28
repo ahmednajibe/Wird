@@ -1,20 +1,30 @@
 /**
  * Date helpers. Every calendar date in the app is a 'YYYY-MM-DD' string in the
- * Africa/Cairo timezone. Arithmetic is done on UTC-noon instants so that the
- * machine's local timezone and DST never leak into the results.
+ * configured timezone (Africa/Cairo by default). Arithmetic is done on
+ * UTC-noon instants so that the machine's local timezone and DST never leak
+ * into the results.
  */
 import type { IsoDate } from './types.js';
 
-export const APP_TIMEZONE = 'Africa/Cairo';
+export const DEFAULT_TIMEZONE = 'Africa/Cairo';
 
 const ISO_RE = /^(\d{4})-(\d{2})-(\d{2})$/;
 
-const cairoDateFormatter = new Intl.DateTimeFormat('en-CA', {
-  timeZone: APP_TIMEZONE,
-  year: 'numeric',
-  month: '2-digit',
-  day: '2-digit',
-});
+const dateFormatters = new Map<string, Intl.DateTimeFormat>();
+
+function dateFormatter(tz: string): Intl.DateTimeFormat {
+  let f = dateFormatters.get(tz);
+  if (!f) {
+    f = new Intl.DateTimeFormat('en-CA', {
+      timeZone: tz,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    });
+    dateFormatters.set(tz, f);
+  }
+  return f;
+}
 
 export function isIsoDate(value: string): boolean {
   const m = ISO_RE.exec(value);
@@ -45,16 +55,16 @@ function fromUtcDate(d: Date): IsoDate {
   return `${String(y).padStart(4, '0')}-${String(m).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 }
 
-/** The Cairo calendar date for an instant (defaults to now). */
-export function cairoDateOf(instant: Date): IsoDate {
-  const parts = cairoDateFormatter.formatToParts(instant);
+/** The calendar date of an instant in `tz` (the configured timezone). */
+export function dateInZone(instant: Date, tz: string = DEFAULT_TIMEZONE): IsoDate {
+  const parts = dateFormatter(tz).formatToParts(instant);
   const get = (t: string): string => parts.find((p) => p.type === t)?.value ?? '';
   return `${get('year')}-${get('month')}-${get('day')}`;
 }
 
-/** Today's date in Africa/Cairo. Pass `now` to make it deterministic in tests. */
-export function today(now: Date = new Date()): IsoDate {
-  return cairoDateOf(now);
+/** Today's date in `tz`. Pass `now` to make it deterministic in tests. */
+export function today(now: Date = new Date(), tz: string = DEFAULT_TIMEZONE): IsoDate {
+  return dateInZone(now, tz);
 }
 
 export function addDays(date: IsoDate, days: number): IsoDate {

@@ -14,10 +14,10 @@ import {
 import { ModuleLedger } from '../src/shared/progress.js';
 import { DEFAULT_SETTINGS } from '../src/shared/settings.js';
 import type { QuranSessionPlan } from '../src/shared/types.js';
-import { OWNER_CATALOG_DATA } from '../src/server/seed/ownerCatalog.js';
+import { OWNER_CATALOG_DATA, OWNER_WEEKLY_TEMPLATE } from '../src/server/seed/ownerCatalog.js';
 
 const CATALOG = buildCatalog(OWNER_CATALOG_DATA);
-const S = DEFAULT_SETTINGS;
+const S = { ...DEFAULT_SETTINGS, weeklyTemplate: OWNER_WEEKLY_TEMPLATE };
 const R = 40;
 const memorize: QuranSessionPlan = { type: 'memorize', pages: [604], minutes: 40, title: 'Memorize page 604', description: '' };
 const review: QuranSessionPlan = { type: 'review', pages: [604], minutes: 15, title: 'Review', description: '' };

@@ -1,20 +1,35 @@
 /**
  * SQLite access via the built-in node:sqlite module.
  */
-import { mkdirSync } from 'node:fs';
-import { dirname } from 'node:path';
+import { existsSync, mkdirSync } from 'node:fs';
+import { dirname, join } from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
-import { runMigrations } from './migrations.js';
+import { backupDirFor } from './config.js';
+import { pendingVersions, runMigrations } from './migrations.js';
 
 export type Db = DatabaseSync;
 
+function pad2(n: number): string {
+  return String(n).padStart(2, '0');
+}
+
 export function openDb(path: string): Db {
   if (path !== ':memory:') mkdirSync(dirname(path), { recursive: true });
+  const existed = path !== ':memory:' && existsSync(path);
   const db = new DatabaseSync(path);
   db.exec('PRAGMA journal_mode = WAL');
   db.exec('PRAGMA foreign_keys = ON');
   db.exec('PRAGMA busy_timeout = 5000');
   db.exec('PRAGMA synchronous = NORMAL');
+  const pending = pendingVersions(db);
+  if (existed && pending.length > 0) {
+    const dir = backupDirFor(path);
+    mkdirSync(dir, { recursive: true });
+    const n = new Date();
+    const ts = `${n.getUTCFullYear()}${pad2(n.getUTCMonth() + 1)}${pad2(n.getUTCDate())}-${pad2(n.getUTCHours())}${pad2(n.getUTCMinutes())}${pad2(n.getUTCSeconds())}`;
+    const target = join(dir, `pre-migrate-v${Math.max(...pending)}-${ts}.db`).replaceAll("'", "''");
+    db.exec(`VACUUM INTO '${target}'`);
+  }
   runMigrations(db);
   return db;
 }

@@ -11,6 +11,9 @@ export type StreamStyle = 'study' | 'practice';
 /** Track id reserved for Quran tasks. */
 export const QURAN_TRACK_ID = 'quran';
 
+/** Valid track/stream ids (also used for settings template slots). */
+export const ID_RE = /^[a-z0-9][a-z0-9-]*$/;
+
 export function streamKey(track: string, stream: string): string {
   return `${track}/${stream}`;
 }

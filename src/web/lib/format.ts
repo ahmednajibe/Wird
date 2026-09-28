@@ -1,4 +1,4 @@
-import { APP_TIMEZONE, toUtcNoon } from '../../shared/dates.js';
+import { DEFAULT_TIMEZONE, toUtcNoon } from '../../shared/dates.js';
 
 export function cn(...parts: (string | false | null | undefined)[]): string {
   return parts.filter(Boolean).join(' ');
@@ -45,7 +45,7 @@ export function plural(n: number, one: string, many = `${one}s`): string {
 
 /** Hour of the day in Cairo (0..23). */
 export function cairoHour(now: Date = new Date()): number {
-  const h = new Intl.DateTimeFormat('en-GB', { timeZone: APP_TIMEZONE, hour: 'numeric', hourCycle: 'h23' }).format(now);
+  const h = new Intl.DateTimeFormat('en-GB', { timeZone: DEFAULT_TIMEZONE, hour: 'numeric', hourCycle: 'h23' }).format(now);
   return Number(h);
 }
 

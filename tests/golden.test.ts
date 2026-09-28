@@ -43,9 +43,18 @@ async function snapshotAll(tag: string, today: string) {
   }
   await snap(`${tag}-tracks`, await call('GET', '/api/tracks'));
   await snap(`${tag}-resources`, await call('GET', '/api/resources'));
-  await snap(`${tag}-quran`, await call('GET', '/api/quran'));
+  const quranRes = await call('GET', '/api/quran');
+  const quranJson: Json = { ...quranRes.json, settings: { ...(quranRes.json.settings as Json) } };
+  delete (quranJson.settings as Json).enabled;
+  await snap(`${tag}-quran`, { status: quranRes.status, json: quranJson });
   await snap(`${tag}-stats`, await call('GET', '/api/stats'));
-  await snap(`${tag}-settings`, await call('GET', '/api/settings'));
+  const settingsRes = await call('GET', '/api/settings');
+  // settings.timezone and settings.quran.enabled were added after these
+  // snapshots were pinned; strip them rather than regenerating the files.
+  const settingsJson: Json = { ...settingsRes.json, quran: { ...(settingsRes.json.quran as Json) } };
+  delete settingsJson.timezone;
+  delete (settingsJson.quran as Json).enabled;
+  await snap(`${tag}-settings`, { status: settingsRes.status, json: settingsJson });
   await snap(`${tag}-calendar`, await call('GET', '/api/calendar?from=2026-10-04&to=2026-10-17'));
   await snap(`${tag}-health`, await call('GET', '/api/health'));
 }
