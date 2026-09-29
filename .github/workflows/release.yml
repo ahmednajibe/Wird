@@ -1,0 +1,207 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch: # dry run: verify + package, no release
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - name: Check tag matches package.json version
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          tag="${GITHUB_REF_NAME#v}"
+          pkg="$(node -p "require('./package.json').version")"
+          if [ "$tag" != "$pkg" ]; then
+            echo "Tag $GITHUB_REF_NAME does not match package.json version $pkg" >&2
+            exit 1
+          fi
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+
+  package:
+    needs: verify
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            lane: windows
+          - os: ubuntu-latest
+            lane: linux
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run build:sea
+
+      - name: Ensure Inno Setup (Windows)
+        if: matrix.lane == 'windows'
+        shell: pwsh
+        run: |
+          $pf86 = ${env:ProgramFiles(x86)}
+          if (-not $env:ISCC -and
+              -not (Test-Path "$pf86\Inno Setup 6\ISCC.exe") -and
+              -not (Test-Path "$env:ProgramFiles\Inno Setup 6\ISCC.exe") -and
+              -not (Test-Path "$env:LOCALAPPDATA\Programs\Inno Setup 6\ISCC.exe")) {
+            choco install innosetup -y --no-progress
+          }
+
+      - name: Sign wird.exe (Windows)
+        if: matrix.lane == 'windows'
+        shell: pwsh
+        env:
+          WIRD_SIGN_CMD: ${{ secrets.WIRD_SIGN_CMD }}
+        run: node scripts/sign.mjs build/sea/wird.exe
+
+      - name: Package Windows
+        if: matrix.lane == 'windows'
+        run: npm run package:win
+
+      - name: Sign setup exe (Windows)
+        if: matrix.lane == 'windows'
+        shell: pwsh
+        env:
+          WIRD_SIGN_CMD: ${{ secrets.WIRD_SIGN_CMD }}
+        run: node scripts/sign.mjs (Get-ChildItem build/release/*-win-x64-setup.exe).FullName
+
+      - name: Smoke SEA exe (Windows)
+        if: matrix.lane == 'windows'
+        run: node scripts/smoke.mjs build/sea/wird.exe
+
+      - name: Smoke portable zip (Windows)
+        if: matrix.lane == 'windows'
+        shell: pwsh
+        run: |
+          Expand-Archive (Get-ChildItem build/release/*-win-x64-portable.zip).FullName -DestinationPath "$env:RUNNER_TEMP\wird-zip"
+          node scripts/smoke.mjs "$env:RUNNER_TEMP\wird-zip\Wird\wird.exe"
+
+      - name: Silent install smoke (Windows)
+        if: matrix.lane == 'windows'
+        shell: pwsh
+        run: |
+          $setup = (Get-ChildItem build/release/*-win-x64-setup.exe).FullName
+          & $setup /VERYSILENT /SUPPRESSMSGBOXES /NORESTART /DIR="$env:RUNNER_TEMP\wird-inst" /NOICONS /TASKS=""
+          if ($LASTEXITCODE -ne 0) { throw "installer exited $LASTEXITCODE" }
+          node scripts/smoke.mjs "$env:RUNNER_TEMP\wird-inst\wird.exe"
+          & "$env:RUNNER_TEMP\wird-inst\unins000.exe" /VERYSILENT /SUPPRESSMSGBOXES
+          Start-Sleep -Seconds 8
+          if (Test-Path "$env:RUNNER_TEMP\wird-inst") { throw "install dir not removed by uninstall" }
+
+      - name: install.ps1 smoke (Windows)
+        if: matrix.lane == 'windows'
+        shell: pwsh
+        env:
+          WIRD_ASSET_DIR: ${{ github.workspace }}\build\release
+          WIRD_INSTALL_DIR: ${{ runner.temp }}\wird-ps
+          WIRD_SHORTCUT_DIR: ${{ runner.temp }}\wird-lnk
+          WIRD_NO_LAUNCH: "1"
+        run: |
+          node scripts/checksums.mjs
+          Get-Content -Raw install/install.ps1 | Invoke-Expression
+          node scripts/smoke.mjs "$env:WIRD_INSTALL_DIR\wird.exe"
+          Remove-Item build/release/SHA256SUMS.txt
+
+      - name: Package Linux
+        if: matrix.lane == 'linux'
+        run: |
+          npm run package:linux
+          npm run package:app
+
+      - name: Smoke SEA binary (Linux)
+        if: matrix.lane == 'linux'
+        run: node scripts/smoke.mjs build/sea/wird
+
+      - name: Smoke linux tarball (Linux)
+        if: matrix.lane == 'linux'
+        run: |
+          mkdir -p "$RUNNER_TEMP/wird-tgz"
+          tar -xzf build/release/Wird-*-linux-x64.tar.gz -C "$RUNNER_TEMP/wird-tgz"
+          node scripts/smoke.mjs "$RUNNER_TEMP/wird-tgz"/Wird-*-linux-x64/wird
+
+      - name: Smoke app bundle (Linux)
+        if: matrix.lane == 'linux'
+        run: |
+          mkdir -p "$RUNNER_TEMP/wird-appx"
+          tar -xzf build/release/Wird-*-app.tar.gz -C "$RUNNER_TEMP/wird-appx"
+          node scripts/smoke.mjs --cwd "$RUNNER_TEMP/wird-appx"/Wird-*-app node wird.cjs
+
+      - name: install.sh smoke (Linux)
+        if: matrix.lane == 'linux'
+        run: |
+          node scripts/checksums.mjs
+          WIRD_ASSET_DIR="$PWD/build/release" \
+          WIRD_INSTALL_DIR="$RUNNER_TEMP/wird-app" \
+          WIRD_NO_LAUNCH=1 \
+          XDG_DATA_HOME="$RUNNER_TEMP/xdg" \
+            sh install/install.sh
+          node scripts/smoke.mjs "$RUNNER_TEMP/wird-app/wird"
+          rm build/release/SHA256SUMS.txt
+
+      - name: Upload release artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-${{ matrix.lane }}
+          path: |
+            build/release/*
+            !build/release/stage/
+
+  # macOS packaged build: defined but deferred (macOS users install via
+  # install.sh, which uses the official Node runtime plus the app bundle).
+  # Enabling it needs darwin packaging (.app bundle, codesign, notarization)
+  # and a smoke test; build-sea.mjs already handles the darwin injection path.
+  package-macos:
+    needs: verify
+    if: false
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run build:sea
+      - run: node scripts/smoke.mjs build/sea/wird
+
+  release:
+    needs: package
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - name: Collect artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: release-*
+          path: build/release
+          merge-multiple: true
+      - name: Add install scripts and checksums
+        run: |
+          cp install/install.ps1 install/install.sh build/release/
+          node scripts/checksums.mjs
+      - name: Create draft release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" build/release/* --draft --title "Wird ${GITHUB_REF_NAME#v}" --generate-notes
