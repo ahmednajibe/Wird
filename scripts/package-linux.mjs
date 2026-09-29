@@ -59,8 +59,12 @@ writeFileSync(
   ].join('\n'),
 );
 
-const tarFile = join(releaseDir, `Wird-${version}-linux-x64.tar.gz`);
-execFileSync('tar', ['-czf', tarFile, '-C', stageDir, `Wird-${version}-linux-x64`], {
+// Relative paths: GNU tar parses an absolute archive name with a drive
+// letter as a remote host.
+const tarName = `Wird-${version}-linux-x64.tar.gz`;
+const tarFile = join(releaseDir, tarName);
+execFileSync('tar', ['-czf', tarName, '-C', 'stage', `Wird-${version}-linux-x64`], {
+  cwd: releaseDir,
   stdio: 'inherit',
 });
 rmSync(stageDir, { recursive: true, force: true });
