@@ -18,6 +18,9 @@ if "%NEED_BUILD%"=="1" (
   if errorlevel 1 goto :fail
 )
 
+rem First run only: create a Wird shortcut on the desktop (skip with WIRD_NO_SHORTCUT=1).
+if not "%WIRD_NO_SHORTCUT%"=="1" powershell -NoProfile -ExecutionPolicy Bypass -Command "try { $desktop=[Environment]::GetFolderPath('Desktop'); $lnk=Join-Path $desktop 'Wird.lnk'; if (-not (Test-Path $lnk)) { $s=(New-Object -ComObject WScript.Shell).CreateShortcut($lnk); $s.TargetPath='%~dp0start-tracker.cmd'; $s.WorkingDirectory='%cd%'; $s.IconLocation='%~dp0assets\brand\wird.ico'; $s.Description='Wird'; $s.Save(); Write-Output 'Created a Wird shortcut on your desktop.' } } catch {}"
+
 rem Open the browser after ~2 s in a separate minimized window so the server can start first.
 start "" /min cmd /c "timeout /t 2 /nobreak >nul & start http://127.0.0.1:4545"
 
