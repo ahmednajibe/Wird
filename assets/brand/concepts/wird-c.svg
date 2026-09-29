@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Wird concept C: minimal monogram, one bold round-capped waw stroke
+       with three beads as accents. Built for 16 px legibility. -->
+  <rect width="512" height="512" rx="112" fill="#05192D"/>
+  <g fill="none" stroke="#ECCB62" stroke-width="62">
+    <circle cx="318" cy="188" r="64"/>
+    <path d="M273 233 C245 290 203 321 155 332 C135 336 118 329 110 314" stroke-linecap="round"/>
+  </g>
+  <g fill="#F0D27A" stroke="#05192D" stroke-opacity="0.35" stroke-width="4">
+    <circle cx="318" cy="124" r="36"/>
+    <circle cx="222" cy="300" r="36"/>
+    <circle cx="130" cy="325" r="36"/>
+  </g>
+</svg>

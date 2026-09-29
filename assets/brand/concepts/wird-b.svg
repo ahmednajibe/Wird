@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Wird concept B: waw as a cord with a few large beads and a tassel
+       (imam bead + fringe) hanging from the tail tip. -->
+  <rect width="512" height="512" rx="112" fill="#05192D"/>
+  <g fill="none" stroke="#ECCB62" stroke-width="11">
+    <circle cx="318" cy="188" r="64"/>
+    <path d="M273 233 C240 292 200 322 152 332 C130 336 112 329 104 311" stroke-linecap="round"/>
+    <!-- short drop from the tail tip into the imam bead -->
+    <path d="M104 311 L100 322" stroke-linecap="round"/>
+  </g>
+  <g fill="#ECCB62">
+    <!-- beads on the cord: three on the head ring, two on the tail -->
+    <circle cx="288.9" cy="131" r="23"/>
+    <circle cx="381.2" cy="178" r="23"/>
+    <circle cx="308" cy="251.2" r="23"/>
+    <circle cx="235" cy="298" r="23"/>
+    <circle cx="160" cy="329" r="23"/>
+    <!-- imam bead -->
+    <ellipse cx="98" cy="330" rx="10" ry="17" transform="rotate(-14 98 330)"/>
+    <!-- tassel fringe -->
+    <g stroke="#ECCB62" stroke-width="6.5" stroke-linecap="round">
+      <line x1="95" y1="345" x2="79" y2="378"/>
+      <line x1="98" y1="346" x2="90" y2="381"/>
+      <line x1="101" y1="346" x2="101" y2="382"/>
+      <line x1="104" y1="345" x2="112" y2="379"/>
+    </g>
+  </g>
+</svg>

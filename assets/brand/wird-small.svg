@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Wird icon, small-size variant (16 and 24 px): same waw silhouette as
+       wird.svg but the ring is a solid thick ring and the tail a solid
+       round-capped tapered stroke instead of individual beads. -->
+  <rect width="512" height="512" rx="112" fill="#05192D"/>
+  <g fill="none" stroke="#ECCB62">
+    <circle cx="336" cy="163" r="78" stroke-width="53"/>
+    <path d="M336 268 C322 305 300 345 272 368" stroke-width="46" stroke-linecap="round"/>
+    <path d="M272 368 C236 398 190 418 136 431 C115 436 98 430 92 416" stroke-width="32" stroke-linecap="round"/>
+  </g>
+</svg>
