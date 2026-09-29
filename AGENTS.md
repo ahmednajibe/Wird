@@ -18,6 +18,13 @@ npm run e2e          # build, then scripts/e2e.ts in local Microsoft Edge
 screenshots to `screenshots/`. Never point tests or scripts at
 `data/learning.db`; that is the owner's real data. Do not delete `data/`.
 
+## Node version
+
+Node is pinned to 24.20.0 (`.nvmrc`, `engines` in package.json, CI, and the
+SEA binary build). Dev machines use fnm (`fnm use` picks up `.nvmrc`; install
+fnm first if missing). Change the pinned version only deliberately, with a
+full gate run (typecheck, test, build, e2e) on the new version.
+
 ## Architecture
 
 - `src/shared/` pure engine, no I/O: dates (configured timezone, weeks start
