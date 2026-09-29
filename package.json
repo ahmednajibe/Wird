@@ -11,6 +11,7 @@
   "scripts": {
     "dev:server": "tsx watch --no-warnings=ExperimentalWarning src/server/index.ts",
     "build": "npm run build:server && npm run build:web",
+    "build:sea": "npm run build && node scripts/build-sea.mjs",
     "start": "node --no-warnings=ExperimentalWarning dist/server/index.js",
     "test": "vitest run",
     "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.web.json",
@@ -45,7 +46,9 @@
     "@types/react-dom": "19.3.0",
     "@vitejs/plugin-react": "6.1.1",
     "concurrently": "10.0.5",
+    "esbuild": "0.28.2",
     "playwright-core": "1.63.0",
+    "postject": "1.0.0-alpha.6",
     "tailwindcss": "4.3.3",
     "tsx": "4.23.13",
     "typescript": "5.9.3",
