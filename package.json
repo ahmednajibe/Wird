@@ -1,11 +1,12 @@
 {
   "name": "learning-tracker",
+  "productName": "Wird",
   "version": "0.1.0",
   "private": true,
   "description": "Personal, local-only learning tracker (Quran, Full Stack, AI, Animation).",
   "type": "module",
   "engines": {
-    "node": ">=22.13.0"
+    "node": "24.20.0"
   },
   "scripts": {
     "dev:server": "tsx watch --no-warnings=ExperimentalWarning src/server/index.ts",
