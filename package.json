@@ -12,6 +12,7 @@
     "dev:server": "tsx watch --no-warnings=ExperimentalWarning src/server/index.ts",
     "build": "npm run build:server && npm run build:web",
     "build:sea": "npm run build && node scripts/build-sea.mjs",
+    "package:win": "node scripts/package-win.mjs",
     "start": "node --no-warnings=ExperimentalWarning dist/server/index.js",
     "test": "vitest run",
     "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.web.json",
