@@ -1,3 +1,6 @@
 * text=auto eol=lf
 *.db binary
 *.cmd text eol=crlf
+*.sh text eol=lf
+*.command text eol=lf
+packaging/linux/*.desktop text eol=lf

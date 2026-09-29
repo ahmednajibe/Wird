@@ -13,6 +13,7 @@
     "build": "npm run build:server && npm run build:web",
     "build:sea": "npm run build && node scripts/build-sea.mjs",
     "package:win": "node scripts/package-win.mjs",
+    "package:linux": "node scripts/package-linux.mjs",
     "start": "node --no-warnings=ExperimentalWarning dist/server/index.js",
     "test": "vitest run",
     "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.web.json",

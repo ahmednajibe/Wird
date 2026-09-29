@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Wird
+Comment=Local-first daily learning and Quran tracker
+Exec=@EXEC@
+Icon=wird
+Terminal=true
+Categories=Education;Utility;
+StartupNotify=false
