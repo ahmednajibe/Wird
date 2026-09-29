@@ -10,6 +10,7 @@ import { dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { build } from 'esbuild';
 import { inject } from 'postject';
+import * as resedit from 'resedit';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const outDir = join(root, 'build', 'sea');
@@ -31,6 +32,42 @@ if (!existsSync(join(distWeb, 'index.html'))) {
 mkdirSync(outDir, { recursive: true });
 
 const version = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')).version;
+
+/** Replaces the copied Node icon and version info with Wird's branding. */
+function stampWindowsMetadata(exeFile, icoFile, version) {
+  const exe = resedit.NtExecutable.from(readFileSync(exeFile), { ignoreCert: true });
+  const res = resedit.NtExecutableResource.from(exe);
+
+  const iconFile = resedit.Data.IconFile.from(readFileSync(icoFile));
+  const group = resedit.Resource.IconGroupEntry.fromEntries(res.entries)[0];
+  resedit.Resource.IconGroupEntry.replaceIconsForResource(
+    res.entries,
+    group?.id ?? 1,
+    group?.lang ?? 1033,
+    iconFile.icons.map((i) => i.data),
+  );
+
+  const [major, minor, patch] = version.split('.').map(Number);
+  const translation = { lang: 1033, codepage: 1200 };
+  for (const vi of resedit.Resource.VersionInfo.fromEntries(res.entries)) {
+    vi.setStringValues(translation, {
+      ProductName: 'Wird',
+      FileDescription: 'Wird',
+      CompanyName: 'Wird',
+      LegalCopyright: 'Wird contributors',
+      OriginalFilename: 'wird.exe',
+      InternalName: 'wird',
+      FileVersion: `${version}.0`,
+      ProductVersion: `${version}.0`,
+    });
+    vi.setFileVersion(major, minor, patch, 0);
+    vi.setProductVersion(major, minor, patch, 0);
+    vi.outputToResourceEntries(res.entries);
+  }
+  res.outputResource(exe);
+  writeFileSync(exeFile, Buffer.from(exe.generate()));
+  console.log('Stamped icon and version info');
+}
 
 // 1. Bundle the desktop entry point into a single CJS file.
 await build({
@@ -79,8 +116,6 @@ execFileSync(process.execPath, ['--experimental-sea-config', configFile], { stdi
 // 4. Copy the runtime and inject the blob.
 cpSync(process.execPath, exeFile);
 
-// Phase 3 placeholder: stamp Windows metadata (icon, version info, product
-// name) on the exe here, BEFORE the blob is injected.
 if (process.platform === 'darwin') {
   execFileSync('codesign', ['--remove-signature', exeFile], { stdio: 'inherit' });
 }
@@ -88,6 +123,13 @@ await inject(exeFile, 'NODE_SEA_BLOB', readFileSync(blobFile), {
   sentinelFuse: 'NODE_SEA_FUSE_fce680ab2cc467b6e072b8b5df1996b2',
   machoSegmentName: 'NODE_SEA',
 });
+// Windows metadata (icon, version info, product name). Stamped AFTER the blob
+// injection: postject fails to parse the relocation table of a
+// resedit-rewritten binary ('Relocation corrupted'), and the SEA blob lives in
+// its own section, so the order does not affect either payload.
+if (process.platform === 'win32') {
+  stampWindowsMetadata(exeFile, join(root, 'assets', 'brand', 'wird.ico'), version);
+}
 if (process.platform === 'darwin') {
   execFileSync('codesign', ['--sign', '-', exeFile], { stdio: 'inherit' });
 }

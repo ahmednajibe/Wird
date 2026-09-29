@@ -349,3 +349,11 @@ export interface ImportResult {
 export interface PlanPromptResponse {
   markdown: string;
 }
+
+export interface HealthResponse {
+  ok: boolean;
+  today: string;
+  app: string;
+  version: string;
+  dataDir: string | null;
+}

@@ -15,7 +15,7 @@ import {
 } from '@phosphor-icons/react';
 import { motion } from 'motion/react';
 import { NavLink, Outlet, useLocation } from 'react-router';
-import { useCatalog, useDashboard } from '../client/hooks';
+import { useCatalog, useDashboard, useHealth } from '../client/hooks';
 import { cn } from '../lib/format';
 import { useTheme } from '../lib/theme';
 import { useAddTask } from './AddTaskContext';
@@ -50,17 +50,18 @@ function Logo() {
   const { data } = useCatalog();
   return (
     <div className="flex items-center gap-2.5">
-      <svg width="30" height="30" viewBox="0 0 32 32" aria-hidden>
-        <rect width="32" height="32" rx="9" fill="var(--surface-2)" />
-        <circle cx="16" cy="16" r="9" fill="none" stroke="var(--surface-3)" strokeWidth="4" />
-        <path d="M16 7a9 9 0 0 1 8.5 12" fill="none" stroke="var(--accent-fill)" strokeWidth="4" strokeLinecap="round" />
-      </svg>
+      <img src="/favicon.svg" width={30} height={30} alt="" aria-hidden />
       <div className="leading-tight">
-        <div className="text-[15px] font-bold tracking-tight text-ink">Learning tracker</div>
+        <div className="text-[15px] font-bold tracking-tight text-ink">Wird</div>
         <div className="text-[11px] font-medium text-subtle">{data?.planName ?? 'Your learning plan'}</div>
       </div>
     </div>
   );
+}
+
+function VersionTag() {
+  const { data } = useHealth();
+  return <div className="text-xs text-subtle">Wird {data?.version ?? ''}</div>;
 }
 
 function ThemeToggle({ className }: { className?: string }) {
@@ -163,7 +164,10 @@ function Sidebar() {
       <div className="mt-auto flex flex-col gap-3">
         <SidebarStatus />
         <div className="flex items-center justify-between px-1">
-          <span className="text-xs text-subtle">Local only, 127.0.0.1</span>
+          <div className="leading-tight">
+            <VersionTag />
+            <div className="text-[11px] text-subtle/80">Local only, 127.0.0.1</div>
+          </div>
           <ThemeToggle />
         </div>
       </div>
@@ -179,12 +183,8 @@ function MobileTopBar() {
   return (
     <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-line bg-bg/85 px-4 backdrop-blur-md md:hidden">
       <div className="flex items-center gap-2">
-        <svg width="26" height="26" viewBox="0 0 32 32" aria-hidden>
-          <rect width="32" height="32" rx="9" fill="var(--surface-2)" />
-          <circle cx="16" cy="16" r="9" fill="none" stroke="var(--surface-3)" strokeWidth="4" />
-          <path d="M16 7a9 9 0 0 1 8.5 12" fill="none" stroke="var(--accent-fill)" strokeWidth="4" strokeLinecap="round" />
-        </svg>
-        <span className="text-[15px] font-bold tracking-tight">{current?.label ?? 'Learning tracker'}</span>
+        <img src="/favicon.svg" width={26} height={26} alt="" aria-hidden />
+        <span className="text-[15px] font-bold tracking-tight">{current?.label ?? 'Wird'}</span>
       </div>
       <div className="flex items-center">
         <NavLink to="/resources" aria-label="Resources" className={({ isActive }) => cn('inline-flex size-10 items-center justify-center rounded-full', isActive ? 'text-accent-ink' : 'text-muted')}>

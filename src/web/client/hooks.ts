@@ -15,6 +15,7 @@ export const qk = {
   resources: ['resources'] as const,
   settings: ['settings'] as const,
   catalog: ['catalog'] as const,
+  health: ['health'] as const,
   preview: (input: ManualTaskInput) => ['score-preview', input] as const,
 };
 
@@ -27,6 +28,7 @@ export const useStats = () => useQuery({ queryKey: qk.stats, queryFn: api.stats 
 export const useResources = () => useQuery({ queryKey: qk.resources, queryFn: api.resources, staleTime: 60_000 });
 export const useSettings = () => useQuery({ queryKey: qk.settings, queryFn: api.settings });
 export const useCatalog = () => useQuery({ queryKey: qk.catalog, queryFn: api.catalog, staleTime: 60_000 });
+export const useHealth = () => useQuery({ queryKey: qk.health, queryFn: api.health, staleTime: Infinity });
 
 export function useScorePreview(input: ManualTaskInput | null) {
   return useQuery({

@@ -69,7 +69,7 @@ export function createApp(options: AppOptions = {}): { app: Hono; service: Learn
   app.get('*', (c) => {
     const index = assets.read('web/index.html');
     if (index === null) {
-      return c.text('Learning tracker API is running. The web UI has not been built yet (expected dist/web).', 404);
+      return c.text('Wird is running, but the web UI has not been built yet (expected dist/web).', 404);
     }
     let rel: string;
     try {

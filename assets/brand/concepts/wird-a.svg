@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Wird concept A: the letter waw formed entirely of misbaha beads.
+       Head: closed ring of equal beads; tail: beads shrinking toward the tip. -->
+  <rect width="512" height="512" rx="112" fill="#05192D"/>
+  <g fill="#ECCB62">
+    <!-- head ring (junction bead bottom-left) -->
+    <circle cx="272.7" cy="233.3" r="19"/>
+    <circle cx="254.8" cy="198.0" r="19"/>
+    <circle cx="261.0" cy="158.9" r="19"/>
+    <circle cx="288.9" cy="131.0" r="19"/>
+    <circle cx="328.0" cy="124.8" r="19"/>
+    <circle cx="363.3" cy="142.7" r="19"/>
+    <circle cx="381.2" cy="178.0" r="19"/>
+    <circle cx="375.0" cy="217.1" r="19"/>
+    <circle cx="347.1" cy="245.0" r="19"/>
+    <circle cx="308.0" cy="251.2" r="19"/>
+    <!-- tail string, beads shrinking toward the upturned tip -->
+    <circle cx="247" cy="263" r="18"/>
+    <circle cx="218" cy="289" r="17.5"/>
+    <circle cx="188" cy="310" r="17"/>
+    <circle cx="158" cy="325" r="16"/>
+    <circle cx="131" cy="332" r="15"/>
+    <circle cx="108" cy="320" r="14"/>
+  </g>
+</svg>
