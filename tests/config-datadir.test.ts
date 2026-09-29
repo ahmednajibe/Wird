@@ -82,7 +82,7 @@ describe('logDirFor / resolveDbPath', () => {
     expect(logDirFor('/data/wird')).toBe(join('/data/wird', 'logs'));
   });
   it('resolveDbPath keeps its original behavior', () => {
-    const cwd = 'D:\\work\\app';
+    const cwd = process.platform === 'win32' ? 'D:\\work\\app' : '/work/app';
     expect(resolveDbPath({}, cwd)).toBe(join(cwd, 'data', 'learning.db'));
     expect(resolveDbPath({ LEARNING_DB_PATH: 'custom.db' }, cwd)).toBe(join(cwd, 'custom.db'));
     expect(resolveDbPath({ LEARNING_DB_PATH: '  ' }, cwd)).toBe(join(cwd, 'data', 'learning.db'));
