@@ -16,6 +16,7 @@
     "package:linux": "node scripts/package-linux.mjs",
     "package:app": "node scripts/package-app.mjs",
     "checksums": "node scripts/checksums.mjs",
+    "smoke": "node scripts/smoke.mjs",
     "start": "node --no-warnings=ExperimentalWarning dist/server/index.js",
     "test": "vitest run",
     "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.web.json",
