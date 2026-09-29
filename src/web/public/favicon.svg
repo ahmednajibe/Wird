@@ -1,26 +1,17 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <!-- Wird icon: the Arabic letter waw as a misbaha (prayer beads).
-       Head: closed hollow ring of equal beads, upper right. Tail leaves the
-       bottom of the ring, drops steeply, then sweeps left into a comma-like
-       finish in the lower-left quadrant. Palette: app navy tile, Quran amber. -->
+  <!-- Wird icon: a W monogram drawn as two overlapping ribbons that share the
+       middle peak. Palette: app navy tile, cream and Quran-amber ribbons. -->
+  <defs>
+    <linearGradient id="wird-cream" x1="0" y1="0" x2="0.4" y2="1">
+      <stop offset="0" stop-color="#FBF6E4"/>
+      <stop offset="1" stop-color="#E9DCAC"/>
+    </linearGradient>
+    <linearGradient id="wird-gold" x1="0" y1="0" x2="0.4" y2="1">
+      <stop offset="0" stop-color="#F0D77E"/>
+      <stop offset="1" stop-color="#D9AE3C"/>
+    </linearGradient>
+  </defs>
   <rect width="512" height="512" rx="112" fill="#05192D"/>
-  <g fill="#ECCB62">
-    <!-- head ring, junction bead at the bottom -->
-    <circle cx="336" cy="267.5" r="26"/>
-    <circle cx="268.8" cy="243.1" r="26"/>
-    <circle cx="233.1" cy="181.1" r="26"/>
-    <circle cx="245.5" cy="110.7" r="26"/>
-    <circle cx="300.3" cy="64.8" r="26"/>
-    <circle cx="371.7" cy="64.8" r="26"/>
-    <circle cx="426.5" cy="110.7" r="26"/>
-    <circle cx="438.9" cy="181.1" r="26"/>
-    <circle cx="403.2" cy="243.1" r="26"/>
-    <!-- tail: steep drop, then sweep left, tapering to the upturned tip -->
-    <circle cx="312" cy="324" r="22"/>
-    <circle cx="270" cy="368" r="21"/>
-    <circle cx="218" cy="400" r="19.5"/>
-    <circle cx="168" cy="422" r="18"/>
-    <circle cx="118" cy="433" r="16.5"/>
-    <circle cx="78" cy="420" r="14.5"/>
-  </g>
+  <path d="M256 220 L296 356 L372 158" fill="none" stroke="url(#wird-gold)" stroke-width="76" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M140 160 L216 356 L256 220" fill="none" stroke="url(#wird-cream)" stroke-width="76" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>
