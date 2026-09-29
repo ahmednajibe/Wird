@@ -228,6 +228,27 @@ export const MIGRATIONS: readonly Migration[] = [
   },
 ];
 
+/**
+ * Refuses to open a database written by a newer version of the app. Runs
+ * before any backup or migration so a newer schema is left byte-identical.
+ */
+export function assertSchemaNotNewer(db: DatabaseSync): void {
+  db.exec(`CREATE TABLE IF NOT EXISTS schema_migrations (
+    version INTEGER PRIMARY KEY,
+    name TEXT NOT NULL,
+    applied_at TEXT NOT NULL
+  )`);
+  const found =
+    (db.prepare('SELECT MAX(version) AS v FROM schema_migrations').get() as { v: number | null }).v ?? 0;
+  const max = Math.max(...MIGRATIONS.map((m) => m.version));
+  if (found > max) {
+    throw new Error(
+      `This data was created by a newer version of Wird (database schema v${found}, this version supports up to v${max}). ` +
+        `Install the latest Wird from https://github.com/ahmednajibe/Wird/releases. Your data has not been changed.`,
+    );
+  }
+}
+
 /** Versions defined but not yet applied to this database, ascending. */
 export function pendingVersions(db: DatabaseSync): number[] {
   db.exec(`CREATE TABLE IF NOT EXISTS schema_migrations (
@@ -242,6 +263,7 @@ export function pendingVersions(db: DatabaseSync): number[] {
 }
 
 export function runMigrations(db: DatabaseSync): number[] {
+  assertSchemaNotNewer(db);
   db.exec(`CREATE TABLE IF NOT EXISTS schema_migrations (
     version INTEGER PRIMARY KEY,
     name TEXT NOT NULL,

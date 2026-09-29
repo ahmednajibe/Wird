@@ -56,7 +56,13 @@ async function snapshotAll(tag: string, today: string) {
   delete (settingsJson.quran as Json).enabled;
   await snap(`${tag}-settings`, { status: settingsRes.status, json: settingsJson });
   await snap(`${tag}-calendar`, await call('GET', '/api/calendar?from=2026-10-04&to=2026-10-17'));
-  await snap(`${tag}-health`, await call('GET', '/api/health'));
+  // /api/health also reports { app, version, dataDir }, which are
+  // machine-dependent: pin the original fields, assert the new ones.
+  const healthRes = await call('GET', '/api/health');
+  const { ok, today: healthToday, app, version } = healthRes.json as Json;
+  expect(app).toBe('wird');
+  expect(typeof version).toBe('string');
+  await snap(`${tag}-health`, { status: healthRes.status, json: { ok, today: healthToday } });
 }
 
 describe('golden read-model snapshots', () => {
