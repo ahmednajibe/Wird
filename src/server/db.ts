@@ -6,7 +6,7 @@ import { dirname } from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
 import { snapshotDb } from './backup.js';
 import { backupDirFor } from './config.js';
-import { pendingVersions, runMigrations } from './migrations.js';
+import { assertSchemaNotNewer, pendingVersions, runMigrations } from './migrations.js';
 
 export type Db = DatabaseSync;
 
@@ -18,6 +18,12 @@ export function openDb(path: string): Db {
   db.exec('PRAGMA foreign_keys = ON');
   db.exec('PRAGMA busy_timeout = 5000');
   db.exec('PRAGMA synchronous = NORMAL');
+  try {
+    assertSchemaNotNewer(db);
+  } catch (err) {
+    db.close();
+    throw err;
+  }
   const pending = pendingVersions(db);
   if (existed && pending.length > 0) {
     snapshotDb(db, backupDirFor(path), `pre-migrate-v${Math.max(...pending)}`);

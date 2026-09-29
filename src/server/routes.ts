@@ -2,10 +2,10 @@
  * HTTP API routes (JSON). Inputs are validated with zod; invalid input -> 400.
  */
 import { Hono, type Context } from 'hono';
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { dirname } from 'node:path';
 import { z } from 'zod';
 import { dayOfWeek, diffDays, isIsoDate } from '../shared/dates.js';
+import type { AssetSource } from './assets.js';
 import { ApiError, badRequest, notFound } from './errors.js';
 import { commitImport, previewImport } from './importer.js';
 import type { LearningService, ManualTaskInput } from './service.js';
@@ -69,7 +69,7 @@ function idParam(c: Context): number {
   return id;
 }
 
-export function apiRoutes(service: LearningService): Hono {
+export function apiRoutes(service: LearningService, opts: { assets: AssetSource; version: string }): Hono {
   const api = new Hono();
 
   api.onError((err, c) => {
@@ -80,7 +80,16 @@ export function apiRoutes(service: LearningService): Hono {
     return c.json({ error: 'Internal server error' }, 500);
   });
 
-  api.get('/health', (c) => c.json({ ok: true, today: service.today() }));
+  api.get('/health', (c) => {
+    const dbPath = service.dbPath;
+    return c.json({
+      ok: true,
+      today: service.today(),
+      app: 'wird',
+      version: opts.version,
+      dataDir: dbPath && dbPath !== ':memory:' ? dirname(dbPath) : null,
+    });
+  });
 
   api.get('/dashboard', (c) => {
     const date = dateParam(c.req.query('date'), service.today());
@@ -150,13 +159,9 @@ export function apiRoutes(service: LearningService): Hono {
   api.get('/plan-pack', (c) => c.json(planPack(service)));
 
   api.get('/plan-prompt', (c) => {
-    // Resolved like dist/web in app.ts: relative to the process cwd.
-    const file = join(process.cwd(), 'PLAN_PROMPT.md');
-    try {
-      return c.json({ markdown: readFileSync(file, 'utf8') });
-    } catch {
-      throw notFound('PLAN_PROMPT.md is missing from this install');
-    }
+    const buf = opts.assets.read('PLAN_PROMPT.md');
+    if (buf === null) throw notFound('PLAN_PROMPT.md is missing from this install');
+    return c.json({ markdown: new TextDecoder().decode(buf) });
   });
 
   api.post('/import/preview', async (c) => {
