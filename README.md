@@ -4,8 +4,13 @@
 
 Wird is a local-first daily learning tracker with optional Quran
 memorization. It plans your week, tracks points and streaks, and keeps
-everything on your machine. You design your own plan: paste PLAN_PROMPT.md
-into any AI, get a plan file back, and import it into the app.
+everything on your machine. You design your own plan: paste
+[PLAN_PROMPT.md](PLAN_PROMPT.md) into any AI, get a plan file back, and
+import it into the app.
+
+New here? You can hand this repository's link to any AI assistant and ask
+it to walk you through installing Wird and writing your plan: this README
+and PLAN_PROMPT.md are written to be self-contained.
 
 ## Fully local
 
@@ -110,8 +115,9 @@ console window open while you use it; close the window to quit. Launching a
 second copy just opens the browser again. If port 4545 is taken, set the
 `PORT` environment variable or use `--port=NUMBER`.
 
-Your plan comes from an AI: open `PLAN_PROMPT.md`, paste it into any AI
-along with what you want to learn, save the returned plan file, then use the
+Your plan comes from an AI: open [PLAN_PROMPT.md](PLAN_PROMPT.md), paste it
+into any AI along with what you want to learn, save the returned plan file,
+then use the
 Import page in Wird (preview first, then update or fresh import). Quran
 memorization can be turned on or off in Settings; history is never lost.
 
