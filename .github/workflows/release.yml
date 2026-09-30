@@ -97,10 +97,13 @@ jobs:
         shell: pwsh
         run: |
           $setup = (Get-ChildItem build/release/*-win-x64-setup.exe).FullName
-          & $setup /VERYSILENT /SUPPRESSMSGBOXES /NORESTART /DIR="$env:RUNNER_TEMP\wird-inst" /NOICONS /TASKS=""
-          if ($LASTEXITCODE -ne 0) { throw "installer exited $LASTEXITCODE" }
+          # Inno installers/uninstallers are GUI-subsystem: `&` does not wait
+          # and never sets $LASTEXITCODE, so use Start-Process -Wait.
+          $p = Start-Process $setup -Wait -PassThru -ArgumentList '/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART',"/DIR=$env:RUNNER_TEMP\wird-inst",'/NOICONS','/TASKS=""'
+          if ($p.ExitCode -ne 0) { throw "installer exited $($p.ExitCode)" }
           node scripts/smoke.mjs "$env:RUNNER_TEMP\wird-inst\wird.exe"
-          & "$env:RUNNER_TEMP\wird-inst\unins000.exe" /VERYSILENT /SUPPRESSMSGBOXES
+          $u = Start-Process "$env:RUNNER_TEMP\wird-inst\unins000.exe" -Wait -PassThru -ArgumentList '/VERYSILENT','/SUPPRESSMSGBOXES'
+          if ($u.ExitCode -ne 0) { throw "uninstaller exited $($u.ExitCode)" }
           Start-Sleep -Seconds 8
           if (Test-Path "$env:RUNNER_TEMP\wird-inst") { throw "install dir not removed by uninstall" }
 
