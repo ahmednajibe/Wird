@@ -80,14 +80,18 @@ replace_dir() {
   rm -rf "$2.old.$$"
 }
 
+# Resolve the tag only when downloading: with WIRD_ASSET_DIR the version is
+# derived from the asset file names instead.
 TAG="${WIRD_VERSION:-}"
-if [ -z "$TAG" ]; then
-  TAG=$(fetch_stdout "https://api.github.com/repos/$REPO/releases/latest" |
-    sed -n 's/.*"tag_name"[[:space:]]*"\([^"]*\)".*/\1/p' | head -n1)
-fi
-if [ -z "$TAG" ]; then
-  echo "Could not determine the latest Wird release." >&2
-  exit 1
+if [ -z "${WIRD_ASSET_DIR:-}" ]; then
+  if [ -z "$TAG" ]; then
+    TAG=$(fetch_stdout "https://api.github.com/repos/$REPO/releases/latest" |
+      sed -n 's/.*"tag_name"[[:space:]]*"\([^"]*\)".*/\1/p' | head -n1)
+  fi
+  if [ -z "$TAG" ]; then
+    echo "Could not determine the latest Wird release." >&2
+    exit 1
+  fi
 fi
 
 OS=$(uname -s)
