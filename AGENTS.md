@@ -12,6 +12,12 @@ npm run build        # dist/server (tsc) + dist/web (vite build)
 npm start            # production server on http://127.0.0.1:4545
 npm run dev          # API server (tsx watch, :4545) + Vite dev server (:5173)
 npm run e2e          # build, then scripts/e2e.ts in local Microsoft Edge
+npm run build:sea    # single-executable build -> build/sea/wird.exe (wird on POSIX)
+npm run package:win  # build/release/: portable zip + Inno Setup installer
+npm run package:linux# build/release/: linux tar.gz (Linux only)
+npm run package:app  # build/release/: `node wird.cjs` bundle tar.gz (macOS lane)
+npm run checksums    # build/release/SHA256SUMS.txt
+npm run smoke        # smoke-test a binary: node scripts/smoke.mjs <file> [--cwd DIR]
 ```
 
 `npm run e2e` uses a throwaway database via `LEARNING_DB_PATH` and writes
@@ -104,3 +110,33 @@ the Vite root (src/web/) whose name begins with 'api' (the frontend API client
 lives in src/web/client/ for this reason; do not rename it back). Otherwise
 dev-server module requests like /api/client.ts get proxied to the backend,
 404, and the page is blank. vite.config.ts proxy is intentionally unchanged.
+
+## Packaging
+
+- `src/server/desktop.ts` is the only packaged entry. `src/server/index.ts`
+  stays unchanged and is used by `npm start`/`npm run dev`.
+- Nothing reads files relative to `process.cwd()` except the `diskAssets`
+  defaults in `app.ts` and the non-packaged desktop fallback; all asset
+  access goes through the `AssetSource` interface (`assets.ts` disk,
+  `embedded.ts` SEA).
+- Data directory precedence: `LEARNING_DB_PATH` > `LEARNING_DATA_DIR` >
+  `portable` marker next to the exe > per-user dir (`%LOCALAPPDATA%\Wird` on
+  Windows, not Roaming; `~/Library/Application Support/Wird` on macOS;
+  `$XDG_DATA_HOME/wird` or `~/.local/share/wird` on Linux).
+- Desktop startup order: bind the port first, then open the DB, then open
+  the browser. On a port conflict, never switch ports silently: a running
+  Wird opens the browser, a foreign process is a fatal error.
+- The `localOnly` middleware (`security.ts`: loopback Host header, Origin
+  and JSON content-type checks on mutations) must stay mounted before all
+  routes.
+- `assertSchemaNotNewer` refuses DBs from a newer app version; keep it
+  before any backup or migration work.
+- Packaging scripts write only under `build/`. Every smoke test or CI run
+  must set `LEARNING_DATA_DIR` (or `LEARNING_DB_PATH`) to a temp dir; the
+  real per-user folder and `data/` are off-limits.
+- Node is pinned in three places that must change together: `.nvmrc`,
+  `engines` in package.json, and `NODE_VERSION` in `install/install.sh`.
+- The Inno `AppId` in `packaging/windows/wird.iss` is fixed forever; the
+  uninstaller must never delete user data (no `[UninstallDelete]` outside
+  `{app}`). `install/` scripts are piped into interpreters: `install.ps1`
+  never calls `exit`, `install.sh` stays POSIX sh.
