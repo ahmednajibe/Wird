@@ -39,7 +39,7 @@ function PhaseTimeline({ group, projection, color, onSelect }: { group: TrackStr
             >
               <div className="flex items-center gap-2">
                 <span
-                  className={cn('num inline-flex size-6 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold', done ? 'text-on-accent' : 'text-ink')}
+                  className={cn('num inline-flex size-6 shrink-0 items-center justify-center rounded-full text-2xs font-semibold', done ? 'text-on-accent' : 'text-ink')}
                   style={{ background: done ? color : 'var(--surface-3)' }}
                 >
                   {done ? <CheckCircle size={14} weight="fill" aria-hidden /> : i + 1}
@@ -49,7 +49,7 @@ function PhaseTimeline({ group, projection, color, onSelect }: { group: TrackStr
                 </span>
               </div>
               <ProgressBar value={credited} max={est} height={5} color={color} label={t('tracks.phaseProgress', { title: p.title })} />
-              <div className="flex justify-between text-[11px] text-muted">
+              <div className="flex justify-between text-2xs text-muted">
                 <span>{done ? t('tracks.phaseDone') : current ? t('tracks.phaseCurrent') : t('tracks.phaseNext')}</span>
                 <span className="num">{done ? '' : pp?.projectedCompletionDate ? formatMediumDate(pp.projectedCompletionDate) : t('tracks.noDate')}</span>
               </div>
@@ -97,7 +97,7 @@ function ModuleCard({
             )}
             {m.kind === 'project' && <Chip>{t('tracks.project')}</Chip>}
           </div>
-          <h4 className="text-[15px] font-semibold tracking-tight text-ink rtl:text-right" dir="auto">
+          <h4 className="text-md font-semibold tracking-tight text-ink rtl:text-right" dir="auto">
             {m.title}
           </h4>
         </div>
@@ -205,17 +205,17 @@ function StreamSection({ group, onAction, index }: { group: TrackStreamGroup; on
         </div>
         <div className="grid grid-cols-3 gap-2 sm:gap-3 lg:min-w-[420px]">
           <div className="rounded-xl bg-surface-2 px-3 py-2">
-            <div className="text-[11px] text-muted">{t('tracks.modules')}</div>
+            <div className="text-2xs text-muted">{t('tracks.modules')}</div>
             <div className="num text-base font-semibold text-ink">
               {doneCount}/{all.length}
             </div>
           </div>
           <div className="rounded-xl bg-surface-2 px-3 py-2">
-            <div className="text-[11px] text-muted">{t('tracks.perWeek')}</div>
+            <div className="text-2xs text-muted">{t('tracks.perWeek')}</div>
             <div className="num text-base font-semibold text-ink">{formatHours(pr?.weeklyPlannedMinutes ?? 0)}</div>
           </div>
           <div className="rounded-xl bg-surface-2 px-3 py-2">
-            <div className="text-[11px] text-muted">{t('tracks.projFinish')}</div>
+            <div className="text-2xs text-muted">{t('tracks.projFinish')}</div>
             <div className="num text-base font-semibold text-ink">{pr?.projectedCompletionDate ? formatMediumDate(pr.projectedCompletionDate) : t('tracks.notScheduled')}</div>
           </div>
         </div>
@@ -400,7 +400,7 @@ export function TracksPage() {
         <ResourcesView />
       ) : q.isPending ? (
         <div className="flex flex-col gap-4">
-          <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+          <div className="grid grid-cols-2 gap-3 lg:grid-cols-3 xl:grid-cols-4">
             {[0, 1, 2, 3].map((i) => (
               <Skeleton key={i} className="h-28 rounded-2xl" />
             ))}
@@ -426,7 +426,7 @@ export function TracksPage() {
         </Card>
       ) : (
         <>
-          <div role="tablist" aria-label={t('nav.tracks')} className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+          <div role="tablist" aria-label={t('nav.tracks')} className="grid grid-cols-2 gap-3 lg:grid-cols-3 xl:grid-cols-4">
             {streams.map((g) => {
               const key = `${g.track}.${g.stream}`;
               return (

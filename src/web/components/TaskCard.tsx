@@ -249,7 +249,7 @@ export function TaskCard({
         <div className="flex flex-wrap items-center gap-3 px-4 py-3 sm:gap-4 sm:px-5">
           {checkButton}
           <div className="flex min-w-0 flex-1 flex-wrap items-baseline gap-x-3 gap-y-0.5">
-            <h3 className="text-[15px] font-semibold tracking-tight text-muted line-through decoration-1">{title}</h3>
+            <h3 className="text-md font-semibold tracking-tight text-muted line-through decoration-1">{title}</h3>
             {done && (
               <span className="inline-flex items-center gap-1 text-xs font-semibold text-accent-ink" data-testid="task-points">
                 <Lightning size={13} weight="fill" aria-hidden />
@@ -316,7 +316,7 @@ export function TaskCard({
               <bdi dir="auto">{m.label}</bdi>
             </Chip>
           </div>
-          <h3 className="mt-2 text-[15px] font-semibold tracking-tight text-ink sm:text-base">{title}</h3>
+          <h3 className="mt-2 text-md font-semibold tracking-tight text-ink sm:text-base">{title}</h3>
           <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1">
             <Meta icon={Clock}>{formatMinutes(task.plannedMinutes)}</Meta>
             {isQuran && task.quranPages.length > 0 && (

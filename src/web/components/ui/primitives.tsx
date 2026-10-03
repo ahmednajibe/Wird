@@ -23,7 +23,7 @@ export function CardHeader({ title, subtitle, icon: I, action, className }: { ti
           </span>
         )}
         <div className="min-w-0">
-          <h2 className="text-[15px] font-semibold tracking-tight text-ink">{title}</h2>
+          <h2 className="text-md font-semibold tracking-tight text-ink">{title}</h2>
           {subtitle && <p className="mt-0.5 text-sm text-muted">{subtitle}</p>}
         </div>
       </div>
@@ -38,7 +38,7 @@ export function PageHeader({ title, subtitle, actions, eyebrow }: { title: React
       <div className="min-w-0">
         {eyebrow && <div className="mb-1.5 text-sm font-medium text-muted">{eyebrow}</div>}
         <h1 className="text-2xl font-bold tracking-tight text-ink md:text-[28px]">{title}</h1>
-        {subtitle && <p className="mt-1.5 max-w-2xl text-sm text-muted md:text-[15px]">{subtitle}</p>}
+        {subtitle && <p className="mt-1.5 max-w-2xl text-sm text-muted md:text-md">{subtitle}</p>}
       </div>
       {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
     </header>

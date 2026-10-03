@@ -203,7 +203,7 @@ function WeekStrip({ days }: { days: WeekSummaryDay[] }) {
   return (
     <Card className="p-4 sm:p-5">
       <div className="mb-3 flex items-center justify-between">
-        <h2 className="text-[15px] font-semibold tracking-tight">{t('week.title')}</h2>
+        <h2 className="text-md font-semibold tracking-tight">{t('week.title')}</h2>
         <span className="text-xs text-muted">{t('week.sub')}</span>
       </div>
       <div className="grid grid-cols-7 gap-1.5 sm:gap-2.5" data-testid="week-strip">
@@ -218,9 +218,9 @@ function WeekStrip({ days }: { days: WeekSummaryDay[] }) {
                 aria-label={t('week.dayNotStartedAria', { day: dayName(w.date, lang), date: w.date })}
                 className="flex flex-col items-center gap-1.5 rounded-2xl border border-dashed border-line px-1 py-2.5 opacity-55 sm:py-3"
               >
-                <span className="text-[11px] font-semibold text-muted uppercase">{dayNameShort(w.date, lang)}</span>
+                <span className="text-2xs font-semibold text-muted uppercase">{dayNameShort(w.date, lang)}</span>
                 <span className="num text-base font-semibold text-muted sm:text-lg">{dayOfMonth(w.date)}</span>
-                <span className="text-[10px] leading-tight text-subtle">{t('week.notStarted')}</span>
+                <span className="text-3xs leading-tight text-subtle">{t('week.notStarted')}</span>
               </div>
             );
           }
@@ -243,7 +243,7 @@ function WeekStrip({ days }: { days: WeekSummaryDay[] }) {
                 w.isToday ? 'border-accent/50 bg-accent/8' : 'border-line bg-surface-2/50 hover:bg-surface-2',
               )}
             >
-              <span className={cn('text-[11px] font-semibold uppercase', w.isToday ? 'text-accent-ink' : 'text-muted')}>{dayNameShort(w.date, lang)}</span>
+              <span className={cn('text-2xs font-semibold uppercase', w.isToday ? 'text-accent-ink' : 'text-muted')}>{dayNameShort(w.date, lang)}</span>
               <span className="num text-base font-semibold text-ink sm:text-lg">{dayOfMonth(w.date)}</span>
               <span className="relative h-1.5 w-full max-w-12 overflow-hidden rounded-full bg-surface-3">
                 <motion.span
@@ -295,7 +295,7 @@ function IntroCard() {
   return (
     <Card className="p-5 sm:p-6" data-testid="intro-card">
       <div className="flex items-start justify-between gap-4">
-        <h2 className="text-[15px] font-semibold tracking-tight text-ink">{t('intro.title')}</h2>
+        <h2 className="text-md font-semibold tracking-tight text-ink">{t('intro.title')}</h2>
         <Button variant="secondary" size="sm" onClick={dismiss} data-testid="intro-dismiss">
           {t('intro.dismiss')}
         </Button>

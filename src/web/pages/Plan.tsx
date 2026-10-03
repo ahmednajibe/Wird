@@ -26,7 +26,7 @@ import type { DayView, TaskView } from '../client/types';
 import { BaselineList } from '../components/BaselineList';
 import { Button, IconButton } from '../components/ui/Button';
 import { ConfirmDialog, Dialog } from '../components/ui/Dialog';
-import { Chip, Disclosure, Duration, ErrorState, PageHeader, ProgressBar, Segmented, Skeleton } from '../components/ui/primitives';
+import { Chip, Disclosure, Duration, ErrorState, InfoHint, PageHeader, ProgressBar, Segmented, Skeleton } from '../components/ui/primitives';
 import { useToast } from '../components/ui/Toast';
 import { useI18n } from '../i18n';
 import { dayName, dayNameShort, fastingReasons, hijriLabel, localizeTaskTitle, taskTitleParts, type BaselineContext } from '../i18n/engineText';
@@ -391,13 +391,20 @@ function WhyPanel() {
     <Disclosure title={t('plan.whyTitle')} subtitle={t('plan.whySub')} icon={Info} defaultOpen={false} data-testid="why-panel">
       <div className="grid gap-6 lg:grid-cols-3">
         <div>
-          <h3 className="label mb-3">{t('plan.capPerWeekday')}</h3>
+          <h3 className="label mb-3 flex items-center gap-1">
+            {t('plan.capPerWeekday')}
+            <span className="normal-case tracking-normal">
+              <InfoHint label={t('plan.capPerWeekday')}>
+                {tRich('plan.monThuNote', { min: <Duration minutes={Math.round((s.capacityByDow[1] ?? 0) * (1 - s.fastingReductionPct / 100))} className="text-ink" /> })}
+              </InfoHint>
+            </span>
+          </h3>
           <ul className="flex flex-col gap-2">
             {s.capacityByDow.map((c, i) => {
               const per = expl.perDay.find((p) => p.dow === i);
               return (
                 <li key={i} className="flex items-center gap-3 text-sm">
-                  <span className="w-9 text-muted">{dayNameShort(addDays(DOW_EPOCH, i), lang)}</span>
+                  <span className="w-16 shrink-0 text-muted">{dayNameShort(addDays(DOW_EPOCH, i), lang)}</span>
                   <div className="flex-1">
                     <ProgressBar value={c} max={Math.max(...s.capacityByDow, 1)} height={6} color="var(--muted)" animateOnMount={false} />
                   </div>
@@ -411,12 +418,16 @@ function WhyPanel() {
             })}
           </ul>
           <p className="mt-3 text-xs text-muted">
-            {tRich('plan.fastingLess', { pct: <bdi dir="ltr" className="num text-ink">{s.fastingReductionPct}%</bdi> })}{' '}
-            {tRich('plan.monThuNote', { min: <Duration minutes={Math.round((s.capacityByDow[1] ?? 0) * (1 - s.fastingReductionPct / 100))} className="text-ink" /> })}
+            {tRich('plan.fastingLess', { pct: <bdi dir="ltr" className="num text-ink">{s.fastingReductionPct}%</bdi> })}
           </p>
         </div>
         <div>
-          <h3 className="label mb-3">{t('plan.weekPerTrack')}</h3>
+          <h3 className="label mb-3 flex items-center gap-1">
+            {t('plan.weekPerTrack')}
+            <span className="normal-case tracking-normal">
+              <InfoHint label={t('plan.weekPerTrack')}>{t('plan.weekExplHint')}</InfoHint>
+            </span>
+          </h3>
           <ul className="flex flex-col gap-2.5">
             {rows.map((w) => {
               const m = meta(w.track, w.stream);
@@ -437,12 +448,7 @@ function WhyPanel() {
             })}
           </ul>
           <p className="mt-3 text-xs text-muted">
-            {tRich('plan.weekExpl', {
-              total: <Duration minutes={totalWeekly} className="text-ink" />,
-              reserve: <Duration minutes={expl.quranReserveMinutes} className="text-ink" />,
-              cap: <Duration minutes={expl.effectiveReviewCapMinutes} className="text-ink" />,
-              buffer: <Duration minutes={nw.bufferMinutes} className="text-ink" />,
-            })}
+            {tRich('plan.weekExpl', { total: <Duration minutes={totalWeekly} className="text-ink" /> })}
           </p>
         </div>
         <div>
@@ -450,15 +456,15 @@ function WhyPanel() {
           <div className="grid grid-cols-3 gap-2">
             <div className="rounded-xl bg-surface-2 p-3 text-center">
               <div className="num text-xl font-semibold text-ink">{expl.normal}</div>
-              <div className="text-[11px] text-muted">{t('plan.goalNormal')}</div>
+              <div className="text-2xs text-muted">{t('plan.goalNormal')}</div>
             </div>
             <div className="rounded-xl bg-surface-2 p-3 text-center">
               <div className="num text-xl font-semibold text-ink">{expl.fasting}</div>
-              <div className="text-[11px] text-muted">{t('plan.goalFasting')}</div>
+              <div className="text-2xs text-muted">{t('plan.goalFasting')}</div>
             </div>
             <div className="rounded-xl bg-surface-2 p-3 text-center">
               <div className="num text-xl font-semibold text-ink">0</div>
-              <div className="text-[11px] text-muted">{t('plan.goalRest')}</div>
+              <div className="text-2xs text-muted">{t('plan.goalRest')}</div>
             </div>
           </div>
           <BaselineList className="mt-3" expl={expl} ctx={baselineCtx} />

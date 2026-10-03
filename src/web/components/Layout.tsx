@@ -50,8 +50,8 @@ function Logo() {
     <div className="flex items-center gap-2.5">
       <img src="/favicon.svg" width={30} height={30} alt="" aria-hidden />
       <div className="leading-tight">
-        <div className="text-[15px] font-bold tracking-tight text-ink">Wird</div>
-        <div className="text-[11px] font-medium text-subtle">{data?.planName ?? t('app.planFallback')}</div>
+        <div className="text-md font-bold tracking-tight text-ink">Wird</div>
+        <div className="text-2xs font-medium text-subtle">{data?.planName ?? t('app.planFallback')}</div>
       </div>
     </div>
   );
@@ -98,10 +98,10 @@ function SidebarStatus() {
               count: <AnimatedNumber value={data.streak.current} className="text-lg font-semibold text-ink" />,
             })}
           </div>
-          <div className="text-[11px] text-subtle">{secured ? t('sidebar.secured') : t('sidebar.open')}</div>
+          <div className="text-2xs text-subtle">{secured ? t('sidebar.secured') : t('sidebar.open')}</div>
         </div>
       </div>
-      <div className="mt-3 flex items-center justify-between text-[11px] text-muted">
+      <div className="mt-3 flex items-center justify-between text-2xs text-muted">
         <span>{t('sidebar.level', { level: data.level.level })}</span>
         <span className="num">{t('sidebar.levelPoints', { into: data.level.pointsIntoLevel, total: data.level.pointsForNextLevel })}</span>
       </div>
@@ -131,7 +131,7 @@ function Sidebar() {
       </div>
       <Button variant="primary" icon={Plus} onClick={open} className="w-full justify-between" data-testid="add-task-button">
         <span className="flex-1 text-start">{t('nav.addTask')}</span>
-        <kbd className="num rounded-md bg-on-accent/15 px-1.5 text-[11px] font-semibold">N</kbd>
+        <kbd className="num rounded-md bg-on-accent/15 px-1.5 text-2xs font-semibold">N</kbd>
       </Button>
       <nav aria-label={t('nav.main')} className="flex flex-col gap-1">
         {items.map((item) => {
@@ -174,7 +174,7 @@ function Sidebar() {
         <div className="flex items-center justify-between px-1">
           <div className="leading-tight">
             <VersionTag />
-            <div className="text-[11px] text-subtle/80">{t('app.localOnly')}</div>
+            <div className="text-2xs text-subtle/80">{t('app.localOnly')}</div>
           </div>
           <ThemeToggle />
         </div>
@@ -193,7 +193,7 @@ function MobileTopBar() {
     <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-line bg-bg/85 px-4 backdrop-blur-md md:hidden">
       <div className="flex items-center gap-2">
         <img src="/favicon.svg" width={26} height={26} alt="" aria-hidden />
-        <span className="text-[15px] font-bold tracking-tight">{title}</span>
+        <span className="text-md font-bold tracking-tight">{title}</span>
       </div>
       <div className="flex items-center">
         <NavLink to="/settings" aria-label={t('nav.settings')} className={({ isActive }) => cn('inline-flex size-10 items-center justify-center rounded-full', isActive ? 'text-accent-ink' : 'text-muted')}>
@@ -233,7 +233,7 @@ function BottomTabs() {
             to={item.to}
             end={item.to === '/'}
             className={({ isActive }) =>
-              cn('flex h-16 flex-col items-center justify-center gap-1 text-[11px] font-medium', isActive ? 'text-accent-ink' : 'text-muted')
+              cn('flex h-16 flex-col items-center justify-center gap-1 text-2xs font-medium', isActive ? 'text-accent-ink' : 'text-muted')
             }
           >
             {({ isActive }) => (
