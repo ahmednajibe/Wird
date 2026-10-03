@@ -1,4 +1,4 @@
-import { BookOpen, CalendarBlank, CheckCircle, Clock, Download, FileArrowUp, FloppyDisk, Moon, Palette, Target } from '@phosphor-icons/react';
+import { BookOpen, CalendarBlank, CheckCircle, Clock, Download, FileArrowUp, FloppyDisk, Moon, Palette, SlidersHorizontal } from '@phosphor-icons/react';
 import { AnimatePresence, motion } from 'motion/react';
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { Link } from 'react-router';
@@ -11,13 +11,16 @@ import { api, ApiError, errorMessage } from '../client/client';
 import { useCatalog, useSaveSettings, useSettings } from '../client/hooks';
 import type { CatalogResponse, Settings } from '../client/types';
 import { Button } from '../components/ui/Button';
-import { Card, ErrorState, PageHeader, Segmented, Skeleton, Switch } from '../components/ui/primitives';
+import { Card, Disclosure, ErrorState, PageHeader, Segmented, Skeleton, Switch } from '../components/ui/primitives';
 import { useToast } from '../components/ui/Toast';
 import { cn, formatLongDate, formatMediumDate } from '../lib/format';
 import { useTheme, type ThemePref } from '../lib/theme';
 
 const DOW = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 type Errors = Record<string, string>;
+
+/** Error paths whose fields live inside the Advanced disclosure. */
+const inAdvanced = (path: string) => path.startsWith('baseline.') || path.startsWith('timezone') || path === 'quran.minutesPerReviewPage' || path === 'quran.reviewCapMinutes';
 
 function Section({ icon: I, title, description, children }: { icon: typeof Clock; title: string; description?: string; children: ReactNode }) {
   return (
@@ -166,6 +169,7 @@ function SettingsForm({ initial, catalog }: { initial: Settings; catalog: Catalo
   const [draft, setDraft] = useState<Settings>(initial);
   const [errors, setErrors] = useState<Errors>({});
   const [savedText, setSavedText] = useState<string | null>(null);
+  const [advancedOpen, setAdvancedOpen] = useState(false);
   const save = useSaveSettings();
   const { toast } = useToast();
   const { pref, setPref } = useTheme();
@@ -189,6 +193,7 @@ function SettingsForm({ initial, catalog }: { initial: Settings; catalog: Catalo
       const e: Errors = {};
       for (const i of parsed.error.issues) e[i.path.join('.')] = friendly(i.message);
       setErrors(e);
+      if (Object.keys(e).some(inAdvanced)) setAdvancedOpen(true);
       toast({ tone: 'error', title: 'Check the highlighted fields' });
       return;
     }
@@ -202,6 +207,7 @@ function SettingsForm({ initial, catalog }: { initial: Settings; catalog: Catalo
         const e: Errors = {};
         for (const d of err.details) e[d.path] = friendly(d.message);
         setErrors(e);
+        if (Object.keys(e).some(inAdvanced)) setAdvancedOpen(true);
       }
       toast({ tone: 'error', title: 'Could not save settings', body: errorMessage(err) });
     }
@@ -248,62 +254,6 @@ function SettingsForm({ initial, catalog }: { initial: Settings; catalog: Catalo
           <p className="mt-3 text-xs text-muted">Eid days and the days of Tashreeq are never fasting days.</p>
         </Section>
 
-        <div className="flex flex-col gap-5">
-          <Section icon={CalendarBlank} title="Hijri date" description="Shift the calculated Hijri date to match the local moon sighting.">
-            <Segmented<number>
-              label="Hijri offset in days"
-              value={draft.hijriOffsetDays}
-              onChange={(v) => set('hijriOffsetDays', v)}
-              options={[-2, -1, 0, 1, 2].map((v) => ({ value: v, label: <span className="num">{v > 0 ? `+${v}` : v}</span> }))}
-            />
-            <div className="mt-4 rounded-2xl bg-surface-2 p-4">
-              <div className="text-xs text-muted">Today with this offset</div>
-              <div className="mt-1 text-lg font-semibold text-ink" data-testid="hijri-preview">
-                {toHijri(t, draft.hijriOffsetDays).label}
-              </div>
-              <div className="text-sm text-muted">{formatLongDate(t)}</div>
-            </div>
-          </Section>
-          <Section icon={Palette} title="Appearance" description="Saved on this device. System follows your OS setting.">
-            <Segmented<ThemePref>
-              label="Theme"
-              value={pref}
-              onChange={setPref}
-              options={[
-                { value: 'system', label: 'System' },
-                { value: 'dark', label: 'Dark' },
-                { value: 'light', label: 'Light' },
-              ]}
-            />
-          </Section>
-          <Section icon={Clock} title="Timezone" description="IANA name used for 'today', greetings and week boundaries.">
-            <div>
-              <label htmlFor="timezone" className="mb-1.5 block text-sm font-medium text-ink">
-                Timezone
-              </label>
-              <input
-                id="timezone"
-                data-testid="field-timezone"
-                className={cn('field', err('timezone') && 'border-danger')}
-                value={draft.timezone}
-                placeholder="Africa/Cairo"
-                aria-invalid={Boolean(err('timezone'))}
-                aria-describedby={err('timezone') ? 'timezone-err' : undefined}
-                onChange={(e) => set('timezone', e.target.value)}
-              />
-              {err('timezone') ? (
-                <p id="timezone-err" className="mt-1 text-xs text-danger">
-                  {err('timezone')}
-                </p>
-              ) : (
-                <p className="mt-1 text-xs text-muted">For example Africa/Cairo or Europe/Berlin.</p>
-              )}
-            </div>
-          </Section>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
         <Section icon={BookOpen} title="Quran" description="How long sessions take. Memorize minutes adapt to your real average after a few sessions.">
           <div className="rounded-[10px] border border-line px-3">
             <Switch
@@ -317,8 +267,6 @@ function SettingsForm({ initial, catalog }: { initial: Settings; catalog: Catalo
           <div className={cn(!draft.quran.enabled && 'pointer-events-none opacity-45')} aria-disabled={!draft.quran.enabled}>
             <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
               <NumberField id="q-mem" label="Memorize session" value={draft.quran.memorizeMinutes} suffix="min" error={err('quran.memorizeMinutes')} onChange={(n) => setQuran('memorizeMinutes', n)} />
-              <NumberField id="q-page" label="Review per page" value={draft.quran.minutesPerReviewPage} suffix="min" error={err('quran.minutesPerReviewPage')} onChange={(n) => setQuran('minutesPerReviewPage', n)} />
-              <NumberField id="q-cap" label="Review cap" value={draft.quran.reviewCapMinutes} suffix="min" error={err('quran.reviewCapMinutes')} onChange={(n) => setQuran('reviewCapMinutes', n)} />
             </div>
             <div className="mt-4">
               <div className="mb-1.5 text-sm font-medium text-ink">Memorization order</div>
@@ -334,35 +282,110 @@ function SettingsForm({ initial, catalog }: { initial: Settings; catalog: Catalo
             </div>
           </div>
         </Section>
+      </div>
 
-        <Section icon={Target} title="Daily goal" description="The goal is a share of an average planned day. Fasting days use a smaller share.">
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <NumberField id="b-factor" label="Baseline factor" step={0.01} value={draft.baseline.factor} error={err('baseline.factor')} hint="0 to 2" onChange={(n) => setBaseline('factor', n)} />
-            <NumberField
-              id="b-fasting"
-              label="Fasting factor"
-              step={0.05}
-              value={draft.baseline.fastingFactor}
-              error={err('baseline.fastingFactor')}
-              hint="0 to 1"
-              onChange={(n) => setBaseline('fastingFactor', n)}
-            />
-          </div>
-          <div className="mt-4 grid grid-cols-2 gap-2">
-            <div className="rounded-xl bg-surface-2 p-3">
-              <div className="text-xs text-muted">Normal day goal</div>
-              <div className="num text-2xl font-semibold text-ink" data-testid="preview-normal">
-                {preview ? preview.normal : '-'}
-              </div>
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+        <Section icon={CalendarBlank} title="Hijri date" description="Shift the calculated Hijri date to match the local moon sighting.">
+          <Segmented<number>
+            label="Hijri offset in days"
+            value={draft.hijriOffsetDays}
+            onChange={(v) => set('hijriOffsetDays', v)}
+            options={[-2, -1, 0, 1, 2].map((v) => ({ value: v, label: <span className="num">{v > 0 ? `+${v}` : v}</span> }))}
+          />
+          <div className="mt-4 rounded-2xl bg-surface-2 p-4">
+            <div className="text-xs text-muted">Today with this offset</div>
+            <div className="mt-1 text-lg font-semibold text-ink" data-testid="hijri-preview">
+              {toHijri(t, draft.hijriOffsetDays).label}
             </div>
-            <div className="rounded-xl bg-surface-2 p-3">
-              <div className="text-xs text-muted">Fasting day goal</div>
-              <div className="num text-2xl font-semibold text-ink">{preview ? preview.fasting : '-'}</div>
-            </div>
+            <div className="text-sm text-muted">{formatLongDate(t)}</div>
           </div>
-          <p className="mt-2 text-xs text-muted">Past days keep the goal they had. Changes only apply from today.</p>
+        </Section>
+        <Section icon={Palette} title="Appearance" description="Saved on this device. System follows your OS setting.">
+          <Segmented<ThemePref>
+            label="Theme"
+            value={pref}
+            onChange={setPref}
+            options={[
+              { value: 'system', label: 'System' },
+              { value: 'dark', label: 'Dark' },
+              { value: 'light', label: 'Light' },
+            ]}
+          />
         </Section>
       </div>
+
+      <Disclosure
+        title="Advanced"
+        subtitle="Fine-tuning for the daily goal, Quran review timing and the timezone. The defaults work for most people."
+        icon={SlidersHorizontal}
+        open={advancedOpen}
+        onOpenChange={setAdvancedOpen}
+      >
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+          <div>
+            <h3 className="label">Daily goal</h3>
+            <p className="mt-1.5 text-sm text-muted">The goal is a share of an average planned day. Fasting days use a smaller share.</p>
+            <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <NumberField id="b-factor" label="Baseline factor" step={0.01} value={draft.baseline.factor} error={err('baseline.factor')} hint="0 to 2" onChange={(n) => setBaseline('factor', n)} />
+              <NumberField
+                id="b-fasting"
+                label="Fasting factor"
+                step={0.05}
+                value={draft.baseline.fastingFactor}
+                error={err('baseline.fastingFactor')}
+                hint="0 to 1"
+                onChange={(n) => setBaseline('fastingFactor', n)}
+              />
+            </div>
+            <div className="mt-4 grid grid-cols-2 gap-2">
+              <div className="rounded-xl bg-surface-2 p-3">
+                <div className="text-xs text-muted">Normal day goal</div>
+                <div className="num text-2xl font-semibold text-ink" data-testid="preview-normal">
+                  {preview ? preview.normal : '-'}
+                </div>
+              </div>
+              <div className="rounded-xl bg-surface-2 p-3">
+                <div className="text-xs text-muted">Fasting day goal</div>
+                <div className="num text-2xl font-semibold text-ink">{preview ? preview.fasting : '-'}</div>
+              </div>
+            </div>
+            <p className="mt-2 text-xs text-muted">Past days keep the goal they had. Changes only apply from today.</p>
+          </div>
+
+          <div className={cn(!draft.quran.enabled && 'pointer-events-none opacity-45')} aria-disabled={!draft.quran.enabled}>
+            <h3 className="label">Quran review</h3>
+            <p className="mt-1.5 text-sm text-muted">How long a review page takes and the most review minutes a day can plan.</p>
+            <div className="mt-4 grid grid-cols-2 gap-3">
+              <NumberField id="q-page" label="Review per page" value={draft.quran.minutesPerReviewPage} suffix="min" error={err('quran.minutesPerReviewPage')} onChange={(n) => setQuran('minutesPerReviewPage', n)} />
+              <NumberField id="q-cap" label="Review cap" value={draft.quran.reviewCapMinutes} suffix="min" error={err('quran.reviewCapMinutes')} onChange={(n) => setQuran('reviewCapMinutes', n)} />
+            </div>
+          </div>
+
+          <div>
+            <label htmlFor="timezone" className="label block">
+              Timezone
+            </label>
+            <p className="mt-1.5 text-sm text-muted">IANA name used for &apos;today&apos;, greetings and week boundaries.</p>
+            <input
+              id="timezone"
+              data-testid="field-timezone"
+              className={cn('field mt-4', err('timezone') && 'border-danger')}
+              value={draft.timezone}
+              placeholder="Africa/Cairo"
+              aria-invalid={Boolean(err('timezone'))}
+              aria-describedby={err('timezone') ? 'timezone-err' : undefined}
+              onChange={(e) => set('timezone', e.target.value)}
+            />
+            {err('timezone') ? (
+              <p id="timezone-err" className="mt-1 text-xs text-danger">
+                {err('timezone')}
+              </p>
+            ) : (
+              <p className="mt-1 text-xs text-muted">For example Africa/Cairo or Europe/Berlin.</p>
+            )}
+          </div>
+        </div>
+      </Disclosure>
 
       <PlanSection catalog={catalog} />
 

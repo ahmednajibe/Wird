@@ -1,4 +1,4 @@
-import { ArrowClockwise, WarningCircle, type Icon } from '@phosphor-icons/react';
+import { ArrowClockwise, CaretDown, Question, WarningCircle, type Icon } from '@phosphor-icons/react';
 import { animate, motion, useReducedMotion } from 'motion/react';
 import { useEffect, useId, useLayoutEffect, useRef, useState, type HTMLAttributes, type ReactNode } from 'react';
 import { cn, formatNumber } from '../../lib/format';
@@ -343,6 +343,116 @@ export function ExternalLink({ href, children, className }: { href: string; chil
     <a href={href} target="_blank" rel="noopener noreferrer" className={cn('underline-offset-2 hover:underline', className)}>
       {children}
     </a>
+  );
+}
+
+/** Small inline "?" button that opens a short explanation panel. Click toggles; Escape and outside clicks close it. */
+export function InfoHint({ label, children }: { label: string; children: ReactNode }) {
+  const [open, setOpen] = useState(false);
+  const [shift, setShift] = useState(0);
+  const ref = useRef<HTMLSpanElement>(null);
+  const id = useId();
+  useEffect(() => {
+    if (!open) return;
+    const onDown = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setOpen(false);
+    document.addEventListener('mousedown', onDown);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('mousedown', onDown);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [open]);
+  return (
+    <span ref={ref} className="relative inline-flex">
+      <button
+        type="button"
+        aria-label={`About ${label}`}
+        aria-expanded={open}
+        aria-controls={open ? id : undefined}
+        onClick={() => {
+          if (!open && ref.current) {
+            const w = Math.min(288, window.innerWidth * 0.8);
+            const left = ref.current.getBoundingClientRect().left;
+            setShift(Math.min(Math.max(left, 12), window.innerWidth - w - 12) - left);
+          }
+          setOpen((v) => !v);
+        }}
+        className="inline-flex size-6 items-center justify-center rounded-full text-muted transition-colors hover:bg-surface-2 hover:text-ink"
+      >
+        <Question size={15} aria-hidden />
+      </button>
+      {open && (
+        <span
+          id={id}
+          style={shift === 0 ? undefined : { left: shift }}
+          className="absolute top-full left-0 z-20 mt-2 block w-72 max-w-[80vw] rounded-2xl border border-line-strong bg-surface p-3 text-left text-sm leading-relaxed font-normal text-muted shadow-pop"
+        >
+          {children}
+        </span>
+      )}
+    </span>
+  );
+}
+
+/** Card whose header is a full-width toggle button; body renders only when open. Supports controlled and uncontrolled use. */
+export function Disclosure({
+  title,
+  subtitle,
+  icon: I,
+  defaultOpen = false,
+  open,
+  onOpenChange,
+  children,
+  className,
+  ...rest
+}: Omit<HTMLAttributes<HTMLElement>, 'title'> & {
+  title: ReactNode;
+  subtitle?: ReactNode;
+  icon?: Icon;
+  defaultOpen?: boolean;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  children: ReactNode;
+}) {
+  const [inner, setInner] = useState(defaultOpen);
+  const isOpen = open ?? inner;
+  const id = useId();
+  const toggle = () => {
+    const next = !isOpen;
+    if (open === undefined) setInner(next);
+    onOpenChange?.(next);
+  };
+  return (
+    <Card className={className} {...rest}>
+      <button
+        type="button"
+        aria-expanded={isOpen}
+        aria-controls={id}
+        onClick={toggle}
+        className="flex w-full items-center gap-3 rounded-[inherit] p-5 text-left transition-colors hover:bg-surface-2/50 sm:p-6"
+      >
+        {I && (
+          <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-xl bg-surface-2 text-muted">
+            <I size={19} aria-hidden />
+          </span>
+        )}
+        <span className="min-w-0 flex-1">
+          <span className="block text-base font-semibold tracking-tight text-ink">{title}</span>
+          {subtitle && <span className="mt-0.5 block text-sm text-muted">{subtitle}</span>}
+        </span>
+        <motion.span animate={{ rotate: isOpen ? 180 : 0 }} transition={{ type: 'spring', stiffness: 500, damping: 30 }} className="inline-flex shrink-0 text-muted">
+          <CaretDown size={17} aria-hidden />
+        </motion.span>
+      </button>
+      {isOpen && (
+        <div id={id} className="px-5 pb-5 sm:px-6 sm:pb-6">
+          {children}
+        </div>
+      )}
+    </Card>
   );
 }
 

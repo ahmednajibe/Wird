@@ -50,12 +50,14 @@ export function AddTaskModal({ open, onClose }: { open: boolean; onClose: () => 
   const [pages, setPages] = useState('1');
   const [offCurriculum, setOffCurriculum] = useState(false);
   const [done, setDone] = useState(true);
+  const [showFormula, setShowFormula] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (open) {
       setTitle('');
       setErrors({});
+      setShowFormula(false);
       create.reset();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -314,8 +316,15 @@ export function AddTaskModal({ open, onClose }: { open: boolean; onClose: () => 
                 )}
               </AnimatePresence>
             </div>
-            <p className="text-xs text-muted">Points are calculated automatically.</p>
-            {preview.data && input && <p className="num mt-0.5 truncate text-[11px] text-subtle">{preview.data.formula}</p>}
+            <p className="text-xs text-muted">
+              Points are calculated automatically.{' '}
+              {preview.data && input && (
+                <button type="button" aria-expanded={showFormula} onClick={() => setShowFormula((v) => !v)} className="font-medium text-accent-ink underline-offset-2 hover:underline">
+                  How?
+                </button>
+              )}
+            </p>
+            {showFormula && preview.data && input && <p className="num mt-0.5 truncate text-[11px] text-subtle">{preview.data.formula}</p>}
           </div>
         </div>
 

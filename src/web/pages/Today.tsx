@@ -1,5 +1,6 @@
 import { Check, Clock, Coffee, Fire, Hourglass, ListChecks, Moon, Plus, SealCheck } from '@phosphor-icons/react';
 import { motion } from 'motion/react';
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { errorMessage } from '../client/client';
 import { useCatalog, useDashboard, useSettings } from '../client/hooks';
@@ -7,7 +8,7 @@ import type { Dashboard, WeekSummaryDay } from '../client/types';
 import { useAddTask } from '../components/AddTaskContext';
 import { TaskCard, type TaskActions } from '../components/TaskCard';
 import { Button } from '../components/ui/Button';
-import { AnimatedNumber, Card, Chip, Duration, EmptyState, ErrorState, ProgressBar, Ring, Skeleton, useMediaQuery } from '../components/ui/primitives';
+import { AnimatedNumber, Card, Chip, Duration, EmptyState, ErrorState, InfoHint, ProgressBar, Ring, Skeleton, useMediaQuery } from '../components/ui/primitives';
 import { cn, dayOfMonth, formatLongDate, greeting, plural } from '../lib/format';
 import { useModuleResources } from '../lib/resources';
 import { useTaskActions } from '../lib/useTaskActions';
@@ -52,6 +53,13 @@ function HeroCard({ d }: { d: Dashboard }) {
   const enough = catalog.data?.quranEnabled && hasWarmup ? 'The Quran session plus the warm-up is enough.' : 'A light day of your core habits is enough.';
   const { current, longest } = d.streak;
   const l = d.level;
+  const goalHint = (
+    <InfoHint label={rest ? 'rest days' : 'the daily goal'}>
+      {rest
+        ? 'Rest days have no goal. Your streak is paused, not broken.'
+        : 'Your daily goal is a small share of a normal day\u2019s planned points, smaller on fasting days. Reach it and the day counts for your streak. Anything above it is a bonus.'}
+    </InfoHint>
+  );
   return (
     <Card className={cn('relative overflow-hidden p-5 sm:p-6', secured && 'border-accent/40')} data-testid="goal-card">
       {secured && (
@@ -62,15 +70,19 @@ function HeroCard({ d }: { d: Dashboard }) {
           className="pointer-events-none absolute -top-24 -right-24 size-64 rounded-full bg-accent/12 blur-3xl"
         />
       )}
-      <div className="relative flex items-center gap-5 sm:gap-6">
-        <Ring value={d.pointsToday} max={rest ? 0 : baseline} size={wide ? 148 : 116} stroke={wide ? 13 : 11} label={`${d.pointsToday} points, goal ${baseline}`}>
-          <AnimatedNumber value={d.pointsToday} className="text-[28px] leading-none font-semibold text-ink sm:text-[34px]" data-testid="points-today" />
-          <span className="mt-1 text-xs text-muted">{rest ? 'points' : <>goal <span className="num">{baseline}</span></>}</span>
-        </Ring>
-        <div className="min-w-0 flex-1">
+      <div className="relative grid grid-cols-[auto_1fr] items-center gap-x-5 gap-y-4 sm:gap-x-6">
+        <div className="sm:row-span-2">
+          <Ring value={d.pointsToday} max={rest ? 0 : baseline} size={wide ? 148 : 116} stroke={wide ? 13 : 11} label={`${d.pointsToday} points, goal ${baseline}`}>
+            <AnimatedNumber value={d.pointsToday} className="text-[28px] leading-none font-semibold text-ink sm:text-[34px]" data-testid="points-today" />
+            <span className="mt-1 text-xs text-muted">{rest ? 'points' : <>goal <span className="num">{baseline}</span></>}</span>
+          </Ring>
+        </div>
+        <div className="min-w-0">
           {rest ? (
             <>
-              <p className="text-lg font-semibold text-ink">Rest day</p>
+              <p className="inline-flex items-center gap-1 text-lg font-semibold text-ink">
+                Rest <span className="whitespace-nowrap">day {goalHint}</span>
+              </p>
               <p className="mt-1 text-sm text-muted">No goal today. The streak is paused, not broken.</p>
             </>
           ) : secured ? (
@@ -82,33 +94,42 @@ function HeroCard({ d }: { d: Dashboard }) {
                 data-testid="streak-secured"
               >
                 <SealCheck size={22} weight="fill" aria-hidden />
-                Streak secured
+                Streak <span className="whitespace-nowrap">secured {goalHint}</span>
               </motion.p>
               <p className="mt-1 text-sm text-muted">Today counts. Everything else is a bonus.</p>
             </>
           ) : (
             <>
               <p className="text-lg font-semibold text-ink">
-                <span className="num">{left}</span> {left === 1 ? 'point' : 'points'} to go
+                <span className="num">{left}</span> {left === 1 ? 'point' : 'points'} <span className="whitespace-nowrap">to go {goalHint}</span>
               </p>
               <p className="mt-1 text-sm text-muted">Reach {baseline} points to keep your streak. {enough}</p>
             </>
           )}
-          <div className="mt-4 flex flex-col gap-2 border-t border-line pt-3.5">
-            <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-sm" data-testid="streak-card">
-              <Fire size={16} weight={secured ? 'fill' : 'regular'} className={secured ? 'text-accent-ink' : 'text-muted'} aria-hidden />
-              <span className="text-ink">
-                <AnimatedNumber value={current} className="font-semibold" data-testid="streak-current" /> {current === 1 ? 'day' : 'days'} streak
-              </span>
-              <span className="text-muted">longest <span className="num">{longest}</span></span>
-            </div>
-            <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-sm" data-testid="level-card">
-              <span className="text-ink">Level <span className="num font-semibold">{l.level}</span></span>
-              <span className="w-24 shrink-0 sm:w-28">
-                <ProgressBar value={l.pointsIntoLevel} max={l.pointsForNextLevel} label="Progress to next level" height={5} />
-              </span>
-              <span className="text-muted"><span className="num">{l.pointsToNextLevel}</span> points to level {l.level + 1}</span>
-            </div>
+        </div>
+        <div className="col-span-2 flex min-w-0 flex-col gap-2 border-t border-line pt-3.5 sm:col-span-1 sm:col-start-2">
+          <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-sm" data-testid="streak-card">
+            <Fire size={16} weight={secured ? 'fill' : 'regular'} className={secured ? 'text-accent-ink' : 'text-muted'} aria-hidden />
+            <span className="text-ink">
+              <AnimatedNumber value={current} className="font-semibold" data-testid="streak-current" /> {current === 1 ? 'day' : 'days'} streak
+            </span>
+            <span className="whitespace-nowrap text-muted">
+              longest <span className="num">{longest}</span>{' '}
+              <InfoHint label="the streak">Days in a row that reached their goal. Rest days pause the streak without breaking it. Days that are over never change.</InfoHint>
+            </span>
+          </div>
+          <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-sm" data-testid="level-card">
+            <span className="text-ink">Level <span className="num font-semibold">{l.level}</span></span>
+            <span className="w-24 shrink-0 sm:w-28">
+              <ProgressBar value={l.pointsIntoLevel} max={l.pointsForNextLevel} label="Progress to next level" height={5} />
+            </span>
+            <span className="whitespace-nowrap text-muted">
+              <span className="num">{l.pointsToNextLevel}</span> points to level {l.level + 1}{' '}
+              <InfoHint label="levels">
+                Your level grows with every point you have ever earned. Each level takes a little more than the last. It is a long-term marker; the daily goal is what
+                matters day to day.
+              </InfoHint>
+            </span>
           </div>
         </div>
       </div>
@@ -131,24 +152,36 @@ function CapacityLine({ d }: { d: Dashboard }) {
   const planned = d.tasks.filter((t) => t.source === 'generated' && t.status !== 'rolled').reduce((a, t) => a + t.plannedMinutes, 0);
   const source = c.override ?? c.base;
   const pct = Math.round((1 - c.total / Math.max(1, source)) * 100);
+  const hint = (
+    <InfoHint label="planned and available time">
+      Planned is the time today&apos;s tasks need. The second number is the time you have today, set per weekday in Settings (less on fasting days). Unused Quran time is an
+      optional buffer, never required.
+    </InfoHint>
+  );
   return (
     <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted" data-testid="capacity-line">
       <span className="inline-flex flex-wrap items-center gap-1.5">
         {c.isRestDay ? <Coffee size={16} aria-hidden /> : <Clock size={16} aria-hidden />}
         {c.isRestDay ? (
-          'Rest day, capacity set to 0 min'
+          <span className="whitespace-nowrap">Rest day, capacity set to 0 min {hint}</span>
         ) : (
           <>
-            <Duration minutes={planned} className="text-ink" /> planned of <Duration minutes={c.total} className="text-ink" /> today
-            {c.isFasting ? (
-              <span>
-                (<Duration minutes={source} /> less <span className="num">{pct}</span>% for fasting)
-              </span>
-            ) : c.override !== null ? (
-              <span>
-                (custom, usually <Duration minutes={c.base} />)
-              </span>
-            ) : null}
+            <Duration minutes={planned} className="text-ink" /> planned of{' '}
+            <span className="whitespace-nowrap">
+              <Duration minutes={c.total} className="text-ink" /> today
+              {c.isFasting ? (
+                <span>
+                  {' '}
+                  (<Duration minutes={source} /> less <span className="num">{pct}</span>% for fasting)
+                </span>
+              ) : c.override !== null ? (
+                <span>
+                  {' '}
+                  (custom, usually <Duration minutes={c.base} />)
+                </span>
+              ) : null}{' '}
+              {hint}
+            </span>
           </>
         )}
       </span>
@@ -222,6 +255,52 @@ function WeekStrip({ days }: { days: WeekSummaryDay[] }) {
           );
         })}
       </div>
+    </Card>
+  );
+}
+
+const INTRO_KEY = 'wird-intro-dismissed';
+const INTRO_STEPS = [
+  'Do the tasks below. They are sized to fit the time you have today.',
+  'Each finished task earns points. Wird works them out from the minutes and the kind of work, so there is nothing to enter.',
+  'Reach the daily goal and the day counts for your streak. The goal is small on purpose: a light day still counts.',
+];
+
+function IntroCard() {
+  const [dismissed, setDismissed] = useState(() => {
+    try {
+      return window.localStorage.getItem(INTRO_KEY) === '1';
+    } catch {
+      return false;
+    }
+  });
+  if (dismissed) return null;
+  const dismiss = () => {
+    try {
+      window.localStorage.setItem(INTRO_KEY, '1');
+    } catch {
+      /* storage unavailable: hide for this session only */
+    }
+    setDismissed(true);
+  };
+  return (
+    <Card className="p-5 sm:p-6" data-testid="intro-card">
+      <div className="flex items-start justify-between gap-4">
+        <h2 className="text-[15px] font-semibold tracking-tight text-ink">How Wird works</h2>
+        <Button variant="secondary" size="sm" onClick={dismiss} data-testid="intro-dismiss">
+          Got it
+        </Button>
+      </div>
+      <ol className="mt-4 grid gap-4 sm:grid-cols-3">
+        {INTRO_STEPS.map((s, i) => (
+          <li key={i} className="flex gap-3">
+            <span aria-hidden className="num inline-flex size-6 shrink-0 items-center justify-center rounded-full bg-surface-2 text-xs font-semibold text-muted">
+              {i + 1}
+            </span>
+            <p className="text-sm leading-relaxed text-muted">{s}</p>
+          </li>
+        ))}
+      </ol>
     </Card>
   );
 }
@@ -300,6 +379,8 @@ export function TodayPage() {
           </div>
         </Card>
       )}
+
+      {d.tasks.length > 0 && <IntroCard />}
 
       <section aria-labelledby="tasks-heading" className="flex flex-col gap-3">
         <div className="flex items-end justify-between gap-3">
