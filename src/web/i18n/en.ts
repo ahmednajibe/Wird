@@ -492,7 +492,7 @@ export const en = {
   'settings.reviewCap': 'Review cap',
   'settings.timezone': 'Timezone',
   'settings.timezoneDesc': "IANA name used for 'today', greetings and week boundaries.",
-  'settings.tzHint': 'For example {tz1} or {tz2}.',
+  'settings.tzHint': 'For example {tz1} or {tz2}',
   'settings.savedTitle': 'Saved. Here is how your daily goal works now',
   'settings.unsaved': 'Unsaved changes',
   'settings.discard': 'Discard',

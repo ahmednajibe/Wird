@@ -630,7 +630,7 @@ export const ar: ArDict = {
   'settings.reviewCap': 'سقف المراجعة',
   'settings.timezone': 'المنطقة الزمنية',
   'settings.timezoneDesc': 'اسم IANA المستخدم لـ«اليوم» والتحيات وحدود الأسبوع.',
-  'settings.tzHint': 'مثلًا {tz1} أو {tz2}.',
+  'settings.tzHint': 'مثلًا {tz1} أو {tz2}',
   'settings.savedTitle': 'حُفظ. هكذا يعمل هدفك اليومي الآن',
   'settings.unsaved': 'تغييرات غير محفوظة',
   'settings.discard': 'تجاهل',

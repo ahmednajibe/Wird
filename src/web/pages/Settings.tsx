@@ -432,6 +432,7 @@ function SettingsForm({ initial, catalog }: { initial: Settings; catalog: Catalo
               <input
                 id="timezone"
                 data-testid="field-timezone"
+                dir="ltr"
                 className={cn('field mt-4 max-w-xs', err('timezone') && 'border-danger')}
                 value={draft.timezone}
                 placeholder="Africa/Cairo"
