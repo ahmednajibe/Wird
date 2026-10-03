@@ -1,0 +1,29 @@
+{
+  "permissions": {
+    "allow": [
+      "read",
+      "grep",
+      "glob",
+      "edit",
+      "write",
+      "exec"
+    ],
+    "deny": [
+      "Exec(rm)",
+      "Exec(Remove-Item)",
+      "Exec(sudo)",
+      "Exec(git push)",
+      "Exec(git tag)",
+      "Exec(git reset)",
+      "Exec(git clean)",
+      "Write(.env*)",
+      "Write(data/**)",
+      "Exec(npm run reset-plan)",
+      "Exec(git commit)",
+      "Exec(git checkout)",
+      "Exec(git stash)",
+      "Exec(git rebase)",
+      "Write(vite.config.ts)"
+    ]
+  }
+}
