@@ -25,7 +25,7 @@ import { useCatalog, useDashboard, useRegenerate, useSaveDay, useSettings, useTr
 import type { DayView, TaskView } from '../client/types';
 import { Button, IconButton } from '../components/ui/Button';
 import { ConfirmDialog, Dialog } from '../components/ui/Dialog';
-import { Card, Chip, Duration, ErrorState, PageHeader, ProgressBar, Segmented, Skeleton } from '../components/ui/primitives';
+import { Chip, Disclosure, Duration, ErrorState, PageHeader, ProgressBar, Segmented, Skeleton } from '../components/ui/primitives';
 import { useToast } from '../components/ui/Toast';
 import { cn, formatMediumDate, formatShortDate } from '../lib/format';
 import { streamOrderMap, useTrackMeta } from '../lib/tracks';
@@ -186,13 +186,13 @@ function DayCard({ day, onEdit, index }: { day: DayView; onEdit: (d: DayView) =>
         })}
       </ul>
 
-      <div className="mt-3 flex items-center justify-between border-t border-line pt-3 text-xs text-muted">
+      <div className="mt-3 flex flex-wrap items-center justify-between gap-x-2 gap-y-1 border-t border-line pt-3 text-xs text-muted">
         <span>
           {done}/{countable} done
         </span>
         <span className="inline-flex items-center gap-1">
           <Lightning size={13} weight="fill" className="text-accent-ink" aria-hidden />
-          <span className="num text-ink">{day.earnedPoints}</span> / <span className="num">{day.plannedPoints}</span> pts
+          <span className="num text-ink">{day.earnedPoints}</span> / <span className="num">{day.plannedPoints}</span> points
           {!cap.isRestDay && (
             <span className="ml-1">
               (goal <span className="num">{day.baseline}</span>)
@@ -354,17 +354,8 @@ function WhyPanel() {
   const rows = weekly.map((w) => (w.track === QURAN_TRACK_ID ? { ...w, plannedMinutes: nw.quranReserveMinutes } : w));
   const totalWeekly = nw.capacity;
   return (
-    <Card className="p-5 sm:p-6" data-testid="why-panel">
-      <div className="flex items-start gap-3">
-        <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-xl bg-surface-2 text-muted">
-          <Info size={19} aria-hidden />
-        </span>
-        <div>
-          <h2 className="text-lg font-semibold tracking-tight">Why this plan</h2>
-          <p className="text-sm text-muted">The real numbers behind every day card.</p>
-        </div>
-      </div>
-      <div className="mt-5 grid gap-6 lg:grid-cols-3">
+    <Disclosure title="How this plan is calculated" subtitle="The numbers behind every day card." icon={Info} defaultOpen={false} data-testid="why-panel">
+      <div className="grid gap-6 lg:grid-cols-3">
         <div>
           <h3 className="label mb-3">Capacity per weekday</h3>
           <ul className="flex flex-col gap-2">
@@ -438,7 +429,7 @@ function WhyPanel() {
           </p>
         </div>
       </div>
-    </Card>
+    </Disclosure>
   );
 }
 

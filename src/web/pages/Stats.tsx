@@ -169,7 +169,7 @@ function TrackTotals({ perTrack, catalog }: { perTrack: StatsResponse['perTrack'
                 {m.label}
               </span>
               <span className="text-xs text-muted">
-                <span className="num text-sm font-semibold text-ink">{r.points}</span> pts, {formatHours(r.minutes)}, {r.tasks} tasks
+                <span className="num text-sm font-semibold text-ink">{r.points}</span> points, {formatHours(r.minutes)}, {r.tasks} tasks
               </span>
             </div>
             <ProgressBar value={r.points} max={max} color={m.cssVar} height={8} label={`${m.label} points`} />

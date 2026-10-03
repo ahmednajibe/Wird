@@ -146,6 +146,17 @@ async function run(): Promise<void> {
       assert(notStarted === expected, `${notStarted} not-started days shown, API says ${expected}`);
     });
 
+    await check('Intro card dismisses and stays dismissed', async () => {
+      const card = page.locator('[data-testid="intro-card"]');
+      await card.waitFor();
+      assert(await card.isVisible(), 'intro card visible on a fresh context');
+      await page.locator('[data-testid="intro-dismiss"]').click();
+      assert((await card.count()) === 0, 'intro card hidden after dismiss');
+      await page.reload();
+      await page.locator('[data-testid="task-card"]').first().waitFor();
+      assert((await page.locator('[data-testid="intro-card"]').count()) === 0, 'intro card stays hidden after reload');
+    });
+
     let points = 0;
     await check('Completing a task increases the points counter', async () => {
       points = await numberAttr(page, '[data-testid="points-today"]');
