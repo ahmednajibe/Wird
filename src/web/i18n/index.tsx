@@ -4,6 +4,7 @@
  * into the flat dictionaries in en.ts and ar.ts.
  */
 import { createContext, Fragment, useCallback, useContext, useLayoutEffect, useMemo, useState, type ReactNode } from 'react';
+import { setClientLang } from '../client/client';
 import { setFormatLang } from '../lib/format';
 import { ar } from './ar';
 import { en, fill, pluralForm, tnFor, type Dict, type PluralKey, type StringKey } from './en';
@@ -72,8 +73,9 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
   const [lang, setLangState] = useState<Lang>(readLang);
   const dir: Dir = lang === 'ar' ? 'rtl' : 'ltr';
 
-  // Keep the non-React formatters in sync before children render.
+  // Keep the non-React formatters and client errors in sync before children render.
   setFormatLang(lang);
+  setClientLang(lang);
 
   useLayoutEffect(() => {
     document.documentElement.lang = lang;

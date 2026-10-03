@@ -7,23 +7,29 @@ import { errorMessage } from '../client/client';
 import { useCatalog, useStats } from '../client/hooks';
 import type { CatalogResponse, StatsResponse } from '../client/types';
 import { AnimatedNumber, Card, EmptyState, ErrorState, PageHeader, ProgressBar, Skeleton } from '../components/ui/primitives';
+import { useI18n } from '../i18n';
+import { dayNameShort } from '../i18n/engineText';
 import { cn, formatHours, formatMediumDate, formatMonthShort, formatShortDate } from '../lib/format';
 import { metaFor, streamOrderMap } from '../lib/tracks';
 
+/** Fixed Sunday-start week used to render weekday names (dow index -> date). */
+const DOW_EPOCH = '2024-01-07';
+
 type Day = StatsResponse['daily'][number];
 
-function level(d: Day): { cls: string; label: string } {
-  if (d.beforeStart) return { cls: 'bg-transparent border border-line opacity-40', label: 'not started' };
-  if (d.isRestDay) return { cls: 'border border-dashed border-line-strong bg-transparent', label: 'rest day' };
-  if (d.points <= 0) return { cls: 'bg-[var(--grid-empty)]', label: 'no points' };
+function level(d: Day): string {
+  if (d.beforeStart) return 'bg-transparent border border-line opacity-40';
+  if (d.isRestDay) return 'border border-dashed border-line-strong bg-transparent';
+  if (d.points <= 0) return 'bg-[var(--grid-empty)]';
   const ratio = d.baseline > 0 ? d.points / d.baseline : 2;
-  if (!d.counts) return ratio < 0.5 ? { cls: 'bg-muted/25', label: 'below goal' } : { cls: 'bg-muted/50', label: 'below goal' };
-  if (ratio < 1.5) return { cls: 'bg-accent-fill/55', label: 'goal reached' };
-  if (ratio < 2.5) return { cls: 'bg-accent-fill/80', label: 'goal reached' };
-  return { cls: 'bg-accent-fill', label: 'goal reached' };
+  if (!d.counts) return ratio < 0.5 ? 'bg-muted/25' : 'bg-muted/50';
+  if (ratio < 1.5) return 'bg-accent-fill/55';
+  if (ratio < 2.5) return 'bg-accent-fill/80';
+  return 'bg-accent-fill';
 }
 
 function Heatmap({ daily }: { daily: Day[] }) {
+  const { t, tn, lang } = useI18n();
   const weeks = useMemo(() => {
     if (daily.length === 0) return [];
     const byDate = new Map(daily.map((d) => [d.date, d]));
@@ -36,25 +42,36 @@ function Heatmap({ daily }: { daily: Day[] }) {
     return cols;
   }, [daily]);
 
+  // Month label per column, skipped when the previous label is less than
+  // 3 columns back so a partial first month cannot collide with the next.
+  const monthLabels = useMemo(() => {
+    let last = -3;
+    return weeks.map((w, i) => {
+      const firstDay = w.find((d) => d !== null);
+      if (firstDay && Number(firstDay.date.slice(8, 10)) <= 7 && i - last >= 3) {
+        last = i;
+        return formatMonthShort(firstDay.date);
+      }
+      return '';
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [weeks, lang]);
+
   return (
     <div className="scrollbar-thin overflow-x-auto pb-2">
       <div className="inline-flex min-w-full flex-col gap-1.5">
         <div className="flex gap-[3px] ps-8 text-[10px] text-muted">
-          {weeks.map((w, i) => {
-            const firstDay = w.find((d) => d !== null);
-            const show = firstDay && Number(firstDay.date.slice(8, 10)) <= 7;
-            return (
-              <span key={i} className="w-3 shrink-0 overflow-visible whitespace-nowrap lg:w-[14px]">
-                {show ? formatMonthShort(firstDay.date) : ''}
-              </span>
-            );
-          })}
+          {monthLabels.map((label, i) => (
+            <span key={i} className="w-3 shrink-0 overflow-visible whitespace-nowrap lg:w-[14px]">
+              {label}
+            </span>
+          ))}
         </div>
         <div className="flex gap-[3px]">
           <div className="flex w-7 shrink-0 flex-col gap-[3px] text-[10px] text-muted">
-            {['Sun', '', 'Tue', '', 'Thu', '', 'Sat'].map((l, i) => (
+            {[0, 1, 2, 3, 4, 5, 6].map((i) => (
               <span key={i} className="flex h-3 items-center lg:h-[14px]">
-                {l}
+                {i % 2 === 0 ? dayNameShort(addDays(DOW_EPOCH, i), lang) : ''}
               </span>
             ))}
           </div>
@@ -68,10 +85,16 @@ function Heatmap({ daily }: { daily: Day[] }) {
                     data-before-start={d.beforeStart ? 'true' : undefined}
                     title={
                       d.beforeStart
-                        ? `${formatMediumDate(d.date)}: not started`
-                        : `${formatMediumDate(d.date)}: ${d.points} points${d.isRestDay ? ', rest day' : `, goal ${d.baseline}`}${d.counts ? ', counted' : ''}`
+                        ? t('stats.heatNotStarted', { date: formatMediumDate(d.date) })
+                        : t('stats.heatTitle', {
+                            date: formatMediumDate(d.date),
+                            points: tn('common.points', d.points),
+                            rest: d.isRestDay ? t('stats.restSuffix') : '',
+                            goal: d.isRestDay ? '' : t('stats.goalSuffix', { goal: d.baseline }),
+                            counted: d.counts ? t('week.countedSuffix') : '',
+                          })
                     }
-                    className={cn('size-3 rounded-[3px] lg:size-[14px]', level(d).cls)}
+                    className={cn('size-3 rounded-[3px] lg:size-[14px]', level(d))}
                   />
                 ) : (
                   <span key={j} className="size-3 lg:size-[14px]" />
@@ -86,13 +109,14 @@ function Heatmap({ daily }: { daily: Day[] }) {
 }
 
 function HeatLegend() {
+  const { t } = useI18n();
   const items = [
-    { cls: 'bg-[var(--grid-empty)]', label: 'No points' },
-    { cls: 'bg-muted/40', label: 'Below goal' },
-    { cls: 'bg-accent-fill/55', label: 'Goal reached' },
-    { cls: 'bg-accent-fill', label: '2.5x goal or more' },
-    { cls: 'border border-dashed border-line-strong', label: 'Rest day' },
-    { cls: 'border border-line opacity-40', label: 'Not started' },
+    { cls: 'bg-[var(--grid-empty)]', label: t('stats.noPoints') },
+    { cls: 'bg-muted/40', label: t('stats.belowGoal') },
+    { cls: 'bg-accent-fill/55', label: t('stats.goalReached') },
+    { cls: 'bg-accent-fill', label: t('stats.goalMore') },
+    { cls: 'border border-dashed border-line-strong', label: t('today.restDay') },
+    { cls: 'border border-line opacity-40', label: t('week.notStarted') },
   ];
   return (
     <ul className="flex flex-wrap gap-x-4 gap-y-2 text-xs text-muted">
@@ -107,6 +131,7 @@ function HeatLegend() {
 }
 
 function WeeklyBars({ weekly, today }: { weekly: StatsResponse['weekly']; today: string }) {
+  const { t, tn } = useI18n();
   const weeks = useMemo(() => {
     const map = new Map(weekly.map((w) => [w.weekStart, w]));
     const end = weekStart(today);
@@ -129,10 +154,12 @@ function WeeklyBars({ weekly, today }: { weekly: StatsResponse['weekly']; today:
                 initial={{ scaleY: 0 }}
                 animate={{ scaleY: w.points / max }}
                 transition={{ delay: i * 0.03, type: 'spring', stiffness: 140, damping: 22 }}
-                title={`Week of ${formatShortDate(w.weekStart)}: ${w.points} points, ${formatHours(w.minutes)}`}
+                title={t('stats.weekOf', { date: formatShortDate(w.weekStart), points: tn('common.points', w.points), minutes: formatHours(w.minutes) })}
               />
             </div>
-            <span className="num text-[10px] whitespace-nowrap text-muted">{formatShortDate(w.weekStart).replace(' ', '\u00a0')}</span>
+            <span className={cn('num text-[10px] whitespace-nowrap text-muted', (weeks.length - 1 - i) % 3 !== 0 && 'hidden sm:block')}>
+              {formatShortDate(w.weekStart).replace(' ', '\u00a0')}
+            </span>
           </div>
         );
       })}
@@ -141,6 +168,7 @@ function WeeklyBars({ weekly, today }: { weekly: StatsResponse['weekly']; today:
 }
 
 function TrackTotals({ perTrack, catalog }: { perTrack: StatsResponse['perTrack']; catalog: CatalogResponse | undefined }) {
+  const { t, tn, tRich, tnRich } = useI18n();
   const rows = useMemo(() => {
     const map = new Map<string, { track: string; stream: string; points: number; minutes: number; tasks: number }>();
     for (const p of perTrack) {
@@ -159,7 +187,7 @@ function TrackTotals({ perTrack, catalog }: { perTrack: StatsResponse['perTrack'
   return (
     <ul className="flex flex-col gap-4">
       {rows.map((r) => {
-        const m = metaFor(catalog, r.track, r.stream);
+        const m = metaFor(catalog, r.track, r.stream, t('nav.quran'));
         const I = m.icon;
         return (
           <li key={`${r.track}.${r.stream}`}>
@@ -169,10 +197,14 @@ function TrackTotals({ perTrack, catalog }: { perTrack: StatsResponse['perTrack'
                 {m.label}
               </span>
               <span className="text-xs text-muted">
-                <span className="num text-sm font-semibold text-ink">{r.points}</span> points, {formatHours(r.minutes)}, {r.tasks} tasks
+                {tRich('stats.trackLine', {
+                  points: tnRich('common.points', r.points, { count: <bdi className="num text-sm font-semibold text-ink">{r.points}</bdi> }),
+                  minutes: <bdi>{formatHours(r.minutes)}</bdi>,
+                  tasks: tn('stats.tasks', r.tasks),
+                })}
               </span>
             </div>
-            <ProgressBar value={r.points} max={max} color={m.cssVar} height={8} label={`${m.label} points`} />
+            <ProgressBar value={r.points} max={max} color={m.cssVar} height={8} label={t('stats.trackPointsAria', { label: m.label })} />
           </li>
         );
       })}
@@ -183,6 +215,7 @@ function TrackTotals({ perTrack, catalog }: { perTrack: StatsResponse['perTrack'
 export function StatsPage() {
   const q = useStats();
   const catalog = useCatalog();
+  const { t, tn, tRich } = useI18n();
   if (q.isPending) {
     return (
       <div className="flex flex-col gap-6">
@@ -200,14 +233,14 @@ export function StatsPage() {
   const d = q.data;
   const hasData = d.totals.points > 0;
   const tiles = [
-    { label: 'Current streak', value: d.streak.current, unit: d.streak.current === 1 ? 'day' : 'days', icon: Fire, accent: d.streak.todayCounts },
-    { label: 'Longest streak', value: d.streak.longest, unit: d.streak.longest === 1 ? 'day' : 'days', icon: Trophy, accent: false },
-    { label: 'Total points', value: d.totals.points, unit: `level ${d.level.level}`, icon: Lightning, accent: false },
-    { label: 'Days counted', value: d.totals.daysCounted, unit: 'last 365 days', icon: SealCheck, accent: false },
+    { label: t('stats.currentStreak'), value: d.streak.current, unit: tn('common.days', d.streak.current), icon: Fire, accent: d.streak.todayCounts },
+    { label: t('stats.longestStreak'), value: d.streak.longest, unit: tn('common.days', d.streak.longest), icon: Trophy, accent: false },
+    { label: t('stats.totalPoints'), value: d.totals.points, unit: t('stats.levelUnit', { level: d.level.level }), icon: Lightning, accent: false },
+    { label: t('stats.daysCounted'), value: d.totals.daysCounted, unit: t('stats.last365'), icon: SealCheck, accent: false },
   ];
   return (
     <div className="flex flex-col gap-6">
-      <PageHeader title="Stats" subtitle="A day counts when its points reach that day's goal. Rest days pause the streak without breaking it." />
+      <PageHeader title={t('nav.stats')} subtitle={t('stats.subtitle')} />
       <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
         {tiles.map((t, i) => (
           <motion.div key={t.label} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }} className="card p-4 sm:p-5">
@@ -226,9 +259,9 @@ export function StatsPage() {
       <Card className="p-4 sm:p-6">
         <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <h2 className="text-lg font-semibold tracking-tight">Last 365 days</h2>
+            <h2 className="text-lg font-semibold tracking-tight">{t('stats.year')}</h2>
             <p className="text-sm text-muted">
-              Green days reached their goal. Grey days had some points but fell short. Tracking started on {formatMediumDate(d.trackingStartDate)}.
+              {tRich('stats.heatCaption', { date: <bdi>{formatMediumDate(d.trackingStartDate)}</bdi> })}
             </p>
           </div>
           <HeatLegend />
@@ -238,13 +271,13 @@ export function StatsPage() {
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1.3fr_1fr]">
         <Card className="p-4 sm:p-6">
-          <h2 className="text-lg font-semibold tracking-tight">Points per week</h2>
-          <p className="mb-4 text-sm text-muted">The last 12 weeks, Sunday to Saturday.</p>
-          {hasData ? <WeeklyBars weekly={d.weekly} today={d.today} /> : <EmptyState icon={ChartBar} title="No points yet" body="Complete your first task on the Today page and your weeks start filling in here." />}
+          <h2 className="text-lg font-semibold tracking-tight">{t('stats.weekPoints')}</h2>
+          <p className="mb-4 text-sm text-muted">{t('stats.weekPointsSub')}</p>
+          {hasData ? <WeeklyBars weekly={d.weekly} today={d.today} /> : <EmptyState icon={ChartBar} title={t('stats.noPointsTitle')} body={t('stats.noPointsBody')} />}
         </Card>
         <Card className="p-4 sm:p-6">
-          <h2 className="text-lg font-semibold tracking-tight">Totals per track</h2>
-          <p className="mb-4 text-sm text-muted">Everything completed in the last year.</p>
+          <h2 className="text-lg font-semibold tracking-tight">{t('stats.trackTotals')}</h2>
+          <p className="mb-4 text-sm text-muted">{t('stats.trackTotalsSub')}</p>
           <TrackTotals perTrack={d.perTrack} catalog={catalog.data} />
         </Card>
       </div>

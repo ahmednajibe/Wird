@@ -43,6 +43,15 @@ export class ApiError extends Error {
   }
 }
 
+// Client-generated error copy is localized; server error messages are not.
+// LocaleProvider calls this whenever the UI language changes.
+let errLang: 'en' | 'ar' = 'en';
+export function setClientLang(lang: 'en' | 'ar'): void {
+  errLang = lang;
+}
+const UNREACHABLE = { en: 'Cannot reach the local server. Is it running on 127.0.0.1:4545?', ar: 'تعذّر الوصول إلى الخادم المحلي. هل يعمل على 127.0.0.1:4545؟' };
+const GENERIC = { en: 'Something went wrong', ar: 'حدث خطأ ما' };
+
 async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
   let res: Response;
   try {
@@ -52,7 +61,7 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
       ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
     });
   } catch {
-    throw new ApiError('Cannot reach the local server. Is it running on 127.0.0.1:4545?', 0);
+    throw new ApiError(UNREACHABLE[errLang], 0);
   }
   const text = await res.text();
   let data: unknown = null;
@@ -104,5 +113,5 @@ export const api = {
 export function errorMessage(err: unknown): string {
   if (err instanceof ApiError) return err.message;
   if (err instanceof Error) return err.message;
-  return 'Something went wrong';
+  return GENERIC[errLang];
 }

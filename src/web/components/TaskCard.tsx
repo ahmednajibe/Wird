@@ -61,14 +61,20 @@ export function ResourceLinks({ resources }: { resources: ResourceView[] }) {
         <li key={r.url ?? r.name} className="flex flex-wrap items-center gap-2 text-sm">
           {r.url ? (
             <ExternalLink href={r.url} className="inline-flex items-center gap-1 font-medium text-ink hover:text-accent-ink">
-              {r.name}
+              <bdi dir="auto">{r.name}</bdi>
               <ArrowSquareOut size={13} aria-hidden className="text-muted" />
             </ExternalLink>
           ) : (
-            <span className="font-medium text-ink">{r.name}</span>
+            <span className="font-medium text-ink" dir="auto">
+              {r.name}
+            </span>
           )}
           <AccessBadge access={r.access} />
-          {r.note && <span className="text-xs text-muted">{r.note}</span>}
+          {r.note && (
+            <span className="text-xs text-muted" dir="auto">
+              {r.note}
+            </span>
+          )}
         </li>
       ))}
     </ul>
@@ -307,7 +313,7 @@ export function TaskCard({
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-1.5">
             <Chip tone={trackTone(m.theme)} icon={TrackIcon}>
-              {m.label}
+              <bdi dir="auto">{m.label}</bdi>
             </Chip>
           </div>
           <h3 className="mt-2 text-[15px] font-semibold tracking-tight text-ink sm:text-base">{title}</h3>

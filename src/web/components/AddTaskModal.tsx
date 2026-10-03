@@ -180,7 +180,7 @@ export function AddTaskModal({ open, onClose }: { open: boolean; onClose: () => 
               </p>
             )}
             {choices.map((c) => {
-              const m = metaFor(catalog.data, c.id);
+              const m = metaFor(catalog.data, c.id, undefined, t('nav.quran'));
               const active = track === c.id;
               const I = m.icon;
               return (
@@ -195,7 +195,7 @@ export function AddTaskModal({ open, onClose }: { open: boolean; onClose: () => 
                   )}
                 >
                   <I size={17} aria-hidden />
-                  {c.shortLabel}
+                  <bdi>{c.kind === 'quran' ? t('nav.quran') : c.shortLabel}</bdi>
                 </button>
               );
             })}
@@ -205,7 +205,7 @@ export function AddTaskModal({ open, onClose }: { open: boolean; onClose: () => 
         {streams.length > 1 && (
           <div>
             <div className="label mb-2">{t('addTask.stream')}</div>
-            <Segmented label={t('addTask.streamAria', { track: trackDef?.shortLabel ?? t('addTask.track') })} value={stream ?? firstStream ?? ''} onChange={setStreamChoice} options={streams.map((s) => ({ value: s.id, label: s.shortLabel }))} />
+            <Segmented label={t('addTask.streamAria', { track: trackDef?.shortLabel ?? t('addTask.track') })} value={stream ?? firstStream ?? ''} onChange={setStreamChoice} options={streams.map((s) => ({ value: s.id, label: <bdi>{s.shortLabel}</bdi> }))} />
           </div>
         )}
 

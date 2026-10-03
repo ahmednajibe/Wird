@@ -89,6 +89,9 @@ No other fields are allowed anywhere in the file. Unknown fields are rejected.
   their track. Track ids must be unique.
 - Ids are permanent. The app stores progress by id. Renaming an id means a new,
   empty module.
+- Write track, stream, phase and module titles, labels and notes in the
+  language the user writes to you in (for example Arabic), and keep ids
+  lowercase ASCII as specified.
 
 ### 2.1 `tracks[]`
 

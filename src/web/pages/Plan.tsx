@@ -28,29 +28,31 @@ import { ConfirmDialog, Dialog } from '../components/ui/Dialog';
 import { Chip, Disclosure, Duration, ErrorState, PageHeader, ProgressBar, Segmented, Skeleton } from '../components/ui/primitives';
 import { useToast } from '../components/ui/Toast';
 import { useI18n } from '../i18n';
-import { baselineExplanation, dayName, fastingReasons, hijriLabel, localizeTaskTitle } from '../i18n/engineText';
-import { cn, formatMediumDate, formatShortDate } from '../lib/format';
+import { baselineExplanation, dayName, dayNameShort, fastingReasons, hijriLabel, localizeTaskTitle } from '../i18n/engineText';
+import { cn, formatMediumDate, formatMinutes, formatShortDate } from '../lib/format';
 import { streamOrderMap, useTrackMeta } from '../lib/tracks';
 
-const DOW_SHORT = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+/** Fixed Sunday-start week used to render weekday names (dow index -> date). */
+const DOW_EPOCH = '2024-01-07';
 
 function StatusIcon({ t }: { t: TaskView }) {
   const trackMeta = useTrackMeta();
+  const { t: tr } = useI18n();
   if (t.status === 'completed')
     return (
-      <span className="inline-flex size-5 shrink-0 items-center justify-center rounded-full bg-accent text-on-accent" title="Completed">
+      <span className="inline-flex size-5 shrink-0 items-center justify-center rounded-full bg-accent text-on-accent" title={tr('task.statusCompleted')}>
         <Check size={11} weight="bold" aria-hidden />
       </span>
     );
-  if (t.status === 'skipped') return <SkipForward size={16} className="shrink-0 text-muted rtl:-scale-x-100" aria-label="Skipped" />;
-  if (t.status === 'rolled') return <ArrowBendUpRight size={16} className="shrink-0 text-subtle rtl:-scale-x-100" aria-label="Moved forward" />;
-  if (t.status === 'missed') return <WarningCircle size={16} className="shrink-0 text-warn" aria-label="Missed" />;
+  if (t.status === 'skipped') return <SkipForward size={16} className="shrink-0 text-muted rtl:-scale-x-100" aria-label={tr('task.skipped')} />;
+  if (t.status === 'rolled') return <ArrowBendUpRight size={16} className="shrink-0 text-subtle rtl:-scale-x-100" aria-label={tr('task.moved')} />;
+  if (t.status === 'missed') return <WarningCircle size={16} className="shrink-0 text-warn" aria-label={tr('task.missed')} />;
   const m = trackMeta(t.track, t.stream);
-  return <span className="inline-flex size-5 shrink-0 items-center justify-center rounded-full border-2" style={{ borderColor: m.cssVar }} aria-label="Pending" />;
+  return <span className="inline-flex size-5 shrink-0 items-center justify-center rounded-full border-2" style={{ borderColor: m.cssVar }} aria-label={tr('task.statusPending')} />;
 }
 
 function NotStartedCard({ day, index }: { day: DayView; index: number }) {
-  const { lang } = useI18n();
+  const { t, lang } = useI18n();
   return (
     <motion.div
       id={day.date}
@@ -63,25 +65,26 @@ function NotStartedCard({ day, index }: { day: DayView; index: number }) {
     >
       <div className="flex items-center gap-2">
         <h3 className="text-base font-semibold tracking-tight text-muted">{dayName(day.date, lang)}</h3>
-        <Chip>Not started</Chip>
+        <Chip>{t('week.notStarted')}</Chip>
       </div>
       <p className="mt-0.5 text-sm text-muted">
         <bdi>{formatMediumDate(day.date)}</bdi>
         <span className="mx-1.5 text-subtle">/</span>
         <bdi>{hijriLabel(day.hijri, lang)}</bdi>
       </p>
-      <p className="mt-3 text-sm text-muted">Tracking started after this day. Nothing was planned and nothing counts as missed.</p>
+      <p className="mt-3 text-sm text-muted">{t('plan.beforeStartBody')}</p>
     </motion.div>
   );
 }
 
 function DayCard({ day, onEdit, index }: { day: DayView; onEdit: (d: DayView) => void; index: number }) {
   const trackMeta = useTrackMeta();
-  const { lang } = useI18n();
+  const { t, tRich, lang } = useI18n();
   const reasons = fastingReasons(day.fasting, day.hijri, lang).join(lang === 'ar' ? '، ' : ', ');
   const cap = day.capacity;
   const done = day.tasks.filter((t) => t.status === 'completed').length;
   const countable = day.tasks.filter((t) => t.status !== 'rolled').length;
+  const movedLabel = t('task.moved');
   if (day.beforeStart) return <NotStartedCard day={day} index={index} />;
   return (
     <motion.div
@@ -96,10 +99,10 @@ function DayCard({ day, onEdit, index }: { day: DayView; onEdit: (d: DayView) =>
         <div className="min-w-0">
           <div className="flex items-center gap-2">
             <h3 className="text-base font-semibold tracking-tight text-ink">{dayName(day.date, lang)}</h3>
-            {day.isToday && <Chip tone="accent">Today</Chip>}
+            {day.isToday && <Chip tone="accent">{t('nav.today')}</Chip>}
             {day.counts && (
-              <span className="inline-flex size-5 items-center justify-center rounded-full bg-accent text-on-accent" title="Counted toward the streak">
-                <Check size={11} weight="bold" aria-label="Counted" />
+              <span className="inline-flex size-5 items-center justify-center rounded-full bg-accent text-on-accent" title={t('week.countedTitle')}>
+                <Check size={11} weight="bold" aria-label={t('week.counted')} />
               </span>
             )}
           </div>
@@ -110,39 +113,42 @@ function DayCard({ day, onEdit, index }: { day: DayView; onEdit: (d: DayView) =>
           </p>
         </div>
         {day.isPast ? (
-          <span className="inline-flex size-8 items-center justify-center text-subtle" title="Past days are locked">
-            <Lock size={16} aria-label="Past day, locked" />
+          <span className="inline-flex size-8 items-center justify-center text-subtle" title={t('plan.pastLocked')}>
+            <Lock size={16} aria-label={t('plan.pastLockedAria')} />
           </span>
         ) : (
-          <IconButton icon={PencilSimple} size="sm" label={`Edit ${dayName(day.date, lang)}`} onClick={() => onEdit(day)} data-testid="day-edit" />
+          <IconButton icon={PencilSimple} size="sm" label={t('plan.editDay', { day: dayName(day.date, lang) })} onClick={() => onEdit(day)} data-testid="day-edit" />
         )}
       </div>
 
       <div className="mt-2 flex min-h-6 flex-wrap items-center gap-1.5">
         {day.fasting.isFasting && (
           <Chip tone="warn" icon={Moon} title={reasons}>
-            Fasting
+            {t('plan.fastOn')}
           </Chip>
         )}
         {day.fasting.isFasting && <span className="text-xs text-muted">{reasons}</span>}
         {!day.fasting.isFasting && day.fasting.blockedBy && <Chip tone="accent">{fastingReasons(day.fasting, day.hijri, lang)[0] ?? day.fasting.blockedBy}</Chip>}
         {cap.isRestDay && (
-          <Chip icon={Coffee}>Rest day</Chip>
+          <Chip icon={Coffee}>{t('today.restDay')}</Chip>
         )}
       </div>
 
       <div className="mt-3">
         <div className="mb-1.5 flex justify-between text-xs text-muted">
           <span>
-            Planned <span className="num text-ink">{day.plannedMinutes}</span> of <span className="num">{cap.total}</span> min
+            {tRich('plan.plannedLine', {
+              planned: <Duration minutes={day.plannedMinutes} className="text-ink" />,
+              total: <Duration minutes={cap.total} />,
+            })}
           </span>
-          {cap.override !== null && !cap.isRestDay && <span>Custom capacity</span>}
+          {cap.override !== null && !cap.isRestDay && <span>{t('plan.customCap')}</span>}
         </div>
-        <ProgressBar value={day.plannedMinutes} max={Math.max(cap.total, 1)} height={6} color="var(--muted)" label="Planned minutes vs capacity" />
+        <ProgressBar value={day.plannedMinutes} max={Math.max(cap.total, 1)} height={6} color="var(--muted)" label={t('plan.plannedAria')} />
         {day.bufferMinutes > 0 && (
           <p className="mt-1.5 flex items-center gap-1 text-xs text-muted" data-testid="day-buffer">
             <Hourglass size={13} aria-hidden />
-            Buffer: <span className="num text-ink">{day.bufferMinutes}</span> min (optional catch-up or rest)
+            {tRich('buffer.line', { min: <span className="num text-ink">{day.bufferMinutes}</span> })}
           </p>
         )}
       </div>
@@ -155,7 +161,7 @@ function DayCard({ day, onEdit, index }: { day: DayView; onEdit: (d: DayView) =>
       )}
 
       <ul className="mt-3 flex flex-1 flex-col divide-y divide-line">
-        {day.tasks.length === 0 && <li className="py-3 text-sm text-muted">{cap.isRestDay ? 'Nothing planned. Rest well.' : 'No tasks planned.'}</li>}
+        {day.tasks.length === 0 && <li className="py-3 text-sm text-muted">{cap.isRestDay ? t('plan.restEmpty') : t('plan.noTasks')}</li>}
         {day.tasks.map((t) => {
           const m = trackMeta(t.track, t.stream);
           const title = t.source === 'generated' ? localizeTaskTitle(t.title, lang) : t.title;
@@ -174,17 +180,19 @@ function DayCard({ day, onEdit, index }: { day: DayView; onEdit: (d: DayView) =>
                   {title}
                 </p>
                 <p className="text-xs">
-                  <span className={m.text}>{m.short}</span>
+                  <span className={m.text} dir="auto">
+                    {m.short}
+                  </span>
                   <span className="text-muted">
                     {' '}
-                    <span className="num">{t.actualMinutes ?? t.plannedMinutes}</span> min
+                    <Duration minutes={t.actualMinutes ?? t.plannedMinutes} />
                   </span>
-                  {t.status === 'rolled' && <span className="text-subtle"> / Moved forward</span>}
+                  {t.status === 'rolled' && <span className="text-subtle"> / {movedLabel}</span>}
                 </p>
               </div>
               {t.status !== 'rolled' && (
                 <span className={cn('num shrink-0 text-xs font-semibold', t.status === 'completed' ? 'text-accent-ink' : 'text-muted')}>
-                  {t.status === 'completed' ? `+${t.earnedPoints ?? 0}` : t.plannedPoints}
+                  {t.status === 'completed' ? <bdi dir="ltr">+{t.earnedPoints ?? 0}</bdi> : t.plannedPoints}
                 </span>
               )}
             </li>
@@ -194,16 +202,15 @@ function DayCard({ day, onEdit, index }: { day: DayView; onEdit: (d: DayView) =>
 
       <div className="mt-3 flex flex-wrap items-center justify-between gap-x-2 gap-y-1 border-t border-line pt-3 text-xs text-muted">
         <span>
-          {done}/{countable} done
+          {tRich('plan.doneCount', { done: <bdi className="num">{done}</bdi>, countable: <bdi className="num">{countable}</bdi> })}
         </span>
         <span className="inline-flex items-center gap-1">
           <Lightning size={13} weight="fill" className="text-accent-ink" aria-hidden />
-          <span className="num text-ink">{day.earnedPoints}</span> / <span className="num">{day.plannedPoints}</span> points
-          {!cap.isRestDay && (
-            <span className="ms-1">
-              (goal <span className="num">{day.baseline}</span>)
-            </span>
-          )}
+          {tRich('plan.pointsLine', {
+            earned: <bdi className="num text-ink">{day.earnedPoints}</bdi>,
+            planned: <bdi className="num">{day.plannedPoints}</bdi>,
+          })}
+          {!cap.isRestDay && <span className="ms-1">{tRich('plan.goalInline', { goal: <bdi className="num">{day.baseline}</bdi> })}</span>}
         </span>
       </div>
     </motion.div>
@@ -216,7 +223,7 @@ type CapacityChoice = 'default' | 'custom' | 'rest';
 function OverrideDialog({ day, onClose }: { day: DayView | null; onClose: () => void }) {
   const save = useSaveDay();
   const { toast } = useToast();
-  const { lang } = useI18n();
+  const { t, lang } = useI18n();
   const [fasting, setFasting] = useState<FastingChoice>('auto');
   const [capMode, setCapMode] = useState<CapacityChoice>('default');
   const [capValue, setCapValue] = useState('120');
@@ -240,7 +247,7 @@ function OverrideDialog({ day, onClose }: { day: DayView | null; onClose: () => 
   const submit = async () => {
     if (!day) return;
     if (!capValid) {
-      setError('Capacity must be a whole number from 1 to 960 minutes.');
+      setError(t('plan.errCap'));
       return;
     }
     try {
@@ -252,27 +259,35 @@ function OverrideDialog({ day, onClose }: { day: DayView | null; onClose: () => 
           note: note.trim() ? note.trim() : null,
         },
       });
-      toast({ title: `${dayName(day.date, lang)} updated`, body: 'The plan for that day was rebuilt.' });
+      toast({ title: t('plan.dayUpdated', { day: dayName(day.date, lang) }), body: t('plan.dayUpdatedBody') });
       onClose();
     } catch (err) {
       setError(errorMessage(err));
     }
   };
 
+  const autoRule = day
+    ? day.fasting.overridden
+      ? t('plan.autoSeeBelow')
+      : day.fasting.isFasting
+        ? t('plan.autoFasting', { reasons: fastingReasons(day.fasting, day.hijri, lang).join(lang === 'ar' ? '، ' : ', ') })
+        : t('plan.autoNotFasting')
+    : '';
+
   return (
     <Dialog
       open={day !== null}
       onClose={onClose}
-      title={day ? `Adjust ${dayName(day.date, lang)}, ${formatShortDate(day.date)}` : ''}
-      description="Changes rebuild that day's pending generated tasks. Completed and manual tasks are kept."
+      title={day ? t('plan.adjustTitle', { day: dayName(day.date, lang), date: formatShortDate(day.date) }) : ''}
+      description={t('plan.adjustDesc')}
       labelledBy="override-title"
       footer={
         <>
           <Button variant="ghost" onClick={onClose}>
-            Cancel
+            {t('common.cancel')}
           </Button>
           <Button variant="primary" onClick={() => void submit()} loading={save.isPending} data-testid="override-save">
-            Save day
+            {t('plan.saveDay')}
           </Button>
         </>
       }
@@ -280,37 +295,29 @@ function OverrideDialog({ day, onClose }: { day: DayView | null; onClose: () => 
       {day && (
         <div className="flex flex-col gap-5">
           <div>
-            <div className="label mb-2">Fasting</div>
+            <div className="label mb-2">{t('plan.fasting')}</div>
             <Segmented<FastingChoice>
-              label="Fasting"
+              label={t('plan.fasting')}
               value={fasting}
               onChange={setFasting}
               options={[
-                { value: 'auto', label: 'Automatic' },
-                { value: 'on', label: 'Fasting' },
-                { value: 'off', label: 'Not fasting' },
+                { value: 'auto', label: t('plan.fastAuto') },
+                { value: 'on', label: t('plan.fastOn') },
+                { value: 'off', label: t('plan.fastOff') },
               ]}
             />
-            <p className="mt-2 text-xs text-muted">
-              Automatic rules say:{' '}
-              {day.fasting.overridden
-                ? 'see below'
-                : day.fasting.isFasting
-                  ? `fasting (${fastingReasons(day.fasting, day.hijri, lang).join(', ')})`
-                  : 'not a fasting day'}
-              .
-            </p>
+            <p className="mt-2 text-xs text-muted">{t('plan.autoRules', { what: autoRule })}</p>
           </div>
           <div>
-            <div className="label mb-2">Capacity</div>
+            <div className="label mb-2">{t('plan.capacity')}</div>
             <Segmented<CapacityChoice>
-              label="Capacity"
+              label={t('plan.capacity')}
               value={capMode}
               onChange={setCapMode}
               options={[
-                { value: 'default', label: `Default (${day.capacity.base} min)` },
-                { value: 'custom', label: 'Custom' },
-                { value: 'rest', label: 'Rest day' },
+                { value: 'default', label: t('plan.capDefault', { min: formatMinutes(day.capacity.base) }) },
+                { value: 'custom', label: t('plan.capCustom') },
+                { value: 'rest', label: t('today.restDay') },
               ]}
             />
             {capMode === 'custom' && (
@@ -322,19 +329,19 @@ function OverrideDialog({ day, onClose }: { day: DayView | null; onClose: () => 
                   max={960}
                   value={capValue}
                   onChange={(e) => setCapValue(e.target.value)}
-                  aria-label="Custom capacity in minutes"
+                  aria-label={t('plan.capCustomAria')}
                   aria-invalid={!capValid}
                 />
-                <span className="text-sm text-muted">minutes before any fasting reduction</span>
+                <span className="text-sm text-muted">{t('plan.capCustomHint')}</span>
               </div>
             )}
-            {capMode === 'rest' && <p className="mt-2 text-xs text-muted">A rest day has no goal. It neither breaks nor extends the streak.</p>}
+            {capMode === 'rest' && <p className="mt-2 text-xs text-muted">{t('plan.restExpl')}</p>}
           </div>
           <div>
             <label htmlFor="day-note" className="label mb-2 block">
-              Note
+              {t('plan.note')}
             </label>
-            <textarea id="day-note" className="field min-h-20" maxLength={500} value={note} onChange={(e) => setNote(e.target.value)} placeholder="Travel, family visit, exam..." />
+            <textarea id="day-note" className="field min-h-20" maxLength={500} value={note} onChange={(e) => setNote(e.target.value)} placeholder={t('plan.notePh')} />
           </div>
           {error && (
             <p role="alert" className="text-sm text-danger">
@@ -353,10 +360,10 @@ function WhyPanel() {
   const dash = useDashboard();
   const catalog = useCatalog();
   const meta = useTrackMeta();
-  const { lang } = useI18n();
+  const { t, tRich, lang } = useI18n();
   if (settings.isPending || tracks.isPending || dash.isPending) return <Skeleton className="h-72 rounded-2xl" />;
   if (settings.isError || tracks.isError || dash.isError) {
-    return <ErrorState message="Could not load the plan explanation." onRetry={() => void Promise.all([settings.refetch(), tracks.refetch(), dash.refetch()])} />;
+    return <ErrorState message={t('plan.whyError')} onRetry={() => void Promise.all([settings.refetch(), tracks.refetch(), dash.refetch()])} />;
   }
   const s = settings.data;
   const expl = dash.data.baseline.explanation;
@@ -374,44 +381,44 @@ function WhyPanel() {
     : false;
   const baselineText = baselineExplanation(expl, lang, { quranEnabled: catalog.data?.quranEnabled ?? true, warmup });
   return (
-    <Disclosure title="How this plan is calculated" subtitle="The numbers behind every day card." icon={Info} defaultOpen={false} data-testid="why-panel">
+    <Disclosure title={t('plan.whyTitle')} subtitle={t('plan.whySub')} icon={Info} defaultOpen={false} data-testid="why-panel">
       <div className="grid gap-6 lg:grid-cols-3">
         <div>
-          <h3 className="label mb-3">Capacity per weekday</h3>
+          <h3 className="label mb-3">{t('plan.capPerWeekday')}</h3>
           <ul className="flex flex-col gap-2">
             {s.capacityByDow.map((c, i) => {
               const per = expl.perDay.find((p) => p.dow === i);
               return (
                 <li key={i} className="flex items-center gap-3 text-sm">
-                  <span className="w-9 text-muted">{DOW_SHORT[i]}</span>
+                  <span className="w-9 text-muted">{dayNameShort(addDays(DOW_EPOCH, i), lang)}</span>
                   <div className="flex-1">
                     <ProgressBar value={c} max={Math.max(...s.capacityByDow, 1)} height={6} color="var(--muted)" animateOnMount={false} />
                   </div>
                   <span className="w-16 text-end text-ink">
-                    <span className="num">{c}</span> min
+                    <Duration minutes={c} />
                   </span>
-                  {per?.isFasting && <Moon size={13} weight="fill" className="text-warn" aria-label="Usually fasting" />}
+                  {per?.isFasting && <Moon size={13} weight="fill" className="text-warn" aria-label={t('plan.usuallyFasting')} />}
                   {!per?.isFasting && <span className="w-[13px]" />}
                 </li>
               );
             })}
           </ul>
           <p className="mt-3 text-xs text-muted">
-            Fasting days get <span className="num text-ink">{s.fastingReductionPct}%</span> less time. Mondays and Thursdays are fasting in a normal week, so they show{' '}
-            <span className="num text-ink">{Math.round((s.capacityByDow[1] ?? 0) * (1 - s.fastingReductionPct / 100))}</span> min.
+            {tRich('plan.fastingLess', { pct: <bdi className="num text-ink">{s.fastingReductionPct}</bdi> })}{' '}
+            {tRich('plan.monThuNote', { min: <Duration minutes={Math.round((s.capacityByDow[1] ?? 0) * (1 - s.fastingReductionPct / 100))} className="text-ink" /> })}
           </p>
         </div>
         <div>
-          <h3 className="label mb-3">Normal week, minutes per track</h3>
+          <h3 className="label mb-3">{t('plan.weekPerTrack')}</h3>
           <ul className="flex flex-col gap-2.5">
             {rows.map((w) => {
               const m = meta(w.track, w.stream);
               return (
                 <li key={`${w.track}-${w.stream}`} className="text-sm">
                   <div className="mb-1 flex justify-between">
-                    <span className={m.text}>{w.track === QURAN_TRACK_ID ? `${m.label} (reserved)` : m.label}</span>
+                    <span className={m.text}>{w.track === QURAN_TRACK_ID ? tRich('plan.reserved', { label: <bdi>{m.label}</bdi> }) : <bdi dir="auto">{m.label}</bdi>}</span>
                     <span className="text-ink">
-                      <span className="num">{w.plannedMinutes}</span> min
+                      <Duration minutes={w.plannedMinutes} />
                       <span className="ms-1 text-muted">{totalWeekly > 0 ? Math.round((w.plannedMinutes / totalWeekly) * 100) : 0}%</span>
                     </span>
                   </div>
@@ -421,27 +428,28 @@ function WhyPanel() {
             })}
           </ul>
           <p className="mt-3 text-xs text-muted">
-            Total <Duration minutes={totalWeekly} className="text-ink" /> a week. Every day reserves <span className="num text-ink">{expl.quranReserveMinutes}</span> min for Quran
-            (the memorize session); study tracks share the rest, so their time never depends on the day&apos;s Quran session. Reviews are capped at{' '}
-            <span className="num text-ink">{expl.effectiveReviewCapMinutes}</span> min, and the unused part of the reservation (
-            <span className="num text-ink">{nw.bufferMinutes}</span> min in a normal week) is an optional buffer, never planned or scored. A missed or skipped
-            session moves to the next slot of its own track.
+            {tRich('plan.weekExpl', {
+              total: <Duration minutes={totalWeekly} className="text-ink" />,
+              reserve: <Duration minutes={expl.quranReserveMinutes} className="text-ink" />,
+              cap: <Duration minutes={expl.effectiveReviewCapMinutes} className="text-ink" />,
+              buffer: <Duration minutes={nw.bufferMinutes} className="text-ink" />,
+            })}
           </p>
         </div>
         <div>
-          <h3 className="label mb-3">Daily goal (baseline)</h3>
+          <h3 className="label mb-3">{t('plan.dailyGoal')}</h3>
           <div className="grid grid-cols-3 gap-2">
             <div className="rounded-xl bg-surface-2 p-3 text-center">
               <div className="num text-xl font-semibold text-ink">{expl.normal}</div>
-              <div className="text-[11px] text-muted">normal</div>
+              <div className="text-[11px] text-muted">{t('plan.goalNormal')}</div>
             </div>
             <div className="rounded-xl bg-surface-2 p-3 text-center">
               <div className="num text-xl font-semibold text-ink">{expl.fasting}</div>
-              <div className="text-[11px] text-muted">fasting</div>
+              <div className="text-[11px] text-muted">{t('plan.goalFasting')}</div>
             </div>
             <div className="rounded-xl bg-surface-2 p-3 text-center">
               <div className="num text-xl font-semibold text-ink">0</div>
-              <div className="text-[11px] text-muted">rest day</div>
+              <div className="text-[11px] text-muted">{t('plan.goalRest')}</div>
             </div>
           </div>
           <p className="mt-3 text-sm leading-relaxed text-muted" data-testid="baseline-text">
@@ -457,8 +465,9 @@ export function PlanPage() {
   const [params, setParams] = useSearchParams();
   const location = useLocation();
   const catalog = useCatalog();
-  const t = cairoToday(new Date(), catalog.data?.timezone);
-  const thisWeek = weekStart(t);
+  const { t, tRich, tn } = useI18n();
+  const today = cairoToday(new Date(), catalog.data?.timezone);
+  const thisWeek = weekStart(today);
   const paramWeek = params.get('week');
   const start = paramWeek && /^\d{4}-\d{2}-\d{2}$/.test(paramWeek) ? weekStart(paramWeek) : thisWeek;
   const week = useWeek(start);
@@ -468,8 +477,8 @@ export function PlanPage() {
   const [editing, setEditing] = useState<DayView | null>(null);
 
   const go = (s: string) => setParams(s === thisWeek ? {} : { week: s });
-  const isPastWeek = addDays(start, 6) < t;
-  const regenFrom = start > t ? start : t;
+  const isPastWeek = addDays(start, 6) < today;
+  const regenFrom = start > today ? start : today;
 
   useEffect(() => {
     if (!week.data || !location.hash) return;
@@ -479,9 +488,9 @@ export function PlanPage() {
   const doRegen = async () => {
     try {
       const r = await regen.mutateAsync(regenFrom);
-      toast({ title: 'Plan regenerated', body: `${r.created} tasks planned from ${formatShortDate(r.from)} to ${formatShortDate(r.to)}.` });
+      toast({ title: t('plan.regenDone'), body: tn('plan.regenDoneBody', r.created, { from: formatShortDate(r.from), to: formatShortDate(r.to) }) });
     } catch (err) {
-      toast({ tone: 'error', title: 'Could not regenerate', body: errorMessage(err) });
+      toast({ tone: 'error', title: t('plan.regenError'), body: errorMessage(err) });
     }
     setConfirm(false);
   };
@@ -491,25 +500,25 @@ export function PlanPage() {
   return (
     <div className="flex flex-col gap-6">
       <PageHeader
-        title="Plan"
-        subtitle="Weeks start on Sunday. Adjust a day for travel, rest or fasting and the plan rebuilds around it."
+        title={t('nav.plan')}
+        subtitle={t('plan.subtitle')}
         actions={
           <>
             <div className="flex items-center gap-1 rounded-full border border-line bg-surface p-1">
-              <IconButton icon={CaretLeft} size="sm" label="Previous week" onClick={() => go(addDays(start, -7))} data-testid="week-prev" rtlFlipIcon />
+              <IconButton icon={CaretLeft} size="sm" label={t('plan.prevWeek')} onClick={() => go(addDays(start, -7))} data-testid="week-prev" rtlFlipIcon />
               <span className="min-w-[150px] px-1 text-center text-sm font-medium text-ink">
-                {formatShortDate(start)} to {formatShortDate(addDays(start, 6))}
+                {tRich('plan.weekRange', { from: <bdi>{formatShortDate(start)}</bdi>, to: <bdi>{formatShortDate(addDays(start, 6))}</bdi> })}
               </span>
-              <IconButton icon={CaretRight} size="sm" label="Next week" onClick={() => go(addDays(start, 7))} data-testid="week-next" rtlFlipIcon />
+              <IconButton icon={CaretRight} size="sm" label={t('plan.nextWeek')} onClick={() => go(addDays(start, 7))} data-testid="week-next" rtlFlipIcon />
             </div>
             {start !== thisWeek && (
               <Button variant="ghost" size="md" onClick={() => go(thisWeek)}>
-                This week
+                {t('week.title')}
               </Button>
             )}
             {!isPastWeek && (
               <Button variant="secondary" icon={ArrowClockwise} onClick={() => setConfirm(true)} data-testid="regenerate">
-                {start > t ? 'Regenerate this week' : 'Regenerate from today'}
+                {start > today ? t('plan.regenWeek') : t('plan.regenToday')}
               </Button>
             )}
           </>
@@ -519,10 +528,10 @@ export function PlanPage() {
       {totals && (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           {[
-            { label: 'Planned time', value: <Duration minutes={totals.plannedMinutes} /> },
-            { label: 'Capacity', value: <Duration minutes={totals.capacity} /> },
-            { label: 'Planned points', value: <span className="num">{totals.plannedPoints}</span> },
-            { label: 'Earned points', value: <span className="num">{totals.earnedPoints}</span>, accent: true },
+            { label: t('plan.tilePlannedTime'), value: <Duration minutes={totals.plannedMinutes} /> },
+            { label: t('plan.capacity'), value: <Duration minutes={totals.capacity} /> },
+            { label: t('plan.tilePlannedPoints'), value: <span className="num">{totals.plannedPoints}</span> },
+            { label: t('plan.tileEarnedPoints'), value: <span className="num">{totals.earnedPoints}</span>, accent: true },
           ].map((x) => (
             <div key={x.label} className="card px-4 py-3">
               <div className="text-xs text-muted">{x.label}</div>
@@ -555,15 +564,12 @@ export function PlanPage() {
         onClose={() => setConfirm(false)}
         onConfirm={() => void doRegen()}
         loading={regen.isPending}
-        title={start > t ? 'Regenerate this week?' : 'Regenerate from today?'}
-        confirmLabel="Regenerate"
-        body={
-          <>
-            Pending generated tasks from <strong className="text-ink">{formatShortDate(regenFrom)}</strong> to{' '}
-            <strong className="text-ink">{formatShortDate(addDays(start, 6))}</strong> are planned again from your real progress. Completed, skipped, moved forward and
-            manual tasks are kept.
-          </>
-        }
+        title={start > today ? t('plan.regenConfirmWeek') : t('plan.regenConfirmToday')}
+        confirmLabel={t('plan.regen')}
+        body={tRich('plan.regenBody', {
+          from: <strong className="text-ink"><bdi>{formatShortDate(regenFrom)}</bdi></strong>,
+          to: <strong className="text-ink"><bdi>{formatShortDate(addDays(start, 6))}</bdi></strong>,
+        })}
       />
       <OverrideDialog day={editing} onClose={() => setEditing(null)} />
     </div>

@@ -11,7 +11,7 @@ import { AnimatedNumber, Card, Chip, ErrorState, PageHeader, ProgressBar, Ring, 
 import { useI18n } from '../i18n';
 import { localizeTaskTitle } from '../i18n/engineText';
 import { cn, formatMediumDate, formatMinutes } from '../lib/format';
-import { formatPages, segmentView } from '../lib/quran';
+import { formatPages, pageSegments, segmentView } from '../lib/quran';
 
 const RECENT_DAYS = 7;
 
@@ -31,12 +31,12 @@ const CELL_CLASS: Record<CellState, string> = {
   next: 'bg-[var(--grid-empty)] ring-2 ring-inset ring-amber-ink',
 };
 
-function orderInWords(order: string): string {
-  if (order === 'forward') return 'Straight through the mushaf: page 1 (Al-Fatiha) to page 604 (An-Nas).';
-  return 'Juz 30 first, starting from the last page (An-Nas) and working back to An-Naba on page 582. Then Juz 29 from Al-Mulk (page 562) forward to page 581. Then from page 1 (Al-Fatiha) forward through the end of Juz 28 (page 561).';
+function orderInWords(order: string, t: (key: 'quran.orderForward' | 'quran.orderJuz') => string): string {
+  return order === 'forward' ? t('quran.orderForward') : t('quran.orderJuz');
 }
 
 function Tooltip({ page, rect, container }: { page: QuranPageView; rect: DOMRect; container: DOMRect }) {
+  const { t } = useI18n();
   const segs = page.segments.map(segmentView);
   const left = Math.min(Math.max(rect.left - container.left + rect.width / 2, 130), container.width - 130);
   const above = rect.top - container.top > 190;
@@ -54,8 +54,8 @@ function Tooltip({ page, rect, container }: { page: QuranPageView; rect: DOMRect
       className="rounded-2xl border border-line-strong bg-surface p-3.5 shadow-pop"
     >
       <div className="flex items-center justify-between">
-        <span className="text-sm font-semibold text-ink">Page {page.page}</span>
-        <span className="text-xs text-muted">Juz {page.juz}</span>
+        <span className="text-sm font-semibold text-ink">{t('quran.page', { page: page.page })}</span>
+        <span className="text-xs text-muted">{t('quran.juz', { juz: page.juz })}</span>
       </div>
       <ul className="mt-2 flex flex-col gap-1">
         {segs.map((s) => (
@@ -66,12 +66,12 @@ function Tooltip({ page, rect, container }: { page: QuranPageView; rect: DOMRect
       </ul>
       <div className="mt-2.5 grid grid-cols-2 gap-2 border-t border-line pt-2.5 text-xs">
         <div>
-          <div className="text-muted">Memorized</div>
-          <div className="text-ink">{page.memorizedDate ? formatMediumDate(page.memorizedDate) : 'Not yet'}</div>
+          <div className="text-muted">{t('quran.memorized')}</div>
+          <div className="text-ink">{page.memorizedDate ? formatMediumDate(page.memorizedDate) : t('quran.notYet')}</div>
         </div>
         <div>
-          <div className="text-muted">Last reviewed</div>
-          <div className="text-ink">{page.lastReviewed ? formatMediumDate(page.lastReviewed) : page.memorized ? 'Never' : '-'}</div>
+          <div className="text-muted">{t('quran.lastReviewed')}</div>
+          <div className="text-ink">{page.lastReviewed ? formatMediumDate(page.lastReviewed) : page.memorized ? t('quran.never') : '-'}</div>
         </div>
       </div>
     </motion.div>
@@ -80,6 +80,7 @@ function Tooltip({ page, rect, container }: { page: QuranPageView; rect: DOMRect
 }
 
 function PageGrid({ data }: { data: QuranResponse }) {
+  const { t, lang } = useI18n();
   const wrap = useRef<HTMLDivElement>(null);
   const [hover, setHover] = useState<{ page: QuranPageView; rect: DOMRect } | null>(null);
   const byPage = useMemo(() => new Map(data.pages.map((p) => [p.page, p])), [data.pages]);
@@ -97,7 +98,7 @@ function PageGrid({ data }: { data: QuranResponse }) {
           return (
             <div key={j.number} className="grid grid-cols-[34px_1fr_28px] items-center gap-2 sm:grid-cols-[52px_1fr_44px] sm:gap-3">
               <span className="num text-[11px] text-muted sm:text-xs">
-                <span className="hidden sm:inline">Juz </span>
+                <span className="hidden sm:inline">{t('quran.juzShort')}</span>
                 {j.number}
               </span>
               <div className="grid gap-[3px] sm:gap-1" style={{ gridTemplateColumns: 'repeat(23, minmax(0, 1fr))' }}>
@@ -109,7 +110,11 @@ function PageGrid({ data }: { data: QuranResponse }) {
                       type="button"
                       data-testid="quran-cell"
                       data-state={st}
-                      aria-label={`Page ${p.page}, ${p.label}${p.memorized ? ', memorized' : ''}`}
+                      aria-label={t('quran.cellAria', {
+                        page: p.page,
+                        label: lang === 'ar' ? pageSegments(p.page).map((s) => `${s.nameAr} ${s.ayahs}`).join('، ') : p.label,
+                        suffix: p.memorized ? t('quran.cellMemorized') : '',
+                      })}
                       onMouseEnter={(e) => show(p, e.currentTarget)}
                       onFocus={(e) => show(p, e.currentTarget)}
                       onBlur={() => setHover(null)}
@@ -136,12 +141,13 @@ function PageGrid({ data }: { data: QuranResponse }) {
 }
 
 function Legend() {
+  const { t, tn } = useI18n();
   const items: { cls: string; label: string }[] = [
-    { cls: 'bg-amber', label: `Reviewed in the last ${RECENT_DAYS} days` },
-    { cls: 'bg-amber/75', label: 'Memorized' },
-    { cls: 'bg-amber/40', label: 'Memorized, never reviewed' },
-    { cls: 'bg-[var(--grid-empty)] ring-2 ring-inset ring-amber-ink', label: 'Next page' },
-    { cls: 'bg-[var(--grid-empty)] border border-line', label: 'Not started' },
+    { cls: 'bg-amber', label: tn('quran.legendRecent', RECENT_DAYS) },
+    { cls: 'bg-amber/75', label: t('quran.memorized') },
+    { cls: 'bg-amber/40', label: t('quran.legendFresh') },
+    { cls: 'bg-[var(--grid-empty)] ring-2 ring-inset ring-amber-ink', label: t('quran.legendNext') },
+    { cls: 'bg-[var(--grid-empty)] border border-line', label: t('week.notStarted') },
   ];
   return (
     <ul className="flex flex-wrap gap-x-4 gap-y-2 text-xs text-muted xl:flex-col">
@@ -158,18 +164,20 @@ function Legend() {
 export function QuranPage() {
   const q = useQuran();
   const catalog = useCatalog();
-  const { lang } = useI18n();
+  const { t, tn, tRich, tnRich, lang } = useI18n();
   if (catalog.data && !catalog.data.quranEnabled) {
     return (
       <div className="flex flex-col gap-6">
-        <PageHeader title="Quran" />
+        <PageHeader title={t('nav.quran')} />
         <Card className="p-5 sm:p-6" data-testid="quran-disabled">
           <p className="text-sm text-muted">
-            Quran is turned off. You can turn it on in{' '}
-            <Link to="/settings" className="text-accent-ink underline underline-offset-2">
-              Settings
-            </Link>
-            .
+            {tRich('quran.disabled', {
+              link: (
+                <Link to="/settings" className="text-accent-ink underline underline-offset-2">
+                  {t('nav.settings')}
+                </Link>
+              ),
+            })}
           </p>
         </Card>
       </div>
@@ -197,36 +205,36 @@ export function QuranPage() {
   return (
     <div className="flex flex-col gap-6">
       <PageHeader
-        title="Quran"
-        subtitle="Memorize a page one day, review the next. Reviews rotate through everything you know so no page is left behind."
+        title={t('nav.quran')}
+        subtitle={t('quran.subtitle')}
       />
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1.1fr_1fr_1fr]">
         <Card className="flex items-center gap-5 p-5 sm:p-6">
-          <Ring value={d.memorized} max={604} size={128} stroke={12} color="var(--amber)" label={`${d.memorized} of 604 pages memorized`}>
+          <Ring value={d.memorized} max={604} size={128} stroke={12} color="var(--amber)" label={t('quran.ringAria', { n: d.memorized, total: 604 })}>
             <AnimatedNumber value={d.memorized} className="text-3xl leading-none font-semibold text-ink" data-testid="quran-memorized" />
-            <span className="mt-1 text-xs text-muted">of 604</span>
+            <span className="mt-1 text-xs text-muted">{t('quran.ofTotal', { total: 604 })}</span>
           </Ring>
           <div className="min-w-0">
-            <div className="label">Memorized</div>
+            <div className="label">{t('quran.memorized')}</div>
             <p className="num mt-1 text-2xl font-semibold text-amber-ink">{pct}%</p>
-            <p className="mt-1 text-sm text-muted">{604 - d.memorized} pages to go</p>
+            <p className="mt-1 text-sm text-muted">{tn('quran.pagesToGo', 604 - d.memorized)}</p>
           </div>
         </Card>
 
         <Card className="p-5 sm:p-6">
           <div className="flex items-center justify-between">
-            <div className="label">Next session</div>
+            <div className="label">{t('quran.nextSession')}</div>
             <Chip tone="amber" icon={d.nextSessionType === 'memorize' ? BookOpen : Repeat}>
-              {d.nextSessionType === 'memorize' ? 'Memorize' : 'Review'}
+              {d.nextSessionType === 'memorize' ? t('type.quran-memorize') : t('type.quran-review')}
             </Chip>
           </div>
           <p className="mt-2 text-lg font-semibold text-ink">{localizeTaskTitle(d.nextSession.title, lang)}</p>
-          <p className="text-sm text-muted">About {formatMinutes(d.nextSession.minutes)}</p>
+          <p className="text-sm text-muted">{t('quran.aboutMin', { min: formatMinutes(d.nextSession.minutes) })}</p>
           {d.nextPage !== null && (
             <div className="mt-3 border-t border-line pt-3">
               <div className="mb-1.5 text-xs text-muted">
-                Next new page: <span className="num text-ink">{d.nextPage}</span>
+                {tRich('quran.nextNew', { page: <bdi className="num text-ink">{d.nextPage}</bdi> })}
               </div>
               <QuranSegments pages={[d.nextPage]} />
             </div>
@@ -234,17 +242,23 @@ export function QuranPage() {
         </Card>
 
         <Card className="p-5 sm:p-6">
-          <div className="label">Review cycle</div>
+          <div className="label">{t('quran.reviewCycle')}</div>
           <p className="mt-2 text-lg font-semibold text-ink">
-            {rc.cycleLength === 0 ? 'Nothing to review yet' : rc.reviewAll ? 'Every page, every review' : `Full cycle every ${rc.cycleLength} reviews`}
+            {rc.cycleLength === 0 ? t('quran.nothingToReview') : rc.reviewAll ? t('quran.everyPage') : tn('quran.fullCycle', rc.cycleLength)}
           </p>
           <p className="mt-1 text-sm text-muted">
-            Up to <span className="num text-ink">{rc.capPages}</span> pages per review: the <span className="num text-ink">{rc.nearPages}</span> most recent plus the{' '}
-            <span className="num text-ink">{rc.farPerSession}</span> longest unreviewed.
+            {tRich('quran.reviewSplit', {
+              cap: <bdi className="num text-ink">{rc.capPages}</bdi>,
+              near: <bdi className="num text-ink">{rc.nearPages}</bdi>,
+              far: <bdi className="num text-ink">{rc.farPerSession}</bdi>,
+            })}
           </p>
           {rc.nextReview.pages.length > 0 && (
             <p className="mt-2 text-xs text-muted">
-              Next review: pages <span className="num text-ink">{formatPages(rc.nextReview.pages)}</span> ({formatMinutes(rc.nextReview.minutes)})
+              {tRich('quran.nextReview', {
+                pages: <bdi className="num text-ink">{formatPages(rc.nextReview.pages)}</bdi>,
+                min: formatMinutes(rc.nextReview.minutes),
+              })}
             </p>
           )}
         </Card>
@@ -256,10 +270,12 @@ export function QuranPage() {
             <CalendarBlank size={19} aria-hidden />
           </span>
           <div>
-            <div className="text-sm font-semibold text-ink">Planned pace</div>
+            <div className="text-sm font-semibold text-ink">{t('quran.plannedPace')}</div>
             <p className="mt-0.5 text-sm text-muted">
-              <span className="num text-ink">{pr.plannedPagesPerWeek}</span> pages a week. Finish on{' '}
-              <span className="text-ink">{pr.plannedCompletionDate ? formatMediumDate(pr.plannedCompletionDate) : 'no date yet'}</span>.
+              {tRich('quran.plannedPaceBody', {
+                pages: <bdi className="num text-ink">{pr.plannedPagesPerWeek}</bdi>,
+                date: <bdi className="text-ink">{pr.plannedCompletionDate ? formatMediumDate(pr.plannedCompletionDate) : t('quran.noDate')}</bdi>,
+              })}
             </p>
           </div>
         </Card>
@@ -268,16 +284,14 @@ export function QuranPage() {
             <TrendUp size={19} aria-hidden />
           </span>
           <div>
-            <div className="text-sm font-semibold text-ink">Your actual pace</div>
+            <div className="text-sm font-semibold text-ink">{t('quran.actualPace')}</div>
             <p className="mt-0.5 text-sm text-muted">
-              {pr.actualPagesPerWeek !== null ? (
-                <>
-                  <span className="num text-ink">{pr.actualPagesPerWeek}</span> pages a week over {pr.daysOfData} days. At this pace you finish on{' '}
-                  <span className="text-ink">{pr.actualCompletionDate ? formatMediumDate(pr.actualCompletionDate) : 'no date yet'}</span>.
-                </>
-              ) : (
-                'Complete a few memorize sessions to see a projection from your real pace.'
-              )}
+              {pr.actualPagesPerWeek !== null
+                ? tnRich('quran.actualPaceBody', pr.daysOfData, {
+                    pages: <bdi className="num text-ink">{pr.actualPagesPerWeek}</bdi>,
+                    date: <bdi className="text-ink">{pr.actualCompletionDate ? formatMediumDate(pr.actualCompletionDate) : t('quran.noDate')}</bdi>,
+                  })
+                : t('quran.noPace')}
             </p>
           </div>
         </Card>
@@ -287,8 +301,8 @@ export function QuranPage() {
         <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,660px)_1fr] xl:gap-10">
           <div className="min-w-0">
             <div className="mb-4">
-              <h2 className="text-lg font-semibold tracking-tight">604 pages</h2>
-              <p className="text-sm text-muted">One row per juz. Hover or tap a page for its surahs and dates.</p>
+              <h2 className="text-lg font-semibold tracking-tight">{tn('quran.totalPages', 604)}</h2>
+              <p className="text-sm text-muted">{t('quran.gridHint')}</p>
             </div>
             <div className="mb-4 xl:hidden">
               <Legend />
@@ -297,15 +311,18 @@ export function QuranPage() {
           </div>
           <div className="flex flex-col gap-5 xl:border-s xl:border-line xl:ps-10">
             <div className="hidden xl:block">
-              <h3 className="label mb-3">Legend</h3>
+              <h3 className="label mb-3">{t('quran.legend')}</h3>
               <Legend />
             </div>
             <div>
-              <h3 className="label mb-2">Progress</h3>
-              <ProgressBar value={d.memorized} max={604} color="var(--amber)" height={8} label="Pages memorized" />
+              <h3 className="label mb-2">{t('quran.progress')}</h3>
+              <ProgressBar value={d.memorized} max={604} color="var(--amber)" height={8} label={t('quran.pagesMemorized')} />
               <p className="mt-1.5 text-xs text-muted">
-                <span className="num text-ink">{d.memorized}</span> of <span className="num">604</span> pages,{' '}
-                <span className="num">{d.pages.filter((p) => p.memorized && p.lastReviewed === null).length}</span> not reviewed yet
+                {tRich('quran.progressLine', {
+                  memorized: <bdi className="num text-ink">{d.memorized}</bdi>,
+                  total: <bdi className="num">604</bdi>,
+                  fresh: <bdi className="num">{d.pages.filter((p) => p.memorized && p.lastReviewed === null).length}</bdi>,
+                })}
               </p>
             </div>
             <div className="flex items-start gap-3">
@@ -313,8 +330,8 @@ export function QuranPage() {
                 <ArrowsClockwise size={19} aria-hidden />
               </span>
               <div>
-                <div className="text-sm font-semibold text-ink">Memorization order</div>
-                <p className="mt-0.5 text-sm leading-relaxed text-muted">{orderInWords(d.settings.memorizationOrder)}</p>
+                <div className="text-sm font-semibold text-ink">{t('quran.order')}</div>
+                <p className="mt-0.5 text-sm leading-relaxed text-muted">{orderInWords(d.settings.memorizationOrder, t)}</p>
               </div>
             </div>
             <div className="flex items-start gap-3">
@@ -322,9 +339,9 @@ export function QuranPage() {
                 <Info size={19} aria-hidden />
               </span>
               <div>
-                <div className="text-sm font-semibold text-ink">Quran data</div>
+                <div className="text-sm font-semibold text-ink">{t('quran.dataTitle')}</div>
                 <p className="mt-0.5 text-sm text-muted">
-                  {d.attribution}.{' '}
+                  <bdi dir="ltr">{d.attribution}.</bdi>{' '}
                   <a href="https://tanzil.net" target="_blank" rel="noopener noreferrer" className="text-accent-ink underline underline-offset-2">
                     tanzil.net
                   </a>

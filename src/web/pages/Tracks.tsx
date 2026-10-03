@@ -10,11 +10,14 @@ import { Button } from '../components/ui/Button';
 import { ConfirmDialog } from '../components/ui/Dialog';
 import { Card, Chip, EmptyState, ErrorState, PageHeader, ProgressBar, Segmented, Skeleton } from '../components/ui/primitives';
 import { useToast } from '../components/ui/Toast';
+import { useI18n } from '../i18n';
+import { isolate } from '../i18n/engineText';
 import { cn, formatHours, formatMediumDate } from '../lib/format';
 import { useTrackMeta } from '../lib/tracks';
 import { ResourcesView } from './Resources';
 
 function PhaseTimeline({ group, projection, color, onSelect }: { group: TrackStreamGroup; projection: StreamProjection | null; color: string; onSelect: (phaseId: string) => void }) {
+  const { t } = useI18n();
   const currentPhase = group.phases.find((p) => p.modules.some((m) => m.isCurrent))?.id;
   return (
     <ol className="scrollbar-thin -mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
@@ -41,14 +44,14 @@ function PhaseTimeline({ group, projection, color, onSelect }: { group: TrackStr
                 >
                   {done ? <CheckCircle size={14} weight="fill" aria-hidden /> : i + 1}
                 </span>
-                <span className="truncate text-sm font-semibold text-ink" title={p.title}>
+                <span className="truncate text-sm font-semibold text-ink rtl:text-right" title={p.title} dir="auto">
                   {p.title}
                 </span>
               </div>
-              <ProgressBar value={credited} max={est} height={5} color={color} label={`${p.title} progress`} />
+              <ProgressBar value={credited} max={est} height={5} color={color} label={t('tracks.phaseProgress', { title: p.title })} />
               <div className="flex justify-between text-[11px] text-muted">
-                <span>{done ? 'Done' : current ? 'In progress' : 'Up next'}</span>
-                <span className="num">{done ? '' : pp?.projectedCompletionDate ? formatMediumDate(pp.projectedCompletionDate) : 'No date yet'}</span>
+                <span>{done ? t('tracks.phaseDone') : current ? t('tracks.phaseCurrent') : t('tracks.phaseNext')}</span>
+                <span className="num">{done ? '' : pp?.projectedCompletionDate ? formatMediumDate(pp.projectedCompletionDate) : t('tracks.noDate')}</span>
               </div>
             </button>
           </li>
@@ -67,6 +70,7 @@ function ModuleCard({
   color: string;
   onAction: (m: TrackModule, action: 'complete' | 'reset') => void;
 }) {
+  const { t, tRich } = useI18n();
   const p = m.progress;
   return (
     <div
@@ -83,37 +87,44 @@ function ModuleCard({
           <div className="mb-1.5 flex flex-wrap items-center gap-1.5">
             {m.isCurrent && (
               <Chip tone="accent" icon={Target}>
-                Current
+                {t('tracks.current')}
               </Chip>
             )}
             {p.completed && (
               <Chip tone="accent" icon={CheckCircle}>
-                Complete
+                {t('tracks.complete')}
               </Chip>
             )}
-            {m.kind === 'project' && <Chip>Project</Chip>}
+            {m.kind === 'project' && <Chip>{t('tracks.project')}</Chip>}
           </div>
-          <h4 className="text-[15px] font-semibold tracking-tight text-ink">{m.title}</h4>
+          <h4 className="text-[15px] font-semibold tracking-tight text-ink rtl:text-right" dir="auto">
+            {m.title}
+          </h4>
         </div>
       </div>
       <div>
-        <ProgressBar value={p.completed ? p.estMinutes : Math.min(p.creditedMinutes, p.estMinutes)} max={p.estMinutes} height={8} color={color} label={`${m.title} progress`} />
+        <ProgressBar value={p.completed ? p.estMinutes : Math.min(p.creditedMinutes, p.estMinutes)} max={p.estMinutes} height={8} color={color} label={t('tracks.phaseProgress', { title: m.title })} />
         <div className="mt-1.5 flex justify-between text-xs text-muted">
           <span>
-            <span className="num text-ink">{formatHours(p.creditedMinutes)}</span> of{' '}
-            <span
-              className="num"
-              title={m.estimateUncertain ? 'Rough estimate: the hours for this module are a guess, so its projection may move.' : undefined}
-            >
-              {m.estimateUncertain && '~'}
-              {formatHours(p.estMinutes)}
-              {m.estimateUncertain && <span className="sr-only"> (rough estimate)</span>}
-            </span>
+            {tRich('tracks.hoursOf', {
+              done: <bdi className="num text-ink">{formatHours(p.creditedMinutes)}</bdi>,
+              total: (
+                <bdi className="num" title={m.estimateUncertain ? t('tracks.roughTitle') : undefined}>
+                  {m.estimateUncertain && '~'}
+                  {formatHours(p.estMinutes)}
+                  {m.estimateUncertain && <span className="sr-only"> {t('tracks.roughSr')}</span>}
+                </bdi>
+              ),
+            })}
           </span>
           <span className="num">{Math.round(p.percent)}%</span>
         </div>
       </div>
-      {m.note && <p className="text-xs text-muted">{m.note}</p>}
+      {m.note && (
+        <p className="text-xs text-muted rtl:text-right" dir="auto">
+          {m.note}
+        </p>
+      )}
       {m.resources.length > 0 && (
         <ResourceLinks
           resources={m.resources.map((r) => ({
@@ -129,11 +140,11 @@ function ModuleCard({
       <div className="mt-auto flex gap-2 pt-1">
         {p.completed ? (
           <Button size="sm" variant="ghost" icon={ArrowCounterClockwise} onClick={() => onAction(m, 'reset')}>
-            Reset
+            {t('tracks.reset')}
           </Button>
         ) : (
           <Button size="sm" variant={m.isCurrent ? 'secondary' : 'ghost'} icon={CheckCircle} onClick={() => onAction(m, 'complete')}>
-            Mark complete
+            {t('tracks.markComplete')}
           </Button>
         )}
       </div>
@@ -142,6 +153,7 @@ function ModuleCard({
 }
 
 function StreamSection({ group, onAction, index }: { group: TrackStreamGroup; onAction: (m: TrackModule, a: 'complete' | 'reset') => void; index: number }) {
+  const { t, tRich, tnRich } = useI18n();
   const trackMeta = useTrackMeta();
   const meta = trackMeta(group.track, group.stream);
   const I = meta.icon;
@@ -181,57 +193,56 @@ function StreamSection({ group, onAction, index }: { group: TrackStreamGroup; on
             <I size={24} aria-hidden />
           </span>
           <div className="min-w-0">
-            <h2 className="text-xl font-semibold tracking-tight text-ink">{meta.label}</h2>
+            <h2 className="text-xl font-semibold tracking-tight text-ink rtl:text-right" dir="auto">
+              {meta.label}
+            </h2>
             <p className="text-sm text-muted">
-              {group.currentModuleTitle ? (
-                <>
-                  Now: <span className="text-ink">{group.currentModuleTitle}</span>
-                </>
-              ) : (
-                'All scheduled modules complete'
-              )}
+              {group.currentModuleTitle
+                ? tRich('tracks.now', { title: <bdi className="text-ink">{group.currentModuleTitle}</bdi> })
+                : t('tracks.allDone')}
             </p>
           </div>
         </div>
         <div className="grid grid-cols-3 gap-2 sm:gap-3 lg:min-w-[420px]">
           <div className="rounded-xl bg-surface-2 px-3 py-2">
-            <div className="text-[11px] text-muted">Modules</div>
+            <div className="text-[11px] text-muted">{t('tracks.modules')}</div>
             <div className="num text-base font-semibold text-ink">
               {doneCount}/{all.length}
             </div>
           </div>
           <div className="rounded-xl bg-surface-2 px-3 py-2">
-            <div className="text-[11px] text-muted">Per week</div>
+            <div className="text-[11px] text-muted">{t('tracks.perWeek')}</div>
             <div className="num text-base font-semibold text-ink">{formatHours(pr?.weeklyPlannedMinutes ?? 0)}</div>
           </div>
           <div className="rounded-xl bg-surface-2 px-3 py-2">
-            <div className="text-[11px] text-muted">Projected finish</div>
-            <div className="num text-base font-semibold text-ink">{pr?.projectedCompletionDate ? formatMediumDate(pr.projectedCompletionDate) : 'Not scheduled'}</div>
+            <div className="text-[11px] text-muted">{t('tracks.projFinish')}</div>
+            <div className="num text-base font-semibold text-ink">{pr?.projectedCompletionDate ? formatMediumDate(pr.projectedCompletionDate) : t('tracks.notScheduled')}</div>
           </div>
         </div>
       </div>
       <div className="mt-4">
-        <ProgressBar value={total - remaining} max={total} height={10} color={meta.cssVar} label={`${meta.label} overall progress`} />
+        <ProgressBar value={total - remaining} max={total} height={10} color={meta.cssVar} label={t('tracks.overallProgress', { label: meta.label })} />
         <div className="mt-1.5 flex justify-between text-xs text-muted">
           <span>
-            <span className="num text-ink">{formatHours(total - remaining)}</span> of <span className="num">{formatHours(total)}</span> done
+            {tRich('tracks.hoursDone', {
+              done: <bdi className="num text-ink">{formatHours(total - remaining)}</bdi>,
+              total: <bdi className="num">{formatHours(total)}</bdi>,
+            })}
           </span>
           <span>
-            <span className="num">{formatHours(remaining)}</span> left
-            {pr?.weeksRemaining != null && (
-              <>
-                , about <span className="num">{Math.ceil(pr.weeksRemaining)}</span> weeks
-              </>
-            )}
+            {tRich('tracks.leftLine', {
+              left: <bdi className="num">{formatHours(remaining)}</bdi>,
+              weeks: pr?.weeksRemaining != null ? tnRich('tracks.aboutWeeks', Math.ceil(pr.weeksRemaining), { count: <bdi className="num">{Math.ceil(pr.weeksRemaining)}</bdi> }) : '',
+            })}
           </span>
         </div>
       </div>
       <div className="mt-5">
         <h3 className="label mb-2 flex items-center gap-1.5">
-          <Flag size={13} aria-hidden /> Phases
+          <Flag size={13} aria-hidden /> {t('tracks.phases')}
         </h3>
         <PhaseTimeline group={group} projection={pr} color={meta.cssVar} onSelect={showPhase} />
-        {all.some((m) => m.estimateUncertain) && <p className="mt-2 text-xs text-muted">~ marks a rough estimate.</p>}
+        {all.some((m) => m.estimateUncertain) && <p className="mt-2 text-xs text-muted">{t('tracks.roughNote')}</p>}
       </div>
       <div className="mt-6 flex flex-col gap-6">
         {group.phases.map((p) => {
@@ -249,15 +260,17 @@ function StreamSection({ group, onAction, index }: { group: TrackStreamGroup; on
                   className="flex w-full items-center gap-2 text-start text-sm font-semibold text-ink"
                 >
                   <span className="num shrink-0 text-xs text-muted">{p.id}</span>
-                  <span className="min-w-0 break-words sm:truncate">{p.title}</span>
+                  <span className="min-w-0 break-words sm:truncate rtl:text-right" dir="auto">
+                    {p.title}
+                  </span>
                   <span className="ms-auto flex shrink-0 items-center gap-3">
                     {!open && (
                       <>
                         <span className="num text-xs font-normal text-muted">
-                          {done}/{p.modules.length} modules
+                          {tRich('tracks.modulesCount', { done: <bdi>{done}</bdi>, total: <bdi>{p.modules.length}</bdi> })}
                         </span>
                         <span className="hidden w-20 sm:block sm:w-36">
-                          <ProgressBar value={credited} max={est} height={4} color={meta.cssVar} label={`${p.title} progress`} />
+                          <ProgressBar value={credited} max={est} height={4} color={meta.cssVar} label={t('tracks.phaseProgress', { title: p.title })} />
                         </span>
                       </>
                     )}
@@ -287,6 +300,7 @@ function StreamSection({ group, onAction, index }: { group: TrackStreamGroup; on
 }
 
 function StreamTab({ group, active, onSelect }: { group: TrackStreamGroup; active: boolean; onSelect: () => void }) {
+  const { t } = useI18n();
   const trackMeta = useTrackMeta();
   const meta = trackMeta(group.track, group.stream);
   const I = meta.icon;
@@ -312,12 +326,14 @@ function StreamTab({ group, active, onSelect }: { group: TrackStreamGroup; activ
         <span className={cn('inline-flex size-8 shrink-0 items-center justify-center rounded-xl', meta.soft, meta.text)}>
           <I size={18} aria-hidden />
         </span>
-        <span className="truncate text-sm font-semibold text-ink">{meta.label}</span>
+        <span className="truncate text-sm font-semibold text-ink rtl:text-right" dir="auto">
+          {meta.label}
+        </span>
         <span className="num ms-auto text-xs text-muted">{total > 0 ? Math.round((done / total) * 100) : 0}%</span>
       </div>
       <ProgressBar value={done} max={total} height={6} color={meta.cssVar} />
       <div className="truncate text-xs text-muted">
-        {pr?.projectedCompletionDate ? <>Finish around {formatMediumDate(pr.projectedCompletionDate)}</> : 'Not scheduled in a normal week'}
+        {pr?.projectedCompletionDate ? t('tracks.finishAround', { date: formatMediumDate(pr.projectedCompletionDate) }) : t('tracks.notSchedWeek')}
       </div>
     </motion.button>
   );
@@ -328,6 +344,7 @@ export function TracksPage() {
   const catalog = useCatalog();
   const action = useModuleAction();
   const { toast } = useToast();
+  const { t } = useI18n();
   const [params, setParams] = useSearchParams();
   const [pending, setPending] = useState<{ m: TrackModule; action: 'complete' | 'reset' } | null>(null);
 
@@ -336,11 +353,11 @@ export function TracksPage() {
     try {
       await action.mutateAsync({ id: pending.m.id, action: pending.action });
       toast({
-        title: pending.action === 'complete' ? 'Module complete' : 'Module reset',
-        body: `${pending.m.title}. The plan from today was rebuilt.`,
+        title: pending.action === 'complete' ? t('tracks.moduleDone') : t('tracks.moduleReset'),
+        body: t('tracks.moduleActionBody', { title: isolate(pending.m.title) }),
       });
     } catch (err) {
-      toast({ tone: 'error', title: 'Could not update the module', body: errorMessage(err) });
+      toast({ tone: 'error', title: t('tracks.errAction'), body: errorMessage(err) });
     }
     setPending(null);
   };
@@ -358,26 +375,22 @@ export function TracksPage() {
   return (
     <div className="flex flex-col gap-6">
       <PageHeader
-        title="Tracks"
-        subtitle={
-          view === 'resources'
-            ? 'Everything the plan uses, grouped by track, with the modules that use each one.'
-            : 'Your curriculum, phase by phase. Progress comes from the minutes you complete; projections use your normal week.'
-        }
+        title={t('nav.tracks')}
+        subtitle={view === 'resources' ? t('tracks.subtitleRes') : t('tracks.subtitle')}
         actions={
           <>
             <Segmented<'modules' | 'resources'>
-              label="Tracks view"
+              label={t('tracks.viewLabel')}
               value={view}
               onChange={setView}
               options={[
-                { value: 'modules', label: 'Modules' },
-                { value: 'resources', label: 'Resources' },
+                { value: 'modules', label: t('tracks.modules') },
+                { value: 'resources', label: t('task.resources') },
               ]}
             />
             {q.data && (
               <Chip tone="accent" icon={CalendarCheck}>
-                {q.data.totals.completedModules} of {q.data.totals.modules} modules done
+                {t('tracks.modulesDone', { done: q.data.totals.completedModules, total: q.data.totals.modules })}
               </Chip>
             )}
           </>
@@ -400,12 +413,12 @@ export function TracksPage() {
         <Card>
           <EmptyState
             icon={Path}
-            title="No study plan yet"
-            body="Import a plan to add tracks, streams and modules."
+            title={t('today.noPlanTitle')}
+            body={t('tracks.noPlanBody')}
             action={
               catalog.data && !catalog.data.hasPlan ? (
                 <Link to="/import" className="text-accent-ink underline underline-offset-2">
-                  Import a plan
+                  {t('route.import')}
                 </Link>
               ) : undefined
             }
@@ -413,7 +426,7 @@ export function TracksPage() {
         </Card>
       ) : (
         <>
-          <div role="tablist" aria-label="Tracks" className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+          <div role="tablist" aria-label={t('nav.tracks')} className="grid grid-cols-2 gap-3 lg:grid-cols-4">
             {streams.map((g) => {
               const key = `${g.track}.${g.stream}`;
               return (
@@ -435,12 +448,12 @@ export function TracksPage() {
         onConfirm={() => void run()}
         loading={action.isPending}
         tone={pending?.action === 'reset' ? 'danger' : 'primary'}
-        title={pending?.action === 'reset' ? 'Reset this module?' : 'Mark this module complete?'}
-        confirmLabel={pending?.action === 'reset' ? 'Reset module' : 'Mark complete'}
+        title={pending?.action === 'reset' ? t('tracks.resetConfirm') : t('tracks.completeConfirm')}
+        confirmLabel={pending?.action === 'reset' ? t('tracks.resetModule') : t('tracks.markComplete')}
         body={
           pending?.action === 'reset'
-            ? `${pending.m.title} goes back to 0 credited minutes from now on. Completed tasks and their points stay. The plan from today is rebuilt.`
-            : `${pending?.m.title ?? ''} is marked done and the plan moves on to the next module from today. Points already earned stay the same.`
+            ? t('tracks.resetBody', { title: isolate(pending.m.title) })
+            : t('tracks.completeBody', { title: isolate(pending?.m.title ?? '') })
         }
       />
     </div>

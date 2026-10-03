@@ -26,17 +26,19 @@ function fallback(track: TrackId): TrackMeta {
   return { key: track, label: track, short: track, icon: iconFor(null), theme: 'slate', ...themeClasses('slate') };
 }
 
-export function metaFor(catalog: CatalogResponse | null | undefined, track: TrackId, stream?: StreamId): TrackMeta {
+export function metaFor(catalog: CatalogResponse | null | undefined, track: TrackId, stream?: StreamId, quranLabel?: string): TrackMeta {
   const def = catalog?.tracks.find((t) => t.id === track);
   if (!def) return fallback(track);
   const s =
     stream !== undefined ? def.streams.find((x) => x.id === stream) : (def.streams.find((x) => !x.archived) ?? def.streams[0]);
   const multi = def.streams.filter((x) => !x.archived).length > 1;
   const theme = s?.theme ?? def.theme;
+  // Quran-track labels come from the dictionary; study labels are plan data.
+  const quran = def.kind === 'quran' && quranLabel !== undefined;
   return {
     key: stream !== undefined ? `${track}.${stream}` : track,
-    label: multi && s ? `${def.shortLabel}: ${s.shortLabel}` : def.shortLabel,
-    short: multi && s ? s.shortLabel : def.shortLabel,
+    label: quran ? quranLabel : multi && s ? `${def.shortLabel}: ${s.shortLabel}` : def.shortLabel,
+    short: quran ? quranLabel : multi && s ? s.shortLabel : def.shortLabel,
     icon: iconFor(s?.icon ?? def.icon),
     theme,
     ...themeClasses(theme),
@@ -46,7 +48,8 @@ export function metaFor(catalog: CatalogResponse | null | undefined, track: Trac
 /** Hook form of metaFor: call once per component, reuse the lookup. */
 export function useTrackMeta(): (track: TrackId, stream?: StreamId) => TrackMeta {
   const { data } = useCatalog();
-  return useMemo(() => (track: TrackId, stream?: StreamId) => metaFor(data, track, stream), [data]);
+  const { t } = useI18n();
+  return useMemo(() => (track: TrackId, stream?: StreamId) => metaFor(data, track, stream, t('nav.quran')), [data, t]);
 }
 
 export const TYPE_KEYS: Record<TaskType, StringKey> = {
