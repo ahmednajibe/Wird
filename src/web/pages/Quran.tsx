@@ -8,6 +8,8 @@ import { useCatalog, useQuran } from '../client/hooks';
 import type { QuranPageView, QuranResponse } from '../client/types';
 import { QuranSegments, SegmentRow } from '../components/QuranSegments';
 import { AnimatedNumber, Card, Chip, ErrorState, PageHeader, ProgressBar, Ring, Skeleton } from '../components/ui/primitives';
+import { useI18n } from '../i18n';
+import { localizeTaskTitle } from '../i18n/engineText';
 import { cn, formatMediumDate, formatMinutes } from '../lib/format';
 import { formatPages, segmentView } from '../lib/quran';
 
@@ -156,6 +158,7 @@ function Legend() {
 export function QuranPage() {
   const q = useQuran();
   const catalog = useCatalog();
+  const { lang } = useI18n();
   if (catalog.data && !catalog.data.quranEnabled) {
     return (
       <div className="flex flex-col gap-6">
@@ -218,7 +221,7 @@ export function QuranPage() {
               {d.nextSessionType === 'memorize' ? 'Memorize' : 'Review'}
             </Chip>
           </div>
-          <p className="mt-2 text-lg font-semibold text-ink">{d.nextSession.title}</p>
+          <p className="mt-2 text-lg font-semibold text-ink">{localizeTaskTitle(d.nextSession.title, lang)}</p>
           <p className="text-sm text-muted">About {formatMinutes(d.nextSession.minutes)}</p>
           {d.nextPage !== null && (
             <div className="mt-3 border-t border-line pt-3">

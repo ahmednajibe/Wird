@@ -14,6 +14,7 @@ import { Button } from '../components/ui/Button';
 import { Card, Disclosure, ErrorState, PageHeader, Segmented, Skeleton, Switch } from '../components/ui/primitives';
 import { useToast } from '../components/ui/Toast';
 import { useI18n, type Lang } from '../i18n';
+import { hijriLabel } from '../i18n/engineText';
 import { cn, formatLongDate, formatMediumDate } from '../lib/format';
 import { useTheme, type ThemePref } from '../lib/theme';
 
@@ -299,7 +300,7 @@ function SettingsForm({ initial, catalog }: { initial: Settings; catalog: Catalo
           <div className="mt-4 rounded-2xl bg-surface-2 p-4">
             <div className="text-xs text-muted">Today with this offset</div>
             <div className="mt-1 text-lg font-semibold text-ink" data-testid="hijri-preview">
-              {toHijri(today, draft.hijriOffsetDays).label}
+              {hijriLabel(toHijri(today, draft.hijriOffsetDays), lang)}
             </div>
             <div className="text-sm text-muted">{formatLongDate(today)}</div>
           </div>

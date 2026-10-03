@@ -334,6 +334,10 @@ async function run(): Promise<void> {
       await page.goto(`${base}/`);
       await settle(page);
       assert((await page.locator('nav').filter({ hasText: 'اليوم' }).count()) > 0, 'sidebar nav shows اليوم');
+      const firstTitle = await page.locator('[data-testid="task-card"] h3').first().innerText();
+      assert(!firstTitle.includes('Deep study') && !firstTitle.includes('Memorize page'), `first task card title is Arabic (${firstTitle})`);
+      const headerText = await page.locator('main header').first().innerText();
+      assert(headerText.includes('هـ'), `header shows the Arabic Hijri label (${headerText.split('\n')[0]})`);
       let file = join(shotsDir, 'today-ar-desktop.png');
       await page.screenshot({ path: file, fullPage: true });
       console.log(`  ${file}`);
