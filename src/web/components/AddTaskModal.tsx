@@ -156,6 +156,16 @@ export function AddTaskModal({ open, onClose }: { open: boolean; onClose: () => 
       description="Log study or Quran work you did outside the plan, or add it for later today."
       labelledBy="add-task-title"
       size="md"
+      footer={
+        <>
+          <Button variant="ghost" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button ref={submitRef} type="submit" form="add-task-form" variant="primary" icon={Plus} loading={create.isPending} data-testid="add-task-submit">
+            {done ? 'Log task' : 'Add to today'}
+          </Button>
+        </>
+      }
     >
       <form id="add-task-form" onSubmit={submit} className="flex flex-col gap-5" data-testid="add-task-form" noValidate>
         <fieldset>
@@ -314,15 +324,6 @@ export function AddTaskModal({ open, onClose }: { open: boolean; onClose: () => 
             {errors.form}
           </p>
         )}
-
-        <div className="flex items-center justify-end gap-2 border-t border-line pt-4">
-          <Button variant="ghost" onClick={onClose}>
-            Cancel
-          </Button>
-          <Button ref={submitRef} type="submit" variant="primary" icon={Plus} loading={create.isPending} data-testid="add-task-submit">
-            {done ? 'Log task' : 'Add to today'}
-          </Button>
-        </div>
       </form>
     </Dialog>
   );

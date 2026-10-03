@@ -1,4 +1,4 @@
-import { Check, Clock, Coffee, Fire, Hourglass, Lightning, ListChecks, Moon, Plus, SealCheck, Trophy } from '@phosphor-icons/react';
+import { Check, Clock, Coffee, Fire, Hourglass, ListChecks, Moon, Plus, SealCheck } from '@phosphor-icons/react';
 import { motion } from 'motion/react';
 import { Link, useNavigate } from 'react-router';
 import { errorMessage } from '../client/client';
@@ -40,7 +40,7 @@ export function FastingBadge({ fasting }: { fasting: { isFasting: boolean; reaso
   return null;
 }
 
-function GoalCard({ d }: { d: Dashboard }) {
+function HeroCard({ d }: { d: Dashboard }) {
   const baseline = d.baseline.value;
   const rest = d.capacity.isRestDay;
   const secured = d.streak.todayCounts;
@@ -50,6 +50,8 @@ function GoalCard({ d }: { d: Dashboard }) {
   const settings = useSettings();
   const hasWarmup = (settings.data?.weeklyTemplate ?? []).some((day) => day.some((s) => s.role === 'warmup'));
   const enough = catalog.data?.quranEnabled && hasWarmup ? 'The Quran session plus the warm-up is enough.' : 'A light day of your core habits is enough.';
+  const { current, longest } = d.streak;
+  const l = d.level;
   return (
     <Card className={cn('relative overflow-hidden p-5 sm:p-6', secured && 'border-accent/40')} data-testid="goal-card">
       {secured && (
@@ -61,15 +63,14 @@ function GoalCard({ d }: { d: Dashboard }) {
         />
       )}
       <div className="relative flex items-center gap-5 sm:gap-6">
-        <Ring value={d.pointsToday} max={rest ? 0 : baseline} size={wide ? 148 : 116} stroke={wide ? 13 : 11} label={`${d.pointsToday} of ${baseline} points`}>
+        <Ring value={d.pointsToday} max={rest ? 0 : baseline} size={wide ? 148 : 116} stroke={wide ? 13 : 11} label={`${d.pointsToday} points, goal ${baseline}`}>
           <AnimatedNumber value={d.pointsToday} className="text-[28px] leading-none font-semibold text-ink sm:text-[34px]" data-testid="points-today" />
-          <span className="mt-1 text-xs text-muted">{rest ? 'points' : <>of <span className="num">{baseline}</span> pts</>}</span>
+          <span className="mt-1 text-xs text-muted">{rest ? 'points' : <>goal <span className="num">{baseline}</span></>}</span>
         </Ring>
         <div className="min-w-0 flex-1">
-          <div className="label">Daily goal</div>
           {rest ? (
             <>
-              <p className="mt-1.5 text-lg font-semibold text-ink">Rest day</p>
+              <p className="text-lg font-semibold text-ink">Rest day</p>
               <p className="mt-1 text-sm text-muted">No goal today. The streak is paused, not broken.</p>
             </>
           ) : secured ? (
@@ -77,7 +78,7 @@ function GoalCard({ d }: { d: Dashboard }) {
               <motion.p
                 initial={{ opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="mt-1.5 inline-flex items-center gap-1.5 text-lg font-semibold text-accent-ink"
+                className="inline-flex items-center gap-1.5 text-lg font-semibold text-accent-ink"
                 data-testid="streak-secured"
               >
                 <SealCheck size={22} weight="fill" aria-hidden />
@@ -87,72 +88,28 @@ function GoalCard({ d }: { d: Dashboard }) {
             </>
           ) : (
             <>
-              <p className="mt-1.5 text-lg font-semibold text-ink">
+              <p className="text-lg font-semibold text-ink">
                 <span className="num">{left}</span> {left === 1 ? 'point' : 'points'} to go
               </p>
               <p className="mt-1 text-sm text-muted">Reach {baseline} points to keep your streak. {enough}</p>
             </>
           )}
-          <div className="mt-3 flex items-center gap-2 text-xs text-muted">
-            <Lightning size={14} weight="fill" className="text-accent-ink" aria-hidden />
-            Planned today <span className="num text-ink">{d.plannedPointsToday}</span> pts
+          <div className="mt-4 flex flex-col gap-2 border-t border-line pt-3.5">
+            <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-sm" data-testid="streak-card">
+              <Fire size={16} weight={secured ? 'fill' : 'regular'} className={secured ? 'text-accent-ink' : 'text-muted'} aria-hidden />
+              <span className="text-ink">
+                <AnimatedNumber value={current} className="font-semibold" data-testid="streak-current" /> {current === 1 ? 'day' : 'days'} streak
+              </span>
+              <span className="text-muted">longest <span className="num">{longest}</span></span>
+            </div>
+            <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-sm" data-testid="level-card">
+              <span className="text-ink">Level <span className="num font-semibold">{l.level}</span></span>
+              <span className="w-24 shrink-0 sm:w-28">
+                <ProgressBar value={l.pointsIntoLevel} max={l.pointsForNextLevel} label="Progress to next level" height={5} />
+              </span>
+              <span className="text-muted"><span className="num">{l.pointsToNextLevel}</span> points to level {l.level + 1}</span>
+            </div>
           </div>
-        </div>
-      </div>
-    </Card>
-  );
-}
-
-function StreakCard({ d }: { d: Dashboard }) {
-  const { current, longest, todayCounts } = d.streak;
-  const rest = d.capacity.isRestDay;
-  const hint = todayCounts
-    ? 'Today already counts.'
-    : rest
-      ? 'Rest day: the streak is paused.'
-      : `Today is still open: ${Math.max(0, d.baseline.value - d.pointsToday)} points to keep it going.`;
-  return (
-    <Card className="flex flex-col p-4 sm:p-6" data-testid="streak-card">
-      <div className="flex items-center justify-between">
-        <div className="label">Streak</div>
-        <span className={cn('inline-flex size-9 items-center justify-center rounded-xl', todayCounts ? 'bg-accent text-on-accent' : 'bg-surface-2 text-muted')}>
-          <Fire size={20} weight={todayCounts ? 'fill' : 'regular'} aria-hidden />
-        </span>
-      </div>
-      <div className="mt-2 flex items-baseline gap-2">
-        <AnimatedNumber value={current} className="text-3xl font-semibold text-ink sm:text-4xl" data-testid="streak-current" />
-        <span className="text-sm text-muted">{current === 1 ? 'day' : 'days'}</span>
-      </div>
-      <p className="mt-1 text-sm text-muted">{hint}</p>
-      <div className="mt-auto flex items-center gap-2 pt-4 text-xs text-muted">
-        <Trophy size={14} aria-hidden />
-        Longest <span className="num text-ink">{longest}</span> {longest === 1 ? 'day' : 'days'}
-      </div>
-    </Card>
-  );
-}
-
-function LevelCard({ d }: { d: Dashboard }) {
-  const l = d.level;
-  return (
-    <Card className="flex flex-col p-4 sm:p-6" data-testid="level-card">
-      <div className="flex items-center justify-between">
-        <div className="label">Level</div>
-        <span className="num inline-flex h-9 min-w-9 items-center justify-center rounded-xl bg-accent/12 px-2 text-sm font-semibold text-accent-ink">{l.level}</span>
-      </div>
-      <div className="mt-2 flex items-baseline gap-2">
-        <AnimatedNumber value={l.totalPoints} className="text-3xl font-semibold text-ink sm:text-4xl" />
-        <span className="text-sm text-muted">XP</span>
-      </div>
-      <div className="mt-auto pt-4">
-        <ProgressBar value={l.pointsIntoLevel} max={l.pointsForNextLevel} label="Progress to next level" height={10} />
-        <div className="mt-2 flex flex-wrap justify-between gap-x-2 text-xs text-muted">
-          <span>
-            <span className="num text-ink">{l.pointsIntoLevel}</span> / <span className="num">{l.pointsForNextLevel}</span> XP
-          </span>
-          <span>
-            <span className="num text-ink">{l.pointsToNextLevel}</span> to level {l.level + 1}
-          </span>
         </div>
       </div>
     </Card>
@@ -182,7 +139,7 @@ function CapacityLine({ d }: { d: Dashboard }) {
           'Rest day, capacity set to 0 min'
         ) : (
           <>
-            Capacity <Duration minutes={c.total} className="text-ink" />
+            <Duration minutes={planned} className="text-ink" /> planned of <Duration minutes={c.total} className="text-ink" /> today
             {c.isFasting ? (
               <span>
                 (<Duration minutes={source} /> less <span className="num">{pct}</span>% for fasting)
@@ -195,11 +152,6 @@ function CapacityLine({ d }: { d: Dashboard }) {
           </>
         )}
       </span>
-      {!c.isRestDay && (
-        <span>
-          Planned <Duration minutes={planned} className="text-ink" />
-        </span>
-      )}
       <BufferLine minutes={d.bufferMinutes} />
     </div>
   );
@@ -281,11 +233,7 @@ function TodaySkeleton() {
         <Skeleton className="h-4 w-48" />
         <Skeleton className="mt-3 h-8 w-72" />
       </div>
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1.4fr_1fr_1fr]">
-        <Skeleton className="h-[196px] rounded-2xl" />
-        <Skeleton className="h-[196px] rounded-2xl" />
-        <Skeleton className="h-[196px] rounded-2xl" />
-      </div>
+      <Skeleton className="h-[196px] rounded-2xl" />
       <div className="flex flex-col gap-3">
         {[0, 1, 2].map((i) => (
           <Skeleton key={i} className="h-[132px] rounded-2xl" />
@@ -314,6 +262,9 @@ export function TodayPage() {
   };
   const doneCount = d.tasks.filter((t) => t.status === 'completed').length;
   const countable = d.tasks.filter((t) => t.status !== 'rolled').length;
+  const isOpen = (t: Dashboard['tasks'][number]) => t.status === 'pending' || t.status === 'missed';
+  const openTasks = d.tasks.filter(isOpen);
+  const doneTasks = d.tasks.filter((t) => !isOpen(t));
 
   return (
     <div className="flex flex-col gap-6">
@@ -334,13 +285,7 @@ export function TodayPage() {
         </div>
       </header>
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1.45fr_1fr_1fr]">
-        <GoalCard d={d} />
-        <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:contents">
-          <StreakCard d={d} />
-          <LevelCard d={d} />
-        </div>
-      </div>
+      <HeroCard d={d} />
 
       {catalog.data && !catalog.data.hasPlan && (
         <Card className="p-5 sm:p-6" data-testid="no-plan-card">
@@ -366,11 +311,6 @@ export function TodayPage() {
               {d.tasks.length === 0 ? 'Nothing planned yet.' : `${doneCount} of ${plural(countable, 'task')} done`}
             </p>
           </div>
-          <div className="hidden md:block">
-            <Button variant="secondary" size="sm" icon={Plus} onClick={open}>
-              Log extra work
-            </Button>
-          </div>
         </div>
         {d.tasks.length === 0 ? (
           <Card>
@@ -386,19 +326,50 @@ export function TodayPage() {
             />
           </Card>
         ) : (
-          <ul className="flex flex-col gap-3" data-testid="task-list">
-            {d.tasks.map((t, i) => (
-              <motion.li
-                key={t.id}
-                layout="position"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: Math.min(i, 8) * 0.045, type: 'spring', stiffness: 380, damping: 32 }}
-              >
-                <TaskCard task={t} resources={resourcesFor(t.moduleId)} actions={actions} />
-              </motion.li>
-            ))}
-          </ul>
+          <>
+            {openTasks.length > 0 ? (
+              <ul className="flex flex-col gap-3" data-testid="task-list">
+                {openTasks.map((t, i) => (
+                  <motion.li
+                    key={t.id}
+                    layout="position"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: Math.min(i, 8) * 0.045, type: 'spring', stiffness: 380, damping: 32 }}
+                  >
+                    <TaskCard task={t} resources={resourcesFor(t.moduleId)} actions={actions} />
+                  </motion.li>
+                ))}
+              </ul>
+            ) : (
+              <Card className="flex items-center gap-3 p-4">
+                <span className="inline-flex size-8 shrink-0 items-center justify-center rounded-full bg-accent/12 text-accent-ink">
+                  <Check size={16} weight="bold" aria-hidden />
+                </span>
+                <p className="text-sm text-muted">All done for today. Anything else you log is a bonus.</p>
+              </Card>
+            )}
+            {doneTasks.length > 0 && (
+              <>
+                <h3 className="mt-2 flex items-baseline gap-2 text-sm font-semibold text-muted">
+                  Done and moved <span className="num text-xs font-normal text-subtle">{doneTasks.length}</span>
+                </h3>
+                <ul className="flex flex-col gap-2">
+                  {doneTasks.map((t, i) => (
+                    <motion.li
+                      key={t.id}
+                      layout="position"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: Math.min(i + openTasks.length, 8) * 0.045, type: 'spring', stiffness: 380, damping: 32 }}
+                    >
+                      <TaskCard task={t} resources={resourcesFor(t.moduleId)} actions={actions} />
+                    </motion.li>
+                  ))}
+                </ul>
+              </>
+            )}
+          </>
         )}
       </section>
 
