@@ -379,6 +379,10 @@ async function run(): Promise<void> {
       for (const [name, path] of PAGES) {
         await p.goto(`${base}${path}`);
         await settle(p);
+        if (viewport.width === 390) {
+          const w = Number(await p.evaluate('document.documentElement.scrollWidth'));
+          assert(w <= 390, `${name} mobile (en) overflows: scrollWidth ${w} > 390`);
+        }
         const file = join(shotsDir, `${name}-${label}.png`);
         await p.screenshot({ path: file, fullPage: true });
         console.log(`  ${file}`);
@@ -410,11 +414,49 @@ async function run(): Promise<void> {
           await p.goto(`${base}${path}`);
           await settle(p);
           await p.waitForFunction('document.documentElement.dir === "rtl" && document.documentElement.lang === "ar"', undefined, { timeout: 10_000 });
+          if (viewport.width === 390) {
+            const w = Number(await p.evaluate('document.documentElement.scrollWidth'));
+            assert(w <= 390, `${name} mobile (ar) overflows: scrollWidth ${w} > 390`);
+          }
           const file = join(shotsDir, `${name}-ar-${label}.png`);
           await p.screenshot({ path: file, fullPage: true });
           console.log(`  ${file}`);
         }
         await arCtx.close();
+      }
+    });
+
+    await check('Settings advanced and plan why panels in both languages', async () => {
+      for (const lang of ['en', 'ar'] as const) {
+        const c = await browser!.newContext({ viewport: { width: 1024, height: 900 }, colorScheme: 'dark', reducedMotion: 'reduce', deviceScaleFactor: 1 });
+        if (lang === 'ar') {
+          await c.addInitScript(() => {
+            try {
+              localStorage.setItem('wird-lang', 'ar');
+            } catch {
+              /* storage unavailable */
+            }
+          });
+        }
+        const p = await c.newPage();
+        watch(p);
+        await p.goto(`${base}/settings`);
+        await settle(p);
+        if (lang === 'ar') await p.waitForFunction('document.documentElement.dir === "rtl" && document.documentElement.lang === "ar"', undefined, { timeout: 10_000 });
+        await p.locator('[data-testid="settings-advanced"] button[aria-expanded]').click();
+        await p.locator('[data-testid="field-b-factor"]').waitFor();
+        let file = join(shotsDir, lang === 'ar' ? 'settings-advanced-1024-ar.png' : 'settings-advanced-1024.png');
+        await p.screenshot({ path: file, fullPage: true });
+        console.log(`  ${file}`);
+        await p.setViewportSize({ width: 1440, height: 900 });
+        await p.goto(`${base}/plan`);
+        await settle(p);
+        await p.locator('[data-testid="why-panel"] button[aria-expanded]').click();
+        await p.locator('[data-testid="baseline-text"]').waitFor();
+        file = join(shotsDir, lang === 'ar' ? 'plan-why-ar-desktop.png' : 'plan-why-desktop.png');
+        await p.screenshot({ path: file, fullPage: true });
+        console.log(`  ${file}`);
+        await c.close();
       }
     });
     for (const [label, viewport] of sizes) {

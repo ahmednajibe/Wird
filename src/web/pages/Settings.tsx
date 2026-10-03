@@ -10,16 +10,19 @@ import { computeBaseline, type BaselineExplanation } from '../../shared/streak.j
 import { api, ApiError, errorMessage } from '../client/client';
 import { useCatalog, useSaveSettings, useSettings } from '../client/hooks';
 import type { CatalogResponse, Settings } from '../client/types';
+import { BaselineList } from '../components/BaselineList';
 import { Button } from '../components/ui/Button';
 import { Card, Disclosure, ErrorState, PageHeader, Segmented, Skeleton, Switch } from '../components/ui/primitives';
 import { useToast } from '../components/ui/Toast';
 import { useI18n, type Lang, type StringKey } from '../i18n';
-import { baselineExplanation, dayName, hijriLabel } from '../i18n/engineText';
+import { dayName, hijriLabel } from '../i18n/engineText';
 import { cn, formatLongDate, formatMediumDate, formatMinutes } from '../lib/format';
 import { useTheme, type ThemePref } from '../lib/theme';
 
 /** Fixed Sunday-start week used to render weekday names (dow index -> date). */
 const DOW_EPOCH = '2024-01-07';
+/** IANA ids shown as examples under the timezone field (kept as code so the bdi parts own the direction). */
+const TZ_EXAMPLES = ['Africa/Cairo', 'Europe/Berlin'] as const;
 type Errors = Record<string, string>;
 
 /** Error paths whose fields live inside the Advanced disclosure. */
@@ -70,8 +73,8 @@ function NumberField({
     });
   }, [value]);
   return (
-    <div>
-      <label htmlFor={id} className="mb-1.5 block text-sm font-medium text-ink">
+    <div className="min-w-0">
+      <label htmlFor={id} className="mb-1.5 block truncate text-sm font-medium text-ink" title={label}>
         {label}
       </label>
       <div className="relative">
@@ -81,7 +84,7 @@ function NumberField({
           type="number"
           step={step}
           inputMode="decimal"
-          className={cn('field num pe-14', error && 'border-danger')}
+          className={cn('field num', suffix && 'pe-14', error && 'border-danger')}
           value={text}
           aria-invalid={Boolean(error)}
           aria-describedby={error ? `${id}-err` : undefined}
@@ -188,7 +191,7 @@ function SettingsForm({ initial, catalog }: { initial: Settings; catalog: Catalo
   const save = useSaveSettings();
   const { toast } = useToast();
   const { pref, setPref } = useTheme();
-  const { lang, setLang, t } = useI18n();
+  const { lang, setLang, t, tRich } = useI18n();
   const today = cairoToday(new Date(), catalog.timezone);
   const engineCatalog = useMemo(() => buildCatalog(catalog.data), [catalog.data]);
 
@@ -355,8 +358,9 @@ function SettingsForm({ initial, catalog }: { initial: Settings; catalog: Catalo
         icon={SlidersHorizontal}
         open={advancedOpen}
         onOpenChange={setAdvancedOpen}
+        data-testid="settings-advanced"
       >
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 2xl:grid-cols-3">
           <div>
             <h3 className="label">{t('settings.dailyGoal')}</h3>
             <p className="mt-1.5 text-sm text-muted">{t('settings.dailyGoalDesc')}</p>
@@ -374,50 +378,69 @@ function SettingsForm({ initial, catalog }: { initial: Settings; catalog: Catalo
             </div>
             <div className="mt-4 grid grid-cols-2 gap-2">
               <div className="rounded-xl bg-surface-2 p-3">
-                <div className="text-xs text-muted">{t('settings.normalGoal')}</div>
+                <div className="truncate text-xs text-muted" title={t('settings.normalGoal')}>
+                  {t('settings.normalGoal')}
+                </div>
                 <div className="num text-2xl font-semibold text-ink" data-testid="preview-normal">
                   {preview ? preview.normal : '-'}
                 </div>
               </div>
               <div className="rounded-xl bg-surface-2 p-3">
-                <div className="text-xs text-muted">{t('settings.fastingGoal')}</div>
+                <div className="truncate text-xs text-muted" title={t('settings.fastingGoal')}>
+                  {t('settings.fastingGoal')}
+                </div>
                 <div className="num text-2xl font-semibold text-ink">{preview ? preview.fasting : '-'}</div>
               </div>
             </div>
             <p className="mt-2 text-xs text-muted">{t('settings.pastKeep')}</p>
           </div>
 
-          <div className={cn(!draft.quran.enabled && 'pointer-events-none opacity-45')} aria-disabled={!draft.quran.enabled}>
-            <h3 className="label">{t('settings.quranReview')}</h3>
-            <p className="mt-1.5 text-sm text-muted">{t('settings.quranReviewDesc')}</p>
-            <div className="mt-4 grid grid-cols-2 gap-3">
-              <NumberField id="q-page" label={t('settings.reviewPerPage')} value={draft.quran.minutesPerReviewPage} suffix={t('unit.min')} error={err('quran.minutesPerReviewPage')} onChange={(n) => setQuran('minutesPerReviewPage', n)} />
-              <NumberField id="q-cap" label={t('settings.reviewCap')} value={draft.quran.reviewCapMinutes} suffix={t('unit.min')} error={err('quran.reviewCapMinutes')} onChange={(n) => setQuran('reviewCapMinutes', n)} />
+          <div className="flex flex-col gap-6 2xl:contents">
+            <div className={cn(!draft.quran.enabled && 'pointer-events-none opacity-45')} aria-disabled={!draft.quran.enabled}>
+              <h3 className="label">{t('settings.quranReview')}</h3>
+              <p className="mt-1.5 text-sm text-muted">{t('settings.quranReviewDesc')}</p>
+              <div className="mt-4 grid grid-cols-2 gap-3">
+                <NumberField id="q-page" label={t('settings.reviewPerPage')} value={draft.quran.minutesPerReviewPage} suffix={t('unit.min')} error={err('quran.minutesPerReviewPage')} onChange={(n) => setQuran('minutesPerReviewPage', n)} />
+                <NumberField id="q-cap" label={t('settings.reviewCap')} value={draft.quran.reviewCapMinutes} suffix={t('unit.min')} error={err('quran.reviewCapMinutes')} onChange={(n) => setQuran('reviewCapMinutes', n)} />
+              </div>
             </div>
-          </div>
 
-          <div>
-            <label htmlFor="timezone" className="label block">
-              {t('settings.timezone')}
-            </label>
-            <p className="mt-1.5 text-sm text-muted">{t('settings.timezoneDesc')}</p>
-            <input
-              id="timezone"
-              data-testid="field-timezone"
-              className={cn('field mt-4', err('timezone') && 'border-danger')}
-              value={draft.timezone}
-              placeholder="Africa/Cairo"
-              aria-invalid={Boolean(err('timezone'))}
-              aria-describedby={err('timezone') ? 'timezone-err' : undefined}
-              onChange={(e) => set('timezone', e.target.value)}
-            />
-            {err('timezone') ? (
-              <p id="timezone-err" className="mt-1 text-xs text-danger">
-                {err('timezone')}
-              </p>
-            ) : (
-              <p className="mt-1 text-xs text-muted">{t('settings.tzHint')}</p>
-            )}
+            <div>
+              <label htmlFor="timezone" className="label block">
+                {t('settings.timezone')}
+              </label>
+              <p className="mt-1.5 text-sm text-muted">{t('settings.timezoneDesc')}</p>
+              <input
+                id="timezone"
+                data-testid="field-timezone"
+                className={cn('field mt-4 max-w-xs', err('timezone') && 'border-danger')}
+                value={draft.timezone}
+                placeholder="Africa/Cairo"
+                aria-invalid={Boolean(err('timezone'))}
+                aria-describedby={err('timezone') ? 'timezone-err' : undefined}
+                onChange={(e) => set('timezone', e.target.value)}
+              />
+              {err('timezone') ? (
+                <p id="timezone-err" className="mt-1 text-xs text-danger">
+                  {err('timezone')}
+                </p>
+              ) : (
+                <p className="mt-1 text-xs text-muted">
+                  {tRich('settings.tzHint', {
+                    tz1: (
+                      <bdi dir="ltr" className="whitespace-nowrap">
+                        {TZ_EXAMPLES[0]}
+                      </bdi>
+                    ),
+                    tz2: (
+                      <bdi dir="ltr" className="whitespace-nowrap">
+                        {TZ_EXAMPLES[1]}
+                      </bdi>
+                    ),
+                  })}
+                </p>
+              )}
+            </div>
           </div>
         </div>
       </Disclosure>
@@ -428,9 +451,7 @@ function SettingsForm({ initial, catalog }: { initial: Settings; catalog: Catalo
             <CheckCircle size={22} weight="fill" className="mt-0.5 shrink-0 text-accent-ink" aria-hidden />
             <div>
               <p className="font-semibold text-ink">{t('settings.savedTitle')}</p>
-              <p className="mt-1 text-sm leading-relaxed text-muted">
-                {baselineExplanation(savedExpl.expl, lang, { quranEnabled: savedExpl.quranEnabled, warmup: savedExpl.warmup })}
-              </p>
+              <BaselineList className="mt-1" expl={savedExpl.expl} ctx={{ quranEnabled: savedExpl.quranEnabled, warmup: savedExpl.warmup }} />
             </div>
           </motion.div>
         )}
