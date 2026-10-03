@@ -468,6 +468,8 @@ async function run(): Promise<void> {
         if (lang === 'ar') await p.waitForFunction('document.documentElement.dir === "rtl" && document.documentElement.lang === "ar"', undefined, { timeout: 10_000 });
         await p.locator('[data-testid="settings-advanced"] button[aria-expanded]').click();
         await p.locator('[data-testid="field-b-factor"]').waitFor();
+        const tzDir = await p.evaluate(`getComputedStyle(document.querySelector('[data-testid="field-timezone"]')).direction`);
+        assert(tzDir === 'ltr', `timezone field direction in ${lang} is ${tzDir}, expected ltr`);
         let file = join(shotsDir, lang === 'ar' ? 'settings-advanced-1024-ar.png' : 'settings-advanced-1024.png');
         await p.screenshot({ path: file, fullPage: true });
         console.log(`  ${file}`);
