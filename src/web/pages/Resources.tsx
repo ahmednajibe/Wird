@@ -5,7 +5,7 @@ import { errorMessage } from '../client/client';
 import { useCatalog, useResources } from '../client/hooks';
 import type { ResourcesResponse } from '../client/types';
 import { AccessBadge } from '../components/TaskCard';
-import { Card, Chip, EmptyState, ErrorState, PageHeader, Skeleton } from '../components/ui/primitives';
+import { Card, Chip, EmptyState, ErrorState, Skeleton } from '../components/ui/primitives';
 import { cn } from '../lib/format';
 import { useTrackMeta } from '../lib/tracks';
 
@@ -97,12 +97,12 @@ function StreamBlock({ s, index }: { s: Stream; index: number }) {
   );
 }
 
-export function ResourcesPage() {
+/** The resources list, rendered as a view of the Tracks page. */
+export function ResourcesView() {
   const q = useResources();
   const catalog = useCatalog();
   return (
     <div className="flex flex-col gap-6">
-      <PageHeader title="Resources" subtitle="Everything the plan uses, grouped by track, with the modules that use each one." />
       {q.isPending || catalog.isPending ? (
         <div className="flex flex-col gap-4">
           {[0, 1, 2].map((i) => (

@@ -27,7 +27,7 @@ const PAGES: [string, string][] = [
   ['tracks', '/tracks'],
   ['quran', '/quran'],
   ['stats', '/stats'],
-  ['resources', '/resources'],
+  ['resources', '/tracks?view=resources'],
   ['import', '/import'],
   ['settings', '/settings'],
 ];
@@ -242,11 +242,18 @@ async function run(): Promise<void> {
     });
 
     await check('Other pages render without errors', async () => {
-      for (const path of ['/tracks', '/stats', '/resources']) {
+      for (const path of ['/tracks', '/stats', '/tracks?view=resources']) {
         await page.goto(`${base}${path}`);
         await settle(page);
       }
       assert((await page.locator('[data-testid="resource-stream"]').count()) === 4, '4 resource streams');
+      assert((await page.locator('nav a[href="/resources"]').count()) === 0, 'no nav link to /resources');
+      assert((await page.locator('nav a[href="/import"]').count()) === 0, 'no nav link to /import');
+      await page.goto(`${base}/resources`);
+      await settle(page);
+      const url = page.url();
+      assert(url.includes('/tracks') && url.includes('view=resources'), `/resources redirected to ${url}`);
+      assert((await page.locator('[data-testid="resource-stream"]').count()) > 0, 'resource streams shown after the redirect');
     });
 
     await check('Import page reports invalid packs', async () => {

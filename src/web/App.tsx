@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MotionConfig } from 'motion/react';
 import { useState } from 'react';
-import { BrowserRouter, Route, Routes } from 'react-router';
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router';
 import { ApiError } from './client/client';
 import { AddTaskProvider } from './components/AddTaskContext';
 import { Layout } from './components/Layout';
@@ -11,7 +11,6 @@ import { ImportPlanPage } from './pages/ImportPlan';
 import { NotFoundPage } from './pages/NotFound';
 import { PlanPage } from './pages/Plan';
 import { QuranPage } from './pages/Quran';
-import { ResourcesPage } from './pages/Resources';
 import { SettingsPage } from './pages/Settings';
 import { StatsPage } from './pages/Stats';
 import { TodayPage } from './pages/Today';
@@ -45,7 +44,7 @@ export function App() {
                     <Route path="tracks" element={<TracksPage />} />
                     <Route path="quran" element={<QuranPage />} />
                     <Route path="stats" element={<StatsPage />} />
-                    <Route path="resources" element={<ResourcesPage />} />
+                    <Route path="resources" element={<Navigate to="/tracks?view=resources" replace />} />
                     <Route path="import" element={<ImportPlanPage />} />
                     <Route path="settings" element={<SettingsPage />} />
                     <Route path="*" element={<NotFoundPage />} />
