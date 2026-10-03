@@ -6,6 +6,7 @@ import { ApiError } from './client/client';
 import { AddTaskProvider } from './components/AddTaskContext';
 import { Layout } from './components/Layout';
 import { ToastProvider } from './components/ui/Toast';
+import { LocaleProvider } from './i18n';
 import { ThemeProvider } from './lib/theme';
 import { ImportPlanPage } from './pages/ImportPlan';
 import { NotFoundPage } from './pages/NotFound';
@@ -33,27 +34,29 @@ export function App() {
   return (
     <QueryClientProvider client={client}>
       <ThemeProvider>
-        <MotionConfig reducedMotion="user">
-          <ToastProvider>
-            <BrowserRouter>
-              <AddTaskProvider>
-                <Routes>
-                  <Route element={<Layout />}>
-                    <Route index element={<TodayPage />} />
-                    <Route path="plan" element={<PlanPage />} />
-                    <Route path="tracks" element={<TracksPage />} />
-                    <Route path="quran" element={<QuranPage />} />
-                    <Route path="stats" element={<StatsPage />} />
-                    <Route path="resources" element={<Navigate to="/tracks?view=resources" replace />} />
-                    <Route path="import" element={<ImportPlanPage />} />
-                    <Route path="settings" element={<SettingsPage />} />
-                    <Route path="*" element={<NotFoundPage />} />
-                  </Route>
-                </Routes>
-              </AddTaskProvider>
-            </BrowserRouter>
-          </ToastProvider>
-        </MotionConfig>
+        <LocaleProvider>
+          <MotionConfig reducedMotion="user">
+            <ToastProvider>
+              <BrowserRouter>
+                <AddTaskProvider>
+                  <Routes>
+                    <Route element={<Layout />}>
+                      <Route index element={<TodayPage />} />
+                      <Route path="plan" element={<PlanPage />} />
+                      <Route path="tracks" element={<TracksPage />} />
+                      <Route path="quran" element={<QuranPage />} />
+                      <Route path="stats" element={<StatsPage />} />
+                      <Route path="resources" element={<Navigate to="/tracks?view=resources" replace />} />
+                      <Route path="import" element={<ImportPlanPage />} />
+                      <Route path="settings" element={<SettingsPage />} />
+                      <Route path="*" element={<NotFoundPage />} />
+                    </Route>
+                  </Routes>
+                </AddTaskProvider>
+              </BrowserRouter>
+            </ToastProvider>
+          </MotionConfig>
+        </LocaleProvider>
       </ThemeProvider>
     </QueryClientProvider>
   );

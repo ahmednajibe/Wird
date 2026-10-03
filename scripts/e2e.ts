@@ -324,6 +324,43 @@ async function run(): Promise<void> {
       await page.locator('[data-testid="settings-save"]').click();
       await page.locator('[data-testid="saved-explanation"]').waitFor();
     });
+
+    await check('Arabic switches the UI to RTL', async () => {
+      await page.goto(`${base}/settings`);
+      const langAr = page.locator('[data-testid="lang-ar"]');
+      await langAr.waitFor();
+      await langAr.click();
+      await page.waitForFunction('document.documentElement.dir === "rtl" && document.documentElement.lang === "ar"');
+      await page.goto(`${base}/`);
+      await settle(page);
+      assert((await page.locator('nav').filter({ hasText: 'اليوم' }).count()) > 0, 'sidebar nav shows اليوم');
+      let file = join(shotsDir, 'today-ar-desktop.png');
+      await page.screenshot({ path: file, fullPage: true });
+      console.log(`  ${file}`);
+
+      const arCtx = await browser!.newContext({ viewport: { width: 390, height: 844 }, colorScheme: 'dark', reducedMotion: 'reduce' });
+      await arCtx.addInitScript(() => {
+        try {
+          localStorage.setItem('wird-lang', 'ar');
+        } catch {
+          /* storage unavailable */
+        }
+      });
+      const arPage = await arCtx.newPage();
+      watch(arPage);
+      await arPage.goto(`${base}/`);
+      await settle(arPage);
+      file = join(shotsDir, 'today-ar-mobile.png');
+      await arPage.screenshot({ path: file, fullPage: true });
+      console.log(`  ${file}`);
+      await arCtx.close();
+
+      await page.goto(`${base}/settings`);
+      const langEn = page.locator('[data-testid="lang-en"]');
+      await langEn.waitFor();
+      await langEn.click();
+      await page.waitForFunction('document.documentElement.dir === "ltr" && document.documentElement.lang === "en"');
+    });
     await ctx.close();
 
     console.log('Screenshots');

@@ -30,7 +30,7 @@ function PhaseTimeline({ group, projection, color, onSelect }: { group: TrackStr
               type="button"
               onClick={() => onSelect(p.id)}
               className={cn(
-                'flex w-full flex-col gap-2 rounded-2xl border p-3 text-left transition-colors',
+                'flex w-full flex-col gap-2 rounded-2xl border p-3 text-start transition-colors',
                 current ? 'border-line-strong bg-surface-2' : 'border-line bg-surface-2/40 hover:bg-surface-2/80',
               )}
             >
@@ -246,11 +246,11 @@ function StreamSection({ group, onAction, index }: { group: TrackStreamGroup; on
                   type="button"
                   aria-expanded={open}
                   onClick={() => togglePhase(p.id)}
-                  className="flex w-full items-center gap-2 text-left text-sm font-semibold text-ink"
+                  className="flex w-full items-center gap-2 text-start text-sm font-semibold text-ink"
                 >
                   <span className="num shrink-0 text-xs text-muted">{p.id}</span>
                   <span className="min-w-0 break-words sm:truncate">{p.title}</span>
-                  <span className="ml-auto flex shrink-0 items-center gap-3">
+                  <span className="ms-auto flex shrink-0 items-center gap-3">
                     {!open && (
                       <>
                         <span className="num text-xs font-normal text-muted">
@@ -303,7 +303,7 @@ function StreamTab({ group, active, onSelect }: { group: TrackStreamGroup; activ
       whileTap={{ scale: 0.98 }}
       data-testid="track-tab"
       className={cn(
-        'flex min-w-0 flex-col gap-3 rounded-2xl border p-4 text-left transition-colors',
+        'flex min-w-0 flex-col gap-3 rounded-2xl border p-4 text-start transition-colors',
         active ? 'bg-surface-2 shadow-card' : 'border-line bg-surface hover:bg-surface-2/60',
       )}
       style={active ? { borderColor: meta.cssVar } : undefined}
@@ -313,7 +313,7 @@ function StreamTab({ group, active, onSelect }: { group: TrackStreamGroup; activ
           <I size={18} aria-hidden />
         </span>
         <span className="truncate text-sm font-semibold text-ink">{meta.label}</span>
-        <span className="num ml-auto text-xs text-muted">{total > 0 ? Math.round((done / total) * 100) : 0}%</span>
+        <span className="num ms-auto text-xs text-muted">{total > 0 ? Math.round((done / total) * 100) : 0}%</span>
       </div>
       <ProgressBar value={done} max={total} height={6} color={meta.cssVar} />
       <div className="truncate text-xs text-muted">

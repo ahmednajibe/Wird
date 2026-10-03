@@ -64,7 +64,7 @@ function StreamBlock({ s, index }: { s: Stream; index: number }) {
                   title={`${m.phaseTitle}${m.estimateUncertain ? '. Estimate uncertain' : ''}`}
                 >
                   {m.title}
-                  {m.estimateUncertain && <Info size={12} className="ml-1 text-warn" aria-label="Estimate uncertain" />}
+                  {m.estimateUncertain && <Info size={12} className="ms-1 text-warn" aria-label="Estimate uncertain" />}
                 </span>
               ))}
             </div>

@@ -10,6 +10,7 @@ import { api, errorMessage } from '../client/client';
 import { qk } from '../client/hooks';
 import type { Dashboard, TaskView } from '../client/types';
 import { useToast } from '../components/ui/Toast';
+import { useI18n } from '../i18n';
 import { burstFrom, celebrate } from './confetti';
 
 const SECURED_KEY = 'lt-secured-';
@@ -53,6 +54,7 @@ function patchTask(d: Dashboard, id: number, patch: Partial<TaskView>): Dashboar
 export function useTaskActions() {
   const qc = useQueryClient();
   const { toast } = useToast();
+  const { t, tn } = useI18n();
 
   const snapshot = async () => {
     await qc.cancelQueries({ queryKey: qk.dashboard });
@@ -84,8 +86,13 @@ export function useTaskActions() {
           celebrate();
           toast({
             tone: 'celebrate',
-            title: 'Streak secured',
-            body: `${next.pointsToday} of ${prev.baseline.value} points. Today counts, streak is now ${next.streak.current} ${next.streak.current === 1 ? 'day' : 'days'}.`,
+            title: t('toast.streakSecured'),
+            body: t('toast.streakSecuredBody', {
+              points: next.pointsToday,
+              goal: prev.baseline.value,
+              days: next.streak.current,
+              daysWord: tn('common.days', next.streak.current),
+            }),
           });
         }, 350);
       }
@@ -93,7 +100,7 @@ export function useTaskActions() {
     },
     onError: (err, _v, ctx) => {
       restore(ctx?.prev);
-      toast({ tone: 'error', title: 'Could not complete the task', body: errorMessage(err) });
+      toast({ tone: 'error', title: t('toast.errComplete'), body: errorMessage(err) });
     },
     onSettled: settle,
   });
@@ -110,7 +117,7 @@ export function useTaskActions() {
     },
     onError: (err, _v, ctx) => {
       restore(ctx?.prev);
-      toast({ tone: 'error', title: 'Could not undo', body: errorMessage(err) });
+      toast({ tone: 'error', title: t('toast.errUndo'), body: errorMessage(err) });
     },
     onSettled: settle,
   });
@@ -125,7 +132,7 @@ export function useTaskActions() {
     },
     onError: (err, _v, ctx) => {
       restore(ctx?.prev);
-      toast({ tone: 'error', title: 'Could not skip', body: errorMessage(err) });
+      toast({ tone: 'error', title: t('toast.errSkip'), body: errorMessage(err) });
     },
     onSettled: settle,
   });
@@ -141,10 +148,10 @@ export function useTaskActions() {
       }
       return { prev };
     },
-    onSuccess: () => toast({ tone: 'info', title: 'Task deleted' }),
+    onSuccess: () => toast({ tone: 'info', title: t('toast.deleted') }),
     onError: (err, _v, ctx) => {
       restore(ctx?.prev);
-      toast({ tone: 'error', title: 'Could not delete', body: errorMessage(err) });
+      toast({ tone: 'error', title: t('toast.errDelete'), body: errorMessage(err) });
     },
     onSettled: settle,
   });

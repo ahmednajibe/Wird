@@ -40,8 +40,8 @@ function StatusIcon({ t }: { t: TaskView }) {
         <Check size={11} weight="bold" aria-hidden />
       </span>
     );
-  if (t.status === 'skipped') return <SkipForward size={16} className="shrink-0 text-muted" aria-label="Skipped" />;
-  if (t.status === 'rolled') return <ArrowBendUpRight size={16} className="shrink-0 text-subtle" aria-label="Moved forward" />;
+  if (t.status === 'skipped') return <SkipForward size={16} className="shrink-0 text-muted rtl:-scale-x-100" aria-label="Skipped" />;
+  if (t.status === 'rolled') return <ArrowBendUpRight size={16} className="shrink-0 text-subtle rtl:-scale-x-100" aria-label="Moved forward" />;
   if (t.status === 'missed') return <WarningCircle size={16} className="shrink-0 text-warn" aria-label="Missed" />;
   const m = trackMeta(t.track, t.stream);
   return <span className="inline-flex size-5 shrink-0 items-center justify-center rounded-full border-2" style={{ borderColor: m.cssVar }} aria-label="Pending" />;
@@ -194,7 +194,7 @@ function DayCard({ day, onEdit, index }: { day: DayView; onEdit: (d: DayView) =>
           <Lightning size={13} weight="fill" className="text-accent-ink" aria-hidden />
           <span className="num text-ink">{day.earnedPoints}</span> / <span className="num">{day.plannedPoints}</span> points
           {!cap.isRestDay && (
-            <span className="ml-1">
+            <span className="ms-1">
               (goal <span className="num">{day.baseline}</span>)
             </span>
           )}
@@ -367,7 +367,7 @@ function WhyPanel() {
                   <div className="flex-1">
                     <ProgressBar value={c} max={Math.max(...s.capacityByDow, 1)} height={6} color="var(--muted)" animateOnMount={false} />
                   </div>
-                  <span className="w-16 text-right text-ink">
+                  <span className="w-16 text-end text-ink">
                     <span className="num">{c}</span> min
                   </span>
                   {per?.isFasting && <Moon size={13} weight="fill" className="text-warn" aria-label="Usually fasting" />}
@@ -392,7 +392,7 @@ function WhyPanel() {
                     <span className={m.text}>{w.track === QURAN_TRACK_ID ? `${m.label} (reserved)` : m.label}</span>
                     <span className="text-ink">
                       <span className="num">{w.plannedMinutes}</span> min
-                      <span className="ml-1 text-muted">{totalWeekly > 0 ? Math.round((w.plannedMinutes / totalWeekly) * 100) : 0}%</span>
+                      <span className="ms-1 text-muted">{totalWeekly > 0 ? Math.round((w.plannedMinutes / totalWeekly) * 100) : 0}%</span>
                     </span>
                   </div>
                   <ProgressBar value={w.plannedMinutes} max={Math.max(...rows.map((x) => x.plannedMinutes), 1)} height={6} color={m.cssVar} animateOnMount={false} />
@@ -476,11 +476,11 @@ export function PlanPage() {
         actions={
           <>
             <div className="flex items-center gap-1 rounded-full border border-line bg-surface p-1">
-              <IconButton icon={CaretLeft} size="sm" label="Previous week" onClick={() => go(addDays(start, -7))} data-testid="week-prev" />
+              <IconButton icon={CaretLeft} size="sm" label="Previous week" onClick={() => go(addDays(start, -7))} data-testid="week-prev" rtlFlipIcon />
               <span className="min-w-[150px] px-1 text-center text-sm font-medium text-ink">
                 {formatShortDate(start)} to {formatShortDate(addDays(start, 6))}
               </span>
-              <IconButton icon={CaretRight} size="sm" label="Next week" onClick={() => go(addDays(start, 7))} data-testid="week-next" />
+              <IconButton icon={CaretRight} size="sm" label="Next week" onClick={() => go(addDays(start, 7))} data-testid="week-next" rtlFlipIcon />
             </div>
             {start !== thisWeek && (
               <Button variant="ghost" size="md" onClick={() => go(thisWeek)}>

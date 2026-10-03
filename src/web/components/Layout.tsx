@@ -14,6 +14,7 @@ import {
 import { motion } from 'motion/react';
 import { NavLink, Outlet, useLocation } from 'react-router';
 import { useCatalog, useDashboard, useHealth } from '../client/hooks';
+import { useI18n, type StringKey } from '../i18n';
 import { cn } from '../lib/format';
 import { useTheme } from '../lib/theme';
 import { useAddTask } from './AddTaskContext';
@@ -22,7 +23,7 @@ import { AnimatedNumber } from './ui/primitives';
 
 interface NavItem {
   to: string;
-  label: string;
+  labelKey: StringKey;
   icon: Icon;
   mobile: boolean;
   /** Only shown when Quran is enabled in Settings. */
@@ -30,18 +31,13 @@ interface NavItem {
 }
 
 const NAV: NavItem[] = [
-  { to: '/', label: 'Today', icon: SunHorizon, mobile: true },
-  { to: '/plan', label: 'Plan', icon: CalendarDots, mobile: true },
-  { to: '/tracks', label: 'Tracks', icon: Path, mobile: true },
-  { to: '/quran', label: 'Quran', icon: BookOpen, mobile: true, quran: true },
-  { to: '/stats', label: 'Stats', icon: ChartBar, mobile: true },
-  { to: '/settings', label: 'Settings', icon: GearSix, mobile: false },
+  { to: '/', labelKey: 'nav.today', icon: SunHorizon, mobile: true },
+  { to: '/plan', labelKey: 'nav.plan', icon: CalendarDots, mobile: true },
+  { to: '/tracks', labelKey: 'nav.tracks', icon: Path, mobile: true },
+  { to: '/quran', labelKey: 'nav.quran', icon: BookOpen, mobile: true, quran: true },
+  { to: '/stats', labelKey: 'nav.stats', icon: ChartBar, mobile: true },
+  { to: '/settings', labelKey: 'nav.settings', icon: GearSix, mobile: false },
 ];
-
-/** Titles for routed pages that are not in NAV (mobile top bar). */
-const ROUTE_TITLES: Record<string, string> = {
-  '/import': 'Import a plan',
-};
 
 function navItems(quranEnabled: boolean): NavItem[] {
   return NAV.filter((n) => !n.quran || quranEnabled);
@@ -49,12 +45,13 @@ function navItems(quranEnabled: boolean): NavItem[] {
 
 function Logo() {
   const { data } = useCatalog();
+  const { t } = useI18n();
   return (
     <div className="flex items-center gap-2.5">
       <img src="/favicon.svg" width={30} height={30} alt="" aria-hidden />
       <div className="leading-tight">
         <div className="text-[15px] font-bold tracking-tight text-ink">Wird</div>
-        <div className="text-[11px] font-medium text-subtle">{data?.planName ?? 'Your learning plan'}</div>
+        <div className="text-[11px] font-medium text-subtle">{data?.planName ?? t('app.planFallback')}</div>
       </div>
     </div>
   );
@@ -67,10 +64,11 @@ function VersionTag() {
 
 function ThemeToggle({ className }: { className?: string }) {
   const { theme, toggle } = useTheme();
+  const { t } = useI18n();
   return (
     <IconButton
       icon={theme === 'dark' ? Sun : Moon}
-      label={theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
+      label={theme === 'dark' ? t('theme.toLight') : t('theme.toDark')}
       onClick={toggle}
       className={className}
       data-testid="theme-toggle"
@@ -80,6 +78,7 @@ function ThemeToggle({ className }: { className?: string }) {
 
 function SidebarStatus() {
   const { data } = useDashboard();
+  const { t, tnRich } = useI18n();
   if (!data) return <div className="h-[92px]" />;
   const secured = data.streak.todayCounts;
   return (
@@ -94,22 +93,21 @@ function SidebarStatus() {
           <Fire size={20} weight={secured ? 'fill' : 'regular'} aria-hidden />
         </span>
         <div className="min-w-0">
-          <div className="flex items-baseline gap-1">
-            <AnimatedNumber value={data.streak.current} className="text-lg font-semibold text-ink" />
-            <span className="text-xs text-muted">day streak</span>
+          <div className="flex items-baseline gap-1 text-xs text-muted">
+            {tnRich('common.streakDays', data.streak.current, {
+              count: <AnimatedNumber value={data.streak.current} className="text-lg font-semibold text-ink" />,
+            })}
           </div>
-          <div className="text-[11px] text-subtle">{secured ? 'Today is secured' : 'Today is still open'}</div>
+          <div className="text-[11px] text-subtle">{secured ? t('sidebar.secured') : t('sidebar.open')}</div>
         </div>
       </div>
       <div className="mt-3 flex items-center justify-between text-[11px] text-muted">
-        <span>Level {data.level.level}</span>
-        <span className="num">
-          {data.level.pointsIntoLevel}/{data.level.pointsForNextLevel} points
-        </span>
+        <span>{t('sidebar.level', { level: data.level.level })}</span>
+        <span className="num">{t('sidebar.levelPoints', { into: data.level.pointsIntoLevel, total: data.level.pointsForNextLevel })}</span>
       </div>
       <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-surface-3">
         <motion.div
-          className="h-full origin-left rounded-full bg-accent-fill"
+          className="h-full origin-left rounded-full bg-accent-fill rtl:origin-right"
           initial={false}
           animate={{ scaleX: data.level.pointsForNextLevel > 0 ? data.level.pointsIntoLevel / data.level.pointsForNextLevel : 0 }}
           transition={{ type: 'spring', stiffness: 120, damping: 22 }}
@@ -122,19 +120,20 @@ function SidebarStatus() {
 function Sidebar() {
   const { open } = useAddTask();
   const { data: catalog } = useCatalog();
+  const { t } = useI18n();
   const location = useLocation();
   const items = navItems(catalog?.quranEnabled ?? true);
   return (
-    <div className="hidden w-[248px] shrink-0 border-r border-line bg-surface/40 md:block">
+    <div className="hidden w-[248px] shrink-0 border-e border-line bg-surface/40 md:block">
     <aside className="sticky top-0 flex h-dvh flex-col gap-6 px-4 py-6">
       <div className="px-2">
         <Logo />
       </div>
       <Button variant="primary" icon={Plus} onClick={open} className="w-full justify-between" data-testid="add-task-button">
-        <span className="flex-1 text-left">Add task</span>
+        <span className="flex-1 text-start">{t('nav.addTask')}</span>
         <kbd className="num rounded-md bg-on-accent/15 px-1.5 text-[11px] font-semibold">N</kbd>
       </Button>
-      <nav aria-label="Main" className="flex flex-col gap-1">
+      <nav aria-label={t('nav.main')} className="flex flex-col gap-1">
         {items.map((item) => {
           // Import lives under Settings; visiting it marks Settings active.
           const viaSettings = item.to === '/settings' && location.pathname === '/import';
@@ -162,7 +161,7 @@ function Sidebar() {
                       />
                     )}
                     <item.icon size={19} weight={isActive ? 'fill' : 'regular'} className={cn('relative', isActive && 'text-accent-ink')} aria-hidden />
-                    <span className="relative">{item.label}</span>
+                    <span className="relative">{t(item.labelKey)}</span>
                   </>
                 );
               }}
@@ -175,7 +174,7 @@ function Sidebar() {
         <div className="flex items-center justify-between px-1">
           <div className="leading-tight">
             <VersionTag />
-            <div className="text-[11px] text-subtle/80">Local only, 127.0.0.1</div>
+            <div className="text-[11px] text-subtle/80">{t('app.localOnly')}</div>
           </div>
           <ThemeToggle />
         </div>
@@ -186,9 +185,10 @@ function Sidebar() {
 }
 
 function MobileTopBar() {
+  const { t } = useI18n();
   const location = useLocation();
   const current = NAV.find((n) => (n.to === '/' ? location.pathname === '/' : location.pathname.startsWith(n.to)));
-  const title = current?.label ?? ROUTE_TITLES[location.pathname] ?? 'Wird';
+  const title = (current ? t(current.labelKey) : location.pathname === '/import' ? t('route.import') : null) ?? 'Wird';
   return (
     <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-line bg-bg/85 px-4 backdrop-blur-md md:hidden">
       <div className="flex items-center gap-2">
@@ -196,7 +196,7 @@ function MobileTopBar() {
         <span className="text-[15px] font-bold tracking-tight">{title}</span>
       </div>
       <div className="flex items-center">
-        <NavLink to="/settings" aria-label="Settings" className={({ isActive }) => cn('inline-flex size-10 items-center justify-center rounded-full', isActive ? 'text-accent-ink' : 'text-muted')}>
+        <NavLink to="/settings" aria-label={t('nav.settings')} className={({ isActive }) => cn('inline-flex size-10 items-center justify-center rounded-full', isActive ? 'text-accent-ink' : 'text-muted')}>
           <GearSix size={20} aria-hidden />
         </NavLink>
         <ThemeToggle />
@@ -208,6 +208,7 @@ function MobileTopBar() {
 function BottomTabs() {
   const { open } = useAddTask();
   const { data: catalog } = useCatalog();
+  const { t } = useI18n();
   const items = navItems(catalog?.quranEnabled ?? true);
   return (
     <>
@@ -215,15 +216,15 @@ function BottomTabs() {
         type="button"
         onClick={open}
         whileTap={{ scale: 0.96 }}
-        aria-label="Add task"
+        aria-label={t('nav.addTask')}
         data-testid="add-task-fab"
-        className="fixed right-4 bottom-[calc(76px+env(safe-area-inset-bottom))] z-40 inline-flex h-12 items-center gap-2 rounded-full bg-accent px-5 font-semibold text-on-accent shadow-glow md:hidden"
+        className="fixed end-4 bottom-[calc(76px+env(safe-area-inset-bottom))] z-40 inline-flex h-12 items-center gap-2 rounded-full bg-accent px-5 font-semibold text-on-accent shadow-glow md:hidden"
       >
         <Plus size={20} weight="bold" aria-hidden />
-        Add
+        {t('app.fab')}
       </motion.button>
       <nav
-        aria-label="Main"
+        aria-label={t('nav.main')}
         className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 border-t border-line bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-md md:hidden"
       >
         {items.filter((n) => n.mobile).map((item) => (
@@ -238,7 +239,7 @@ function BottomTabs() {
             {({ isActive }) => (
               <>
                 <item.icon size={22} weight={isActive ? 'fill' : 'regular'} aria-hidden />
-                {item.label}
+                {t(item.labelKey)}
               </>
             )}
           </NavLink>
@@ -250,10 +251,11 @@ function BottomTabs() {
 
 export function Layout() {
   const location = useLocation();
+  const { t } = useI18n();
   return (
     <div className="flex min-h-dvh">
-      <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:rounded-full focus:bg-accent focus:px-4 focus:py-2 focus:text-on-accent">
-        Skip to content
+      <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:start-2 focus:z-50 focus:rounded-full focus:bg-accent focus:px-4 focus:py-2 focus:text-on-accent">
+        {t('app.skipToContent')}
       </a>
       <Sidebar />
       <div className="flex min-w-0 flex-1 flex-col">

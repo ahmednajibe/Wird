@@ -3,7 +3,7 @@
 @custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
 
 @theme inline {
-  --font-sans: 'Plus Jakarta Sans Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-sans: 'Plus Jakarta Sans Variable', 'IBM Plex Sans Arabic', ui-sans-serif, system-ui, sans-serif;
   --font-mono: 'JetBrains Mono Variable', ui-monospace, 'SFMono-Regular', monospace;
   --font-arabic: 'Amiri', 'Traditional Arabic', serif;
 
@@ -145,6 +145,10 @@
   }
   button:disabled {
     cursor: not-allowed;
+  }
+  /* Negative letter-spacing breaks Arabic joining. */
+  :root[lang='ar'] * {
+    letter-spacing: 0 !important;
   }
   input[type='number'] {
     -moz-appearance: textfield;

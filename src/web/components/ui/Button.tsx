@@ -12,6 +12,8 @@ export interface ButtonProps extends Omit<HTMLMotionProps<'button'>, 'children'>
   icon?: Icon;
   iconRight?: Icon;
   loading?: boolean;
+  /** Mirror directional icons (arrows, carets) in RTL. */
+  rtlFlipIcon?: boolean;
   children?: ReactNode;
 }
 
@@ -32,7 +34,7 @@ const sizes: Record<Size, string> = {
 const iconSizes: Record<Size, number> = { sm: 14, md: 17, lg: 19 };
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
-  { variant = 'secondary', size = 'md', icon: IconL, iconRight: IconR, loading, className, children, disabled, type = 'button', ...rest },
+  { variant = 'secondary', size = 'md', icon: IconL, iconRight: IconR, loading, rtlFlipIcon, className, children, disabled, type = 'button', ...rest },
   ref,
 ) {
   return (
@@ -50,9 +52,9 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
       )}
       {...rest}
     >
-      {IconL && <IconL size={iconSizes[size]} weight="regular" className={cn(loading && 'opacity-40')} aria-hidden />}
+      {IconL && <IconL size={iconSizes[size]} weight="regular" className={cn(loading && 'opacity-40', rtlFlipIcon && 'rtl:-scale-x-100')} aria-hidden />}
       {children}
-      {IconR && <IconR size={iconSizes[size]} weight="regular" aria-hidden />}
+      {IconR && <IconR size={iconSizes[size]} weight="regular" className={cn(rtlFlipIcon && 'rtl:-scale-x-100')} aria-hidden />}
     </motion.button>
   );
 });
@@ -62,10 +64,12 @@ export interface IconButtonProps extends Omit<HTMLMotionProps<'button'>, 'childr
   label: string;
   size?: 'sm' | 'md';
   tone?: 'default' | 'danger';
+  /** Mirror directional icons (arrows, carets) in RTL. */
+  rtlFlipIcon?: boolean;
 }
 
 export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(function IconButton(
-  { icon: I, label, size = 'md', tone = 'default', className, type = 'button', ...rest },
+  { icon: I, label, size = 'md', tone = 'default', rtlFlipIcon, className, type = 'button', ...rest },
   ref,
 ) {
   return (
@@ -83,7 +87,7 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(functio
       )}
       {...rest}
     >
-      <I size={size === 'sm' ? 16 : 19} aria-hidden />
+      <I size={size === 'sm' ? 16 : 19} className={cn(rtlFlipIcon && 'rtl:-scale-x-100')} aria-hidden />
     </motion.button>
   );
 });

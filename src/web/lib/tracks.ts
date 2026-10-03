@@ -8,7 +8,8 @@ import { useMemo } from 'react';
 import { QURAN_TRACK_ID, type TrackDef } from '../../shared/catalog.js';
 import type { StudyTaskType } from '../../shared/types.js';
 import { useCatalog } from '../client/hooks';
-import type { CatalogResponse, StreamId, TaskType, TrackId } from '../client/types';
+import type { CatalogResponse, Intensity, StreamId, TaskType, TrackId } from '../client/types';
+import { useI18n, type StringKey } from '../i18n';
 import { iconFor } from './icons';
 import { themeClasses, type ThemeClasses } from './themes';
 
@@ -48,25 +49,32 @@ export function useTrackMeta(): (track: TrackId, stream?: StreamId) => TrackMeta
   return useMemo(() => (track: TrackId, stream?: StreamId) => metaFor(data, track, stream), [data]);
 }
 
-export const TYPE_LABELS: Record<TaskType, string> = {
-  learn: 'Learn',
-  practice: 'Practice',
-  build: 'Build',
-  review: 'Review',
-  'quran-memorize': 'Memorize',
-  'quran-review': 'Review',
+export const TYPE_KEYS: Record<TaskType, StringKey> = {
+  learn: 'type.learn',
+  practice: 'type.practice',
+  build: 'type.build',
+  review: 'type.review',
+  'quran-memorize': 'type.quran-memorize',
+  'quran-review': 'type.quran-review',
 };
 
-export const INTENSITY_LABELS = { deep: 'Deep focus', normal: 'Normal', light: 'Light' } as const;
+export const INTENSITY_KEYS: Record<Intensity, StringKey> = {
+  deep: 'intensity.deep',
+  normal: 'intensity.normal',
+  light: 'intensity.light',
+};
 
-/** Task type label: the track's configured labels, then the defaults. */
-export function typeLabel(track: TrackDef | undefined, type: string): string {
-  return track?.typeLabels[type as StudyTaskType] ?? TYPE_LABELS[type as TaskType] ?? type;
+type Translate = (key: StringKey) => string;
+
+/** Task type label: the track's configured labels, then the dictionary defaults. */
+export function typeLabel(track: TrackDef | undefined, type: string, t: Translate): string {
+  return track?.typeLabels[type as StudyTaskType] ?? (TYPE_KEYS[type as TaskType] ? t(TYPE_KEYS[type as TaskType]) : type);
 }
 
 export function useTypeLabel(): (track: TrackId, type: TaskType) => string {
   const { data } = useCatalog();
-  return useMemo(() => (track: TrackId, type: TaskType) => typeLabel(data?.tracks.find((t) => t.id === track), type), [data]);
+  const { t } = useI18n();
+  return useMemo(() => (track: TrackId, type: TaskType) => typeLabel(data?.tracks.find((x) => x.id === track), type, t), [data, t]);
 }
 
 /**
