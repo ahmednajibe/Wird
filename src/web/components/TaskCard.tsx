@@ -18,6 +18,7 @@ import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
 import { isQuranType } from '../../shared/types.js';
 import type { ResourceView, TaskView } from '../client/types';
 import { useI18n } from '../i18n';
+import { localizeTaskDescription, localizeTaskTitle } from '../i18n/engineText';
 import { cn, formatMinutes } from '../lib/format';
 import { formatPages } from '../lib/quran';
 import { INTENSITY_KEYS, useTrackMeta, useTypeLabel } from '../lib/tracks';
@@ -180,8 +181,12 @@ export function TaskCard({
   const checkRef = useRef<HTMLButtonElement>(null);
   const trackMeta = useTrackMeta();
   const typeLabel = useTypeLabel();
-  const { t, tn, tRich, tnRich } = useI18n();
+  const { t, tn, tRich, tnRich, lang } = useI18n();
   const m = trackMeta(task.track, task.stream);
+  // Engine-written text is localized on the client; manual titles are user text.
+  const generated = task.source === 'generated';
+  const title = generated ? localizeTaskTitle(task.title, lang) : task.title;
+  const description = generated ? localizeTaskDescription(task.description, lang, { page: task.quranPages[0] }) : task.description;
   const points = done ? (task.earnedPoints ?? 0) : task.plannedPoints;
   const detailParts = [
     typeLabel(task.track, task.type),
@@ -196,7 +201,7 @@ export function TaskCard({
     <motion.button
       ref={checkRef}
       type="button"
-      aria-label={done ? t('task.ariaUndo', { title: task.title }) : t('task.ariaComplete', { title: task.title })}
+      aria-label={done ? t('task.ariaUndo', { title }) : t('task.ariaComplete', { title })}
       data-testid="task-check"
       disabled={pending || skipped || rolled}
       onClick={() => (done ? actions.onUndo(task) : actions.onComplete(task, null, checkRef.current))}
@@ -238,7 +243,7 @@ export function TaskCard({
         <div className="flex flex-wrap items-center gap-3 px-4 py-3 sm:gap-4 sm:px-5">
           {checkButton}
           <div className="flex min-w-0 flex-1 flex-wrap items-baseline gap-x-3 gap-y-0.5">
-            <h3 className="text-[15px] font-semibold tracking-tight text-muted line-through decoration-1">{task.title}</h3>
+            <h3 className="text-[15px] font-semibold tracking-tight text-muted line-through decoration-1">{title}</h3>
             {done && (
               <span className="inline-flex items-center gap-1 text-xs font-semibold text-accent-ink" data-testid="task-points">
                 <Lightning size={13} weight="fill" aria-hidden />
@@ -305,7 +310,7 @@ export function TaskCard({
               {m.label}
             </Chip>
           </div>
-          <h3 className="mt-2 text-[15px] font-semibold tracking-tight text-ink sm:text-base">{task.title}</h3>
+          <h3 className="mt-2 text-[15px] font-semibold tracking-tight text-ink sm:text-base">{title}</h3>
           <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1">
             <Meta icon={Clock}>{formatMinutes(task.plannedMinutes)}</Meta>
             {isQuran && task.quranPages.length > 0 && (
@@ -336,7 +341,7 @@ export function TaskCard({
                 {isQuran && task.quranPages.length > 0 && <QuranSegments pages={task.quranPages} />}
                 {task.description && (
                   <p className="text-sm leading-relaxed text-muted">
-                    <Linkified text={task.description} />
+                    <Linkified text={description} />
                   </p>
                 )}
                 {resources.length > 0 && (

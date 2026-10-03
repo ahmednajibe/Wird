@@ -27,6 +27,8 @@ import { Button, IconButton } from '../components/ui/Button';
 import { ConfirmDialog, Dialog } from '../components/ui/Dialog';
 import { Chip, Disclosure, Duration, ErrorState, PageHeader, ProgressBar, Segmented, Skeleton } from '../components/ui/primitives';
 import { useToast } from '../components/ui/Toast';
+import { useI18n } from '../i18n';
+import { baselineExplanation, dayName, fastingReasons, hijriLabel, localizeTaskTitle } from '../i18n/engineText';
 import { cn, formatMediumDate, formatShortDate } from '../lib/format';
 import { streamOrderMap, useTrackMeta } from '../lib/tracks';
 
@@ -48,6 +50,7 @@ function StatusIcon({ t }: { t: TaskView }) {
 }
 
 function NotStartedCard({ day, index }: { day: DayView; index: number }) {
+  const { lang } = useI18n();
   return (
     <motion.div
       id={day.date}
@@ -59,13 +62,13 @@ function NotStartedCard({ day, index }: { day: DayView; index: number }) {
       className="card flex scroll-mt-20 flex-col border-dashed p-4 opacity-60 sm:p-5"
     >
       <div className="flex items-center gap-2">
-        <h3 className="text-base font-semibold tracking-tight text-muted">{day.dayName}</h3>
+        <h3 className="text-base font-semibold tracking-tight text-muted">{dayName(day.date, lang)}</h3>
         <Chip>Not started</Chip>
       </div>
       <p className="mt-0.5 text-sm text-muted">
-        {formatMediumDate(day.date)}
+        <bdi>{formatMediumDate(day.date)}</bdi>
         <span className="mx-1.5 text-subtle">/</span>
-        {day.hijri.label}
+        <bdi>{hijriLabel(day.hijri, lang)}</bdi>
       </p>
       <p className="mt-3 text-sm text-muted">Tracking started after this day. Nothing was planned and nothing counts as missed.</p>
     </motion.div>
@@ -74,6 +77,8 @@ function NotStartedCard({ day, index }: { day: DayView; index: number }) {
 
 function DayCard({ day, onEdit, index }: { day: DayView; onEdit: (d: DayView) => void; index: number }) {
   const trackMeta = useTrackMeta();
+  const { lang } = useI18n();
+  const reasons = fastingReasons(day.fasting, day.hijri, lang).join(lang === 'ar' ? '، ' : ', ');
   const cap = day.capacity;
   const done = day.tasks.filter((t) => t.status === 'completed').length;
   const countable = day.tasks.filter((t) => t.status !== 'rolled').length;
@@ -90,7 +95,7 @@ function DayCard({ day, onEdit, index }: { day: DayView; onEdit: (d: DayView) =>
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
           <div className="flex items-center gap-2">
-            <h3 className="text-base font-semibold tracking-tight text-ink">{day.dayName}</h3>
+            <h3 className="text-base font-semibold tracking-tight text-ink">{dayName(day.date, lang)}</h3>
             {day.isToday && <Chip tone="accent">Today</Chip>}
             {day.counts && (
               <span className="inline-flex size-5 items-center justify-center rounded-full bg-accent text-on-accent" title="Counted toward the streak">
@@ -99,9 +104,9 @@ function DayCard({ day, onEdit, index }: { day: DayView; onEdit: (d: DayView) =>
             )}
           </div>
           <p className="mt-0.5 text-sm text-muted">
-            {formatMediumDate(day.date)}
+            <bdi>{formatMediumDate(day.date)}</bdi>
             <span className="mx-1.5 text-subtle">/</span>
-            {day.hijri.label}
+            <bdi>{hijriLabel(day.hijri, lang)}</bdi>
           </p>
         </div>
         {day.isPast ? (
@@ -109,18 +114,18 @@ function DayCard({ day, onEdit, index }: { day: DayView; onEdit: (d: DayView) =>
             <Lock size={16} aria-label="Past day, locked" />
           </span>
         ) : (
-          <IconButton icon={PencilSimple} size="sm" label={`Edit ${day.dayName}`} onClick={() => onEdit(day)} data-testid="day-edit" />
+          <IconButton icon={PencilSimple} size="sm" label={`Edit ${dayName(day.date, lang)}`} onClick={() => onEdit(day)} data-testid="day-edit" />
         )}
       </div>
 
       <div className="mt-2 flex min-h-6 flex-wrap items-center gap-1.5">
         {day.fasting.isFasting && (
-          <Chip tone="warn" icon={Moon} title={day.fasting.reasons.join(', ')}>
+          <Chip tone="warn" icon={Moon} title={reasons}>
             Fasting
           </Chip>
         )}
-        {day.fasting.isFasting && <span className="text-xs text-muted">{day.fasting.reasons.join(', ')}</span>}
-        {!day.fasting.isFasting && day.fasting.blockedBy && <Chip tone="accent">{day.fasting.reasons[0] ?? day.fasting.blockedBy}</Chip>}
+        {day.fasting.isFasting && <span className="text-xs text-muted">{reasons}</span>}
+        {!day.fasting.isFasting && day.fasting.blockedBy && <Chip tone="accent">{fastingReasons(day.fasting, day.hijri, lang)[0] ?? day.fasting.blockedBy}</Chip>}
         {cap.isRestDay && (
           <Chip icon={Coffee}>Rest day</Chip>
         )}
@@ -153,6 +158,7 @@ function DayCard({ day, onEdit, index }: { day: DayView; onEdit: (d: DayView) =>
         {day.tasks.length === 0 && <li className="py-3 text-sm text-muted">{cap.isRestDay ? 'Nothing planned. Rest well.' : 'No tasks planned.'}</li>}
         {day.tasks.map((t) => {
           const m = trackMeta(t.track, t.stream);
+          const title = t.source === 'generated' ? localizeTaskTitle(t.title, lang) : t.title;
           return (
             <li key={t.id} className="flex items-center gap-2.5 py-2.5">
               <StatusIcon t={t} />
@@ -163,9 +169,9 @@ function DayCard({ day, onEdit, index }: { day: DayView; onEdit: (d: DayView) =>
                     (t.status === 'completed' || t.status === 'skipped') && 'text-muted line-through decoration-1',
                     t.status === 'rolled' && 'text-subtle',
                   )}
-                  title={t.title}
+                  title={title}
                 >
-                  {t.title}
+                  {title}
                 </p>
                 <p className="text-xs">
                   <span className={m.text}>{m.short}</span>
@@ -210,6 +216,7 @@ type CapacityChoice = 'default' | 'custom' | 'rest';
 function OverrideDialog({ day, onClose }: { day: DayView | null; onClose: () => void }) {
   const save = useSaveDay();
   const { toast } = useToast();
+  const { lang } = useI18n();
   const [fasting, setFasting] = useState<FastingChoice>('auto');
   const [capMode, setCapMode] = useState<CapacityChoice>('default');
   const [capValue, setCapValue] = useState('120');
@@ -245,7 +252,7 @@ function OverrideDialog({ day, onClose }: { day: DayView | null; onClose: () => 
           note: note.trim() ? note.trim() : null,
         },
       });
-      toast({ title: `${day.dayName} updated`, body: 'The plan for that day was rebuilt.' });
+      toast({ title: `${dayName(day.date, lang)} updated`, body: 'The plan for that day was rebuilt.' });
       onClose();
     } catch (err) {
       setError(errorMessage(err));
@@ -256,7 +263,7 @@ function OverrideDialog({ day, onClose }: { day: DayView | null; onClose: () => 
     <Dialog
       open={day !== null}
       onClose={onClose}
-      title={day ? `Adjust ${day.dayName}, ${formatShortDate(day.date)}` : ''}
+      title={day ? `Adjust ${dayName(day.date, lang)}, ${formatShortDate(day.date)}` : ''}
       description="Changes rebuild that day's pending generated tasks. Completed and manual tasks are kept."
       labelledBy="override-title"
       footer={
@@ -285,7 +292,13 @@ function OverrideDialog({ day, onClose }: { day: DayView | null; onClose: () => 
               ]}
             />
             <p className="mt-2 text-xs text-muted">
-              Automatic rules say: {day.fasting.overridden ? 'see below' : day.fasting.isFasting ? `fasting (${day.fasting.reasons.join(', ')})` : 'not a fasting day'}.
+              Automatic rules say:{' '}
+              {day.fasting.overridden
+                ? 'see below'
+                : day.fasting.isFasting
+                  ? `fasting (${fastingReasons(day.fasting, day.hijri, lang).join(', ')})`
+                  : 'not a fasting day'}
+              .
             </p>
           </div>
           <div>
@@ -340,6 +353,7 @@ function WhyPanel() {
   const dash = useDashboard();
   const catalog = useCatalog();
   const meta = useTrackMeta();
+  const { lang } = useI18n();
   if (settings.isPending || tracks.isPending || dash.isPending) return <Skeleton className="h-72 rounded-2xl" />;
   if (settings.isError || tracks.isError || dash.isError) {
     return <ErrorState message="Could not load the plan explanation." onRetry={() => void Promise.all([settings.refetch(), tracks.refetch(), dash.refetch()])} />;
@@ -353,6 +367,12 @@ function WhyPanel() {
   const nw = tracks.data.normalWeek;
   const rows = weekly.map((w) => (w.track === QURAN_TRACK_ID ? { ...w, plannedMinutes: nw.quranReserveMinutes } : w));
   const totalWeekly = nw.capacity;
+  // The habits clause of the baseline text needs the template and catalog.
+  const warmupSlot = s.weeklyTemplate.flat().find((slot) => slot.role === 'warmup');
+  const warmup = warmupSlot
+    ? (catalog.data?.data.tracks.find((t) => t.id === warmupSlot.track)?.streams.find((st) => st.id === warmupSlot.stream)?.warmupTitle ?? null)
+    : false;
+  const baselineText = baselineExplanation(expl, lang, { quranEnabled: catalog.data?.quranEnabled ?? true, warmup });
   return (
     <Disclosure title="How this plan is calculated" subtitle="The numbers behind every day card." icon={Info} defaultOpen={false} data-testid="why-panel">
       <div className="grid gap-6 lg:grid-cols-3">
@@ -425,7 +445,7 @@ function WhyPanel() {
             </div>
           </div>
           <p className="mt-3 text-sm leading-relaxed text-muted" data-testid="baseline-text">
-            {expl.text}
+            {baselineText}
           </p>
         </div>
       </div>

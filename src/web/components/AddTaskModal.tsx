@@ -7,6 +7,7 @@ import { errorMessage, ApiError } from '../client/client';
 import { qk, useCatalog, useCreateTask, useScorePreview } from '../client/hooks';
 import type { Dashboard, ManualTaskInput, ManualTaskType, TrackDef, TrackId } from '../client/types';
 import { useI18n } from '../i18n';
+import { isolate } from '../i18n/engineText';
 import { burstFrom, celebrate } from '../lib/confetti';
 import { cn } from '../lib/format';
 import { metaFor, typeLabel } from '../lib/tracks';
@@ -31,7 +32,7 @@ const QURAN_TYPES: ManualTaskType[] = ['memorize', 'review'];
 export function AddTaskModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   const qc = useQueryClient();
   const { toast } = useToast();
-  const { t, tn, tRich } = useI18n();
+  const { t, tn, tRich, lang } = useI18n();
   const create = useCreateTask();
   const catalog = useCatalog();
   const submitRef = useRef<HTMLButtonElement>(null);
@@ -121,7 +122,7 @@ export function AddTaskModal({ open, onClose }: { open: boolean; onClose: () => 
       const pts = task.earnedPoints ?? 0;
       if (done) {
         burstFrom(submitRef.current);
-        toast({ title: tn('addTask.toastLogged', pts), body: task.title });
+        toast({ title: tn('addTask.toastLogged', pts), body: lang === 'ar' ? isolate(task.title) : task.title });
         if (before && !before.capacity.isRestDay && !before.streak.todayCounts && before.pointsToday + pts >= before.baseline.value && !alreadyCelebrated(before.date)) {
           markCelebrated(before.date);
           window.setTimeout(() => {
@@ -130,7 +131,7 @@ export function AddTaskModal({ open, onClose }: { open: boolean; onClose: () => 
           }, 350);
         }
       } else {
-        toast({ tone: 'info', title: t('addTask.toastAdded'), body: t('addTask.toastAddedBody', { title: task.title, points: task.plannedPoints }) });
+        toast({ tone: 'info', title: t('addTask.toastAdded'), body: t('addTask.toastAddedBody', { title: lang === 'ar' ? isolate(task.title) : task.title, points: task.plannedPoints }) });
       }
       onClose();
     } catch (err) {

@@ -3,10 +3,10 @@ import { cn } from '../lib/format';
 import { pageSegments, pagesSegments, type SegmentView } from '../lib/quran';
 
 export function SegmentRow({ seg, className }: { seg: SegmentView; className?: string }) {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   return (
     <span className={cn('inline-flex items-baseline gap-2', className)}>
-      <span className="font-medium text-ink">{seg.nameEn}</span>
+      {lang === 'en' && <span className="font-medium text-ink">{seg.nameEn}</span>}
       <span className="arabic text-[17px] leading-none text-amber-ink" lang="ar" dir="rtl">
         {seg.nameAr}
       </span>

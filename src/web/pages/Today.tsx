@@ -10,21 +10,23 @@ import { TaskCard, type TaskActions } from '../components/TaskCard';
 import { Button } from '../components/ui/Button';
 import { AnimatedNumber, Card, Chip, Duration, EmptyState, ErrorState, InfoHint, ProgressBar, Ring, Skeleton, useMediaQuery } from '../components/ui/primitives';
 import { useI18n } from '../i18n';
+import { dayName, dayNameShort, fastingReasons, hijriLabel } from '../i18n/engineText';
 import { cn, dayOfMonth, formatLongDate, greeting } from '../lib/format';
 import { useModuleResources } from '../lib/resources';
 import { useTaskActions } from '../lib/useTaskActions';
 
 const EID_CODES = new Set(['eid-al-fitr', 'eid-al-adha', 'tashreeq']);
 
-export function FastingBadge({ fasting }: { fasting: { isFasting: boolean; reasons: string[]; codes: string[] } }) {
-  const { t } = useI18n();
+export function FastingBadge({ fasting, hijri }: { fasting: Dashboard['fasting']; hijri: Dashboard['hijri'] }) {
+  const { t, lang } = useI18n();
+  const reasons = fastingReasons(fasting, hijri, lang).join(lang === 'ar' ? '، ' : ', ');
   if (fasting.isFasting) {
     return (
       <span className="inline-flex flex-wrap items-center gap-2" data-testid="fasting-badge">
         <Chip tone="warn" icon={Moon}>
           {t('fasting.day')}
         </Chip>
-        <span className="text-sm text-muted">{fasting.reasons.join(', ')}</span>
+        <span className="text-sm text-muted">{reasons}</span>
       </span>
     );
   }
@@ -33,7 +35,7 @@ export function FastingBadge({ fasting }: { fasting: { isFasting: boolean; reaso
     return (
       <span className="inline-flex flex-wrap items-center gap-2" data-testid="fasting-badge">
         <Chip tone="accent">{isTashreeq ? t('fasting.tashreeq') : t('fasting.eid')}</Chip>
-        <span className="text-sm text-muted">{fasting.reasons.join(', ')}</span>
+        <span className="text-sm text-muted">{reasons}</span>
       </span>
     );
   }
@@ -197,7 +199,7 @@ function CapacityLine({ d }: { d: Dashboard }) {
 
 function WeekStrip({ days }: { days: WeekSummaryDay[] }) {
   const navigate = useNavigate();
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   return (
     <Card className="p-4 sm:p-5">
       <div className="mb-3 flex items-center justify-between">
@@ -213,10 +215,10 @@ function WeekStrip({ days }: { days: WeekSummaryDay[] }) {
                 key={w.date}
                 data-testid="week-day-not-started"
                 title={t('week.notStartedTitle')}
-                aria-label={t('week.dayNotStartedAria', { day: w.dayName, date: w.date })}
+                aria-label={t('week.dayNotStartedAria', { day: dayName(w.date, lang), date: w.date })}
                 className="flex flex-col items-center gap-1.5 rounded-2xl border border-dashed border-line px-1 py-2.5 opacity-55 sm:py-3"
               >
-                <span className="text-[11px] font-semibold text-muted uppercase">{w.dayName.slice(0, 3)}</span>
+                <span className="text-[11px] font-semibold text-muted uppercase">{dayNameShort(w.date, lang)}</span>
                 <span className="num text-base font-semibold text-muted sm:text-lg">{dayOfMonth(w.date)}</span>
                 <span className="text-[10px] leading-tight text-subtle">{t('week.notStarted')}</span>
               </div>
@@ -232,7 +234,7 @@ function WeekStrip({ days }: { days: WeekSummaryDay[] }) {
               whileTap={{ scale: 0.97 }}
               onClick={() => navigate(`/plan?week=${days[0]?.date ?? ''}#${w.date}`)}
               aria-label={
-                t('week.dayAria', { day: w.dayName, date: w.date, earned: w.earnedPoints, planned: w.plannedPoints }) +
+                t('week.dayAria', { day: dayName(w.date, lang), date: w.date, earned: w.earnedPoints, planned: w.plannedPoints }) +
                 (w.counts ? t('week.countedSuffix') : '') +
                 (w.fasting ? t('week.fastingSuffix') : '')
               }
@@ -241,7 +243,7 @@ function WeekStrip({ days }: { days: WeekSummaryDay[] }) {
                 w.isToday ? 'border-accent/50 bg-accent/8' : 'border-line bg-surface-2/50 hover:bg-surface-2',
               )}
             >
-              <span className={cn('text-[11px] font-semibold uppercase', w.isToday ? 'text-accent-ink' : 'text-muted')}>{w.dayName.slice(0, 3)}</span>
+              <span className={cn('text-[11px] font-semibold uppercase', w.isToday ? 'text-accent-ink' : 'text-muted')}>{dayNameShort(w.date, lang)}</span>
               <span className="num text-base font-semibold text-ink sm:text-lg">{dayOfMonth(w.date)}</span>
               <span className="relative h-1.5 w-full max-w-12 overflow-hidden rounded-full bg-surface-3">
                 <motion.span
@@ -333,7 +335,7 @@ function TodaySkeleton() {
 export function TodayPage() {
   const q = useDashboard();
   const catalog = useCatalog();
-  const { t, tn, tRich } = useI18n();
+  const { t, tn, tRich, lang } = useI18n();
   const { open } = useAddTask();
   const { complete, undo, skip, remove } = useTaskActions();
   const resourcesFor = useModuleResources();
@@ -359,15 +361,15 @@ export function TodayPage() {
       <header className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
         <div className="min-w-0">
           <p className="text-sm font-medium text-muted">
-            {formatLongDate(d.date)}
+            <bdi>{formatLongDate(d.date)}</bdi>
             <span className="mx-2 text-subtle" aria-hidden>
               /
             </span>
-            <span>{d.hijri.label}</span>
+            <bdi>{hijriLabel(d.hijri, lang)}</bdi>
           </p>
           <h1 className="mt-1 text-2xl font-bold tracking-tight text-ink md:text-[30px]">{t('today.greeting', { greeting: greeting(new Date(), catalog.data?.timezone) })}</h1>
           <div className="mt-2.5 flex flex-wrap items-center gap-3">
-            <FastingBadge fasting={d.fasting} />
+            <FastingBadge fasting={d.fasting} hijri={d.hijri} />
             <CapacityLine d={d} />
           </div>
         </div>
