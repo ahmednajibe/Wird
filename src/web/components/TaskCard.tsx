@@ -17,9 +17,10 @@ import { AnimatePresence, motion } from 'motion/react';
 import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
 import { isQuranType } from '../../shared/types.js';
 import type { ResourceView, TaskView } from '../client/types';
+import { useI18n } from '../i18n';
 import { cn, formatMinutes } from '../lib/format';
 import { formatPages } from '../lib/quran';
-import { INTENSITY_LABELS, useTrackMeta, useTypeLabel } from '../lib/tracks';
+import { INTENSITY_KEYS, useTrackMeta, useTypeLabel } from '../lib/tracks';
 import { QuranSegments } from './QuranSegments';
 import { Button, IconButton } from './ui/Button';
 import { Chip, ExternalLink, trackTone } from './ui/primitives';
@@ -45,9 +46,10 @@ export function Linkified({ text }: { text: string }) {
 }
 
 export function AccessBadge({ access }: { access: ResourceView['access'] }) {
-  if (access === 'owned') return <Chip tone="accent">Owned</Chip>;
-  if (access === 'paid') return <Chip tone="warn">Paid</Chip>;
-  return <Chip>Free</Chip>;
+  const { t } = useI18n();
+  if (access === 'owned') return <Chip tone="accent">{t('access.owned')}</Chip>;
+  if (access === 'paid') return <Chip tone="warn">{t('access.paid')}</Chip>;
+  return <Chip>{t('access.free')}</Chip>;
 }
 
 export function ResourceLinks({ resources }: { resources: ResourceView[] }) {
@@ -81,6 +83,7 @@ function ActualMinutesPopover({
   onConfirm: (minutes: number) => void;
   onClose: () => void;
 }) {
+  const { t } = useI18n();
   const [value, setValue] = useState(String(planned));
   const ref = useRef<HTMLDivElement>(null);
   const id = useId();
@@ -105,7 +108,7 @@ function ActualMinutesPopover({
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: -4, scale: 0.97 }}
       transition={{ type: 'spring', stiffness: 520, damping: 34 }}
-      className="absolute top-full right-0 z-20 mt-2 w-64 rounded-2xl border border-line-strong bg-surface p-3.5 shadow-pop"
+      className="absolute top-full end-0 z-20 mt-2 w-64 rounded-2xl border border-line-strong bg-surface p-3.5 shadow-pop"
     >
       <form
         onSubmit={(e) => {
@@ -114,7 +117,7 @@ function ActualMinutesPopover({
         }}
       >
         <label htmlFor={id} className="label">
-          Actual minutes
+          {t('popover.minutes')}
         </label>
         <div className="mt-2 flex items-center gap-2">
           <input
@@ -130,10 +133,10 @@ function ActualMinutesPopover({
             aria-invalid={!valid}
           />
           <Button type="submit" variant="primary" size="sm" disabled={!valid} icon={Check}>
-            Done
+            {t('popover.done')}
           </Button>
         </div>
-        <p className="mt-2 text-xs text-muted">{valid ? `Planned ${planned} min. Points follow the real time.` : 'Use 1 to 600 minutes.'}</p>
+        <p className="mt-2 text-xs text-muted">{valid ? t('popover.planned', { min: planned }) : t('popover.range')}</p>
       </form>
     </motion.div>
   );
@@ -177,13 +180,14 @@ export function TaskCard({
   const checkRef = useRef<HTMLButtonElement>(null);
   const trackMeta = useTrackMeta();
   const typeLabel = useTypeLabel();
+  const { t, tn, tRich, tnRich } = useI18n();
   const m = trackMeta(task.track, task.stream);
   const points = done ? (task.earnedPoints ?? 0) : task.plannedPoints;
   const detailParts = [
     typeLabel(task.track, task.type),
-    ...(!isQuran ? [INTENSITY_LABELS[task.intensity].toLowerCase()] : []),
-    ...(task.source === 'manual' ? ['added by you'] : []),
-    ...(task.offCurriculum ? ['off-curriculum'] : []),
+    ...(!isQuran ? [t(INTENSITY_KEYS[task.intensity]).toLowerCase()] : []),
+    ...(task.source === 'manual' ? [t('task.addedByYou')] : []),
+    ...(task.offCurriculum ? [t('task.offCurriculum')] : []),
   ];
   const hasDetails = detailParts.length > 0 || Boolean(task.description) || resources.length > 0 || (isQuran && task.quranPages.length > 0);
   const TrackIcon = m.icon;
@@ -192,7 +196,7 @@ export function TaskCard({
     <motion.button
       ref={checkRef}
       type="button"
-      aria-label={done ? `Undo ${task.title}` : `Complete ${task.title}`}
+      aria-label={done ? t('task.ariaUndo', { title: task.title }) : t('task.ariaComplete', { title: task.title })}
       data-testid="task-check"
       disabled={pending || skipped || rolled}
       onClick={() => (done ? actions.onUndo(task) : actions.onComplete(task, null, checkRef.current))}
@@ -209,9 +213,9 @@ export function TaskCard({
             <Check size={18} weight="bold" aria-hidden />
           </motion.span>
         ) : rolled ? (
-          <ArrowBendUpRight key="rolled" size={16} aria-hidden />
+          <ArrowBendUpRight key="rolled" size={16} className="rtl:-scale-x-100" aria-hidden />
         ) : skipped ? (
-          <SkipForward key="skip" size={16} aria-hidden />
+          <SkipForward key="skip" size={16} className="rtl:-scale-x-100" aria-hidden />
         ) : (
           <Check key="todo" size={16} weight="bold" aria-hidden className="opacity-0 transition-opacity group-hover:opacity-100" />
         )}
@@ -230,7 +234,7 @@ export function TaskCard({
           isQuran && 'border-amber/35 bg-[linear-gradient(135deg,color-mix(in_oklab,var(--amber)_10%,var(--surface))_0%,var(--surface)_55%)]',
         )}
       >
-        {isQuran && <span aria-hidden className="absolute inset-y-3 left-0 w-1 rounded-r-full bg-amber" />}
+        {isQuran && <span aria-hidden className="absolute inset-y-3 start-0 w-1 rounded-e-full bg-amber" />}
         <div className="flex flex-wrap items-center gap-3 px-4 py-3 sm:gap-4 sm:px-5">
           {checkButton}
           <div className="flex min-w-0 flex-1 flex-wrap items-baseline gap-x-3 gap-y-0.5">
@@ -238,21 +242,27 @@ export function TaskCard({
             {done && (
               <span className="inline-flex items-center gap-1 text-xs font-semibold text-accent-ink" data-testid="task-points">
                 <Lightning size={13} weight="fill" aria-hidden />
-                <span className="num">+{points}</span> earned
+                {tRich('task.earned', {
+                  points: (
+                    <bdi dir="ltr">
+                      <span className="num">+{points}</span>
+                    </bdi>
+                  ),
+                })}
               </span>
             )}
             {rolled && (
               <span className="inline-flex items-center gap-1 text-xs text-subtle">
-                <ArrowBendUpRight size={13} aria-hidden />
-                <span data-testid="task-rolled" title="This session moved to the next slot of the same track. No points, not missed.">
-                  Moved forward
+                <ArrowBendUpRight size={13} className="rtl:-scale-x-100" aria-hidden />
+                <span data-testid="task-rolled" title={t('task.movedTitle')}>
+                  {t('task.moved')}
                 </span>
               </span>
             )}
             {skipped && (
               <span className="inline-flex items-center gap-1 text-xs text-muted">
-                <SkipForward size={13} aria-hidden />
-                Skipped
+                <SkipForward size={13} className="rtl:-scale-x-100" aria-hidden />
+                {t('task.skipped')}
               </span>
             )}
           </div>
@@ -260,12 +270,12 @@ export function TaskCard({
             <div className="flex items-center gap-1.5">
               {!rolled && (
                 <Button size="sm" variant="secondary" icon={ArrowCounterClockwise} disabled={pending} onClick={() => actions.onUndo(task)} data-testid="task-undo">
-                  Undo
+                  {t('task.undo')}
                 </Button>
               )}
               {task.source === 'manual' && (
                 <Button size="sm" variant="ghost" icon={Trash} disabled={pending} onClick={() => actions.onDelete(task)} className="hover:text-danger">
-                  Delete
+                  {t('task.delete')}
                 </Button>
               )}
             </div>
@@ -285,7 +295,7 @@ export function TaskCard({
         isQuran && 'border-amber/35 bg-[linear-gradient(135deg,color-mix(in_oklab,var(--amber)_10%,var(--surface))_0%,var(--surface)_55%)]',
       )}
     >
-      {isQuran && <span aria-hidden className="absolute inset-y-4 left-0 w-1 rounded-r-full bg-amber" />}
+      {isQuran && <span aria-hidden className="absolute inset-y-4 start-0 w-1 rounded-e-full bg-amber" />}
       <div className="flex items-start gap-3 p-4 sm:gap-4 sm:p-5">
         <div className="mt-0.5">{checkButton}</div>
 
@@ -299,18 +309,16 @@ export function TaskCard({
           <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1">
             <Meta icon={Clock}>{formatMinutes(task.plannedMinutes)}</Meta>
             {isQuran && task.quranPages.length > 0 && (
-              <Meta icon={BookOpenText}>
-                {task.quranPages.length === 1 ? 'Page' : 'Pages'} <span className="num">{formatPages(task.quranPages)}</span>
-              </Meta>
+              <Meta icon={BookOpenText}>{tnRich('task.quranPages', task.quranPages.length, { pages: <span className="num">{formatPages(task.quranPages)}</span> })}</Meta>
             )}
-            {isQuran && task.quranPages.length === 0 && task.pagesCount ? <Meta icon={BookOpenText}>{task.pagesCount} pages</Meta> : null}
+            {isQuran && task.quranPages.length === 0 && task.pagesCount ? <Meta icon={BookOpenText}>{tn('task.pageCount', task.pagesCount)}</Meta> : null}
             <span className="inline-flex items-center gap-1 text-xs font-semibold text-ink" data-testid="task-points">
               <Lightning size={14} weight="fill" aria-hidden className="text-accent-ink" />
-              <span className="num">{points}</span> points
+              {tnRich('common.points', points, { count: <span className="num">{points}</span> })}
             </span>
             {missed && (
               <Meta icon={WarningCircle} className="text-warn">
-                Missed
+                {t('task.missed')}
               </Meta>
             )}
           </div>
@@ -333,7 +341,7 @@ export function TaskCard({
                 )}
                 {resources.length > 0 && (
                   <div>
-                    <div className="label mb-1.5">Resources</div>
+                    <div className="label mb-1.5">{t('task.resources')}</div>
                     <ResourceLinks resources={resources} />
                   </div>
                 )}
@@ -351,9 +359,9 @@ export function TaskCard({
                 onClick={(e) => actions.onComplete(task, null, e.currentTarget)}
                 data-testid="task-complete"
               >
-                Complete
+                {t('task.complete')}
               </Button>
-              <IconButton icon={Timer} size="sm" label="Complete with actual minutes" onClick={() => setPopover((v) => !v)} aria-expanded={popover} />
+              <IconButton icon={Timer} size="sm" label={t('popover.completeLabel')} onClick={() => setPopover((v) => !v)} aria-expanded={popover} />
               <AnimatePresence>
                 {popover && (
                   <ActualMinutesPopover
@@ -372,17 +380,18 @@ export function TaskCard({
                 size="sm"
                 variant="ghost"
                 icon={SkipForward}
+                rtlFlipIcon
                 disabled={pending}
                 onClick={() => actions.onSkip(task)}
-                title={isQuran ? 'Skip this Quran session' : 'Move this session to the next slot of the same track'}
+                title={isQuran ? t('task.skipQuran') : t('task.skipStudy')}
                 data-testid="task-skip"
               >
-                Skip
+                {t('task.skip')}
               </Button>
             )}
             {task.source === 'manual' && (
               <Button size="sm" variant="ghost" icon={Trash} disabled={pending} onClick={() => actions.onDelete(task)} className="hover:text-danger">
-                Delete
+                {t('task.delete')}
               </Button>
             )}
             {hasDetails && (
@@ -390,9 +399,9 @@ export function TaskCard({
                 type="button"
                 onClick={() => setOpen((v) => !v)}
                 aria-expanded={open}
-                className="ml-auto inline-flex h-8 items-center gap-1 rounded-full px-2.5 text-xs font-medium text-muted hover:bg-surface-2 hover:text-ink"
+                className="ms-auto inline-flex h-8 items-center gap-1 rounded-full px-2.5 text-xs font-medium text-muted hover:bg-surface-2 hover:text-ink"
               >
-                {open ? 'Hide details' : 'Details'}
+                {open ? t('task.hideDetails') : t('task.details')}
                 <motion.span animate={{ rotate: open ? 180 : 0 }} transition={{ type: 'spring', stiffness: 500, damping: 30 }} className="inline-flex">
                   <CaretDown size={13} aria-hidden />
                 </motion.span>

@@ -1,7 +1,8 @@
 import { ArrowClockwise, CaretDown, Question, WarningCircle, type Icon } from '@phosphor-icons/react';
 import { animate, motion, useReducedMotion } from 'motion/react';
-import { useEffect, useId, useLayoutEffect, useRef, useState, type HTMLAttributes, type ReactNode } from 'react';
-import { cn, formatNumber } from '../../lib/format';
+import { Fragment, useEffect, useId, useLayoutEffect, useRef, useState, type HTMLAttributes, type ReactNode } from 'react';
+import { useI18n } from '../../i18n';
+import { cn, durationParts, formatNumber } from '../../lib/format';
 import { Button } from './Button';
 
 export function Card({ className, children, ...rest }: HTMLAttributes<HTMLElement> & { children: ReactNode }) {
@@ -118,7 +119,7 @@ export function ProgressBar({
       style={{ height }}
     >
       <motion.div
-        className="absolute inset-y-0 left-0 w-full origin-left rounded-full"
+        className="absolute inset-y-0 start-0 w-full origin-left rounded-full rtl:origin-right"
         style={{ background: color }}
         initial={animateOnMount ? { scaleX: 0 } : false}
         animate={{ scaleX: pct }}
@@ -133,18 +134,19 @@ export function Skeleton({ className }: { className?: string }) {
 }
 
 export function ErrorState({ message, onRetry, className }: { message: string; onRetry?: () => void; className?: string }) {
+  const { t } = useI18n();
   return (
     <div role="alert" className={cn('card flex flex-col items-start gap-3 border-danger/30 p-5 sm:flex-row sm:items-center', className)}>
       <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-xl bg-danger/12 text-danger">
         <WarningCircle size={22} aria-hidden />
       </span>
       <div className="min-w-0 flex-1">
-        <p className="font-semibold text-ink">Could not load this</p>
+        <p className="font-semibold text-ink">{t('error.title')}</p>
         <p className="text-sm text-muted">{message}</p>
       </div>
       {onRetry && (
         <Button icon={ArrowClockwise} onClick={onRetry} size="sm">
-          Try again
+          {t('error.retry')}
         </Button>
       )}
     </div>
@@ -226,7 +228,7 @@ export function Ring({
   const id = useId();
   return (
     <div className="relative shrink-0" style={{ width: size, height: size }} role="img" aria-label={label}>
-      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="-rotate-90">
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="-rotate-90 rtl:-scale-x-100">
         <defs>
           <linearGradient id={id} x1="0" y1="0" x2="1" y2="1">
             <stop offset="0%" stopColor={color} />
@@ -261,7 +263,7 @@ export function Segmented<T extends string | number>({
   label,
 }: {
   value: T;
-  options: { value: T; label: ReactNode; disabled?: boolean }[];
+  options: { value: T; label: ReactNode; disabled?: boolean; testId?: string }[];
   onChange: (v: T) => void;
   size?: 'sm' | 'md';
   className?: string;
@@ -279,6 +281,7 @@ export function Segmented<T extends string | number>({
             role="radio"
             aria-checked={active}
             disabled={o.disabled}
+            data-testid={o.testId}
             onClick={() => onChange(o.value)}
             className={cn(
               'relative rounded-full font-medium transition-colors disabled:opacity-40',
@@ -302,8 +305,11 @@ export function Segmented<T extends string | number>({
 }
 
 export function Switch({ checked, onChange, label, description, id }: { checked: boolean; onChange: (v: boolean) => void; label: ReactNode; description?: ReactNode; id?: string }) {
+  const { dir } = useI18n();
   const autoId = useId();
   const sid = id ?? autoId;
+  // The thumb anchors at inline-start (left in LTR, right in RTL).
+  const thumbX = dir === 'rtl' ? (checked ? -20 : 0) : checked ? 20 : 0;
   return (
     <label htmlFor={sid} className="flex cursor-pointer items-center justify-between gap-4 py-2">
       <span className="min-w-0">
@@ -319,8 +325,8 @@ export function Switch({ checked, onChange, label, description, id }: { checked:
         className={cn('relative h-6 w-11 shrink-0 rounded-full border transition-colors', checked ? 'border-accent bg-accent' : 'border-line-strong bg-surface-3')}
       >
         <motion.span
-          className={cn('absolute top-0.5 left-0.5 size-[18px] rounded-full shadow-sm', checked ? 'bg-on-accent' : 'bg-ink/80')}
-          animate={{ x: checked ? 20 : 0 }}
+          className={cn('absolute top-0.5 start-0.5 size-[18px] rounded-full shadow-sm', checked ? 'bg-on-accent' : 'bg-ink/80')}
+          animate={{ x: thumbX }}
           transition={{ type: 'spring', stiffness: 600, damping: 34 }}
         />
       </button>
@@ -348,6 +354,7 @@ export function ExternalLink({ href, children, className }: { href: string; chil
 
 /** Small inline "?" button that opens a short explanation panel. Click toggles; Escape and outside clicks close it. */
 export function InfoHint({ label, children }: { label: string; children: ReactNode }) {
+  const { t } = useI18n();
   const [open, setOpen] = useState(false);
   const [shift, setShift] = useState(0);
   const ref = useRef<HTMLSpanElement>(null);
@@ -369,7 +376,7 @@ export function InfoHint({ label, children }: { label: string; children: ReactNo
     <span ref={ref} className="relative inline-flex">
       <button
         type="button"
-        aria-label={`About ${label}`}
+        aria-label={t('hint.about', { topic: label })}
         aria-expanded={open}
         aria-controls={open ? id : undefined}
         onClick={() => {
@@ -388,7 +395,7 @@ export function InfoHint({ label, children }: { label: string; children: ReactNo
         <span
           id={id}
           style={shift === 0 ? undefined : { left: shift }}
-          className="absolute top-full left-0 z-20 mt-2 block w-72 max-w-[80vw] rounded-2xl border border-line-strong bg-surface p-3 text-left text-sm leading-relaxed font-normal text-muted shadow-pop"
+          className="absolute top-full left-0 z-20 mt-2 block w-72 max-w-[80vw] rounded-2xl border border-line-strong bg-surface p-3 text-start text-sm leading-relaxed font-normal text-muted shadow-pop"
         >
           {children}
         </span>
@@ -432,7 +439,7 @@ export function Disclosure({
         aria-expanded={isOpen}
         aria-controls={id}
         onClick={toggle}
-        className="flex w-full items-center gap-3 rounded-[inherit] p-5 text-left transition-colors hover:bg-surface-2/50 sm:p-6"
+        className="flex w-full items-center gap-3 rounded-[inherit] p-5 text-start transition-colors hover:bg-surface-2/50 sm:p-6"
       >
         {I && (
           <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-xl bg-surface-2 text-muted">
@@ -456,24 +463,18 @@ export function Disclosure({
   );
 }
 
-/** "1 h 48 min" with mono digits and sans units. */
+/** "1 h 48 min" / "1 س 40 د" with mono digits and sans units. */
 export function Duration({ minutes, className }: { minutes: number; className?: string }) {
-  const m = Math.max(0, Math.round(minutes));
-  const h = Math.floor(m / 60);
-  const r = m % 60;
+  useI18n(); // units follow the language
+  const parts = durationParts(minutes);
   return (
     <span className={className}>
-      {h > 0 && (
-        <>
-          <span className="num">{h}</span> h
-        </>
-      )}
-      {h > 0 && r > 0 && ' '}
-      {(r > 0 || h === 0) && (
-        <>
-          <span className="num">{r}</span> min
-        </>
-      )}
+      {parts.map((p, i) => (
+        <Fragment key={i}>
+          {i > 0 && ' '}
+          <span className="num">{p.n}</span> {p.unit}
+        </Fragment>
+      ))}
     </span>
   );
 }

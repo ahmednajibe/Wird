@@ -6,6 +6,7 @@ import { Link } from 'react-router';
 import { errorMessage, ApiError } from '../client/client';
 import { qk, useCatalog, useCreateTask, useScorePreview } from '../client/hooks';
 import type { Dashboard, ManualTaskInput, ManualTaskType, TrackDef, TrackId } from '../client/types';
+import { useI18n } from '../i18n';
 import { burstFrom, celebrate } from '../lib/confetti';
 import { cn } from '../lib/format';
 import { metaFor, typeLabel } from '../lib/tracks';
@@ -24,20 +25,13 @@ function useDebounced<T>(value: T, ms: number): T {
   return v;
 }
 
-const STUDY_TYPES: { value: ManualTaskType; label: string }[] = [
-  { value: 'learn', label: 'Learn' },
-  { value: 'practice', label: 'Practice' },
-  { value: 'build', label: 'Build' },
-  { value: 'review', label: 'Review' },
-];
-const QURAN_TYPES: { value: ManualTaskType; label: string }[] = [
-  { value: 'memorize', label: 'Memorize' },
-  { value: 'review', label: 'Review' },
-];
+const STUDY_TYPES: ManualTaskType[] = ['learn', 'practice', 'build', 'review'];
+const QURAN_TYPES: ManualTaskType[] = ['memorize', 'review'];
 
 export function AddTaskModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   const qc = useQueryClient();
   const { toast } = useToast();
+  const { t, tn, tRich } = useI18n();
   const create = useCreateTask();
   const catalog = useCatalog();
   const submitRef = useRef<HTMLButtonElement>(null);
@@ -110,9 +104,9 @@ export function AddTaskModal({ open, onClose }: { open: boolean; onClose: () => 
 
   const validate = (): Record<string, string> => {
     const e: Record<string, string> = {};
-    if (!title.trim()) e.title = 'Give the task a short title.';
-    if (!Number.isInteger(minutesNum) || minutesNum < 1 || minutesNum > 600) e.minutes = 'Minutes must be a whole number from 1 to 600.';
-    if (isQuranMemorize && (!Number.isInteger(pagesNum) || pagesNum < 1 || pagesNum > 20)) e.pagesCount = 'Pages must be from 1 to 20.';
+    if (!title.trim()) e.title = t('addTask.errTitle');
+    if (!Number.isInteger(minutesNum) || minutesNum < 1 || minutesNum > 600) e.minutes = t('addTask.errMinutes');
+    if (isQuranMemorize && (!Number.isInteger(pagesNum) || pagesNum < 1 || pagesNum > 20)) e.pagesCount = t('addTask.errPages');
     return e;
   };
 
@@ -127,16 +121,16 @@ export function AddTaskModal({ open, onClose }: { open: boolean; onClose: () => 
       const pts = task.earnedPoints ?? 0;
       if (done) {
         burstFrom(submitRef.current);
-        toast({ title: `Logged: +${pts} points`, body: task.title });
+        toast({ title: tn('addTask.toastLogged', pts), body: task.title });
         if (before && !before.capacity.isRestDay && !before.streak.todayCounts && before.pointsToday + pts >= before.baseline.value && !alreadyCelebrated(before.date)) {
           markCelebrated(before.date);
           window.setTimeout(() => {
             celebrate();
-            toast({ tone: 'celebrate', title: 'Streak secured', body: `Today counts: ${before.pointsToday + pts} of ${before.baseline.value} points.` });
+            toast({ tone: 'celebrate', title: t('toast.streakSecured'), body: t('addTask.toastSecuredBody', { points: before.pointsToday + pts, goal: before.baseline.value }) });
           }, 350);
         }
       } else {
-        toast({ tone: 'info', title: 'Task added to today', body: `${task.title}. Worth ${task.plannedPoints} points when completed.` });
+        toast({ tone: 'info', title: t('addTask.toastAdded'), body: t('addTask.toastAddedBody', { title: task.title, points: task.plannedPoints }) });
       }
       onClose();
     } catch (err) {
@@ -154,32 +148,34 @@ export function AddTaskModal({ open, onClose }: { open: boolean; onClose: () => 
     <Dialog
       open={open}
       onClose={onClose}
-      title="Add a task"
-      description="Log study or Quran work you did outside the plan, or add it for later today."
+      title={t('today.addTask')}
+      description={t('addTask.desc')}
       labelledBy="add-task-title"
       size="md"
       footer={
         <>
           <Button variant="ghost" onClick={onClose}>
-            Cancel
+            {t('common.cancel')}
           </Button>
           <Button ref={submitRef} type="submit" form="add-task-form" variant="primary" icon={Plus} loading={create.isPending} data-testid="add-task-submit">
-            {done ? 'Log task' : 'Add to today'}
+            {done ? t('addTask.logTask') : t('addTask.addToToday')}
           </Button>
         </>
       }
     >
       <form id="add-task-form" onSubmit={submit} className="flex flex-col gap-5" data-testid="add-task-form" noValidate>
         <fieldset>
-          <legend className="label mb-2">Track</legend>
+          <legend className="label mb-2">{t('addTask.track')}</legend>
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
             {choices.length === 0 && (
               <p className="col-span-full text-sm text-muted">
-                No tracks yet.{' '}
-                <Link to="/import" className="text-accent-ink underline underline-offset-2">
-                  Import a plan
-                </Link>{' '}
-                or turn Quran on in Settings.
+                {tRich('addTask.noTracks', {
+                  link: (
+                    <Link to="/import" className="text-accent-ink underline underline-offset-2">
+                      {t('route.import')}
+                    </Link>
+                  ),
+                })}
               </p>
             )}
             {choices.map((c) => {
@@ -207,21 +203,21 @@ export function AddTaskModal({ open, onClose }: { open: boolean; onClose: () => 
 
         {streams.length > 1 && (
           <div>
-            <div className="label mb-2">Stream</div>
-            <Segmented label={`${trackDef?.shortLabel ?? 'Track'} stream`} value={stream ?? firstStream ?? ''} onChange={setStreamChoice} options={streams.map((s) => ({ value: s.id, label: s.shortLabel }))} />
+            <div className="label mb-2">{t('addTask.stream')}</div>
+            <Segmented label={t('addTask.streamAria', { track: trackDef?.shortLabel ?? t('addTask.track') })} value={stream ?? firstStream ?? ''} onChange={setStreamChoice} options={streams.map((s) => ({ value: s.id, label: s.shortLabel }))} />
           </div>
         )}
 
         <div>
           <label htmlFor="task-title" className="label mb-2 block">
-            Title
+            {t('addTask.titleLabel')}
           </label>
           <input
             id="task-title"
             className="field"
             value={title}
             maxLength={200}
-            placeholder={isQuran ? 'Extra page with my teacher' : 'Watched a lecture on attention'}
+            placeholder={isQuran ? t('addTask.phQuran') : t('addTask.phStudy')}
             onChange={(e) => setTitle(e.target.value)}
             aria-invalid={Boolean(errors.title)}
           />
@@ -229,13 +225,15 @@ export function AddTaskModal({ open, onClose }: { open: boolean; onClose: () => 
         </div>
 
         <div>
-          <div className="label mb-2">Type</div>
+          <div className="label mb-2">{t('addTask.type')}</div>
           <Segmented
-            label="Task type"
+            label={t('addTask.typeAria')}
             value={effectiveType}
             onChange={setType}
             options={
-              isQuran ? QURAN_TYPES : STUDY_TYPES.map((t) => ({ ...t, label: typeLabel(trackDef, t.value) }))
+              isQuran
+                ? QURAN_TYPES.map((v) => ({ value: v, label: typeLabel(trackDef, `quran-${v}`, t) }))
+                : STUDY_TYPES.map((v) => ({ value: v, label: typeLabel(trackDef, v, t) }))
             }
           />
           {errors.type && <p className="mt-1.5 text-xs text-danger">{errors.type}</p>}
@@ -244,7 +242,7 @@ export function AddTaskModal({ open, onClose }: { open: boolean; onClose: () => 
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label htmlFor="task-minutes" className="label mb-2 block">
-              Minutes
+              {t('addTask.minutes')}
             </label>
             <input
               id="task-minutes"
@@ -262,7 +260,7 @@ export function AddTaskModal({ open, onClose }: { open: boolean; onClose: () => 
           {isQuranMemorize && (
             <div>
               <label htmlFor="task-pages" className="label mb-2 block">
-                Pages memorized
+                {t('addTask.pages')}
               </label>
               <input
                 id="task-pages"
@@ -285,15 +283,15 @@ export function AddTaskModal({ open, onClose }: { open: boolean; onClose: () => 
             <Switch
               checked={offCurriculum}
               onChange={setOffCurriculum}
-              label="Off-curriculum"
-              description="Not part of the current module. Counts at 0.85x and does not move module progress."
+              label={t('addTask.offCurr')}
+              description={t('addTask.offCurrDesc')}
             />
           )}
           <Switch
             checked={done}
             onChange={setDone}
-            label="Already done"
-            description={done ? 'Points are added right away.' : 'Adds a pending task to today.'}
+            label={t('addTask.alreadyDone')}
+            description={done ? t('addTask.doneOn') : t('addTask.doneOff')}
           />
         </div>
 
@@ -307,20 +305,20 @@ export function AddTaskModal({ open, onClose }: { open: boolean; onClose: () => 
                 {preview.data && input ? (
                   <motion.span key="pts" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-baseline gap-1.5">
                     <AnimatedNumber value={preview.data.points} className="text-2xl font-semibold text-accent-ink" data-testid="preview-points" />
-                    <span className="text-sm text-muted">points</span>
+                    <span className="text-sm text-muted">{tn('common.pointsWord', preview.data.points)}</span>
                   </motion.span>
                 ) : (
                   <motion.span key="none" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="text-sm text-muted">
-                    {input ? 'Calculating...' : 'Enter valid minutes to see points'}
+                    {input ? t('addTask.calculating') : t('addTask.enterMinutes')}
                   </motion.span>
                 )}
               </AnimatePresence>
             </div>
             <p className="text-xs text-muted">
-              Points are calculated automatically.{' '}
+              {t('addTask.pointsAuto')}{' '}
               {preview.data && input && (
                 <button type="button" aria-expanded={showFormula} onClick={() => setShowFormula((v) => !v)} className="font-medium text-accent-ink underline-offset-2 hover:underline">
-                  How?
+                  {t('addTask.how')}
                 </button>
               )}
             </p>

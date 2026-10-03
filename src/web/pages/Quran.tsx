@@ -119,7 +119,7 @@ function PageGrid({ data }: { data: QuranResponse }) {
                   );
                 })}
               </div>
-              <span className="num text-right text-[11px] text-muted sm:text-xs">
+              <span className="num text-end text-[11px] text-muted sm:text-xs">
                 {memorized > 0 ? `${memorized}/${pages.length}` : ''}
               </span>
             </div>
@@ -292,7 +292,7 @@ export function QuranPage() {
             </div>
             <PageGrid data={d} />
           </div>
-          <div className="flex flex-col gap-5 xl:border-l xl:border-line xl:pl-10">
+          <div className="flex flex-col gap-5 xl:border-s xl:border-line xl:ps-10">
             <div className="hidden xl:block">
               <h3 className="label mb-3">Legend</h3>
               <Legend />

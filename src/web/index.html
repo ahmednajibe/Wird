@@ -17,6 +17,15 @@
           else if (window.matchMedia('(prefers-color-scheme: light)').matches) theme = 'light';
         } catch (e) {}
         document.documentElement.setAttribute('data-theme', theme);
+        var lang = 'en';
+        try {
+          var sl = localStorage.getItem('wird-lang');
+          var primary = (navigator.languages && navigator.languages[0]) || navigator.language || '';
+          if (sl === 'en' || sl === 'ar') lang = sl;
+          else if (/^ar/i.test(primary)) lang = 'ar';
+        } catch (e) {}
+        document.documentElement.lang = lang;
+        document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
       })();
     </script>
   </head>

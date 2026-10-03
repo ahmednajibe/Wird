@@ -13,6 +13,7 @@ import type { CatalogResponse, Settings } from '../client/types';
 import { Button } from '../components/ui/Button';
 import { Card, Disclosure, ErrorState, PageHeader, Segmented, Skeleton, Switch } from '../components/ui/primitives';
 import { useToast } from '../components/ui/Toast';
+import { useI18n, type Lang } from '../i18n';
 import { cn, formatLongDate, formatMediumDate } from '../lib/format';
 import { useTheme, type ThemePref } from '../lib/theme';
 
@@ -78,7 +79,7 @@ function NumberField({
           type="number"
           step={step}
           inputMode="decimal"
-          className={cn('field num pr-14', error && 'border-danger')}
+          className={cn('field num pe-14', error && 'border-danger')}
           value={text}
           aria-invalid={Boolean(error)}
           aria-describedby={error ? `${id}-err` : undefined}
@@ -88,7 +89,7 @@ function NumberField({
             onChange(n);
           }}
         />
-        {suffix && <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-xs text-muted">{suffix}</span>}
+        {suffix && <span className="pointer-events-none absolute inset-y-0 end-3 flex items-center text-xs text-muted">{suffix}</span>}
       </div>
       {error ? (
         <p id={`${id}-err`} className="mt-1 text-xs text-danger">
@@ -173,7 +174,8 @@ function SettingsForm({ initial, catalog }: { initial: Settings; catalog: Catalo
   const save = useSaveSettings();
   const { toast } = useToast();
   const { pref, setPref } = useTheme();
-  const t = cairoToday(new Date(), catalog.timezone);
+  const { lang, setLang, t } = useI18n();
+  const today = cairoToday(new Date(), catalog.timezone);
   const engineCatalog = useMemo(() => buildCatalog(catalog.data), [catalog.data]);
 
   useEffect(() => setDraft(initial), [initial]);
@@ -297,22 +299,39 @@ function SettingsForm({ initial, catalog }: { initial: Settings; catalog: Catalo
           <div className="mt-4 rounded-2xl bg-surface-2 p-4">
             <div className="text-xs text-muted">Today with this offset</div>
             <div className="mt-1 text-lg font-semibold text-ink" data-testid="hijri-preview">
-              {toHijri(t, draft.hijriOffsetDays).label}
+              {toHijri(today, draft.hijriOffsetDays).label}
             </div>
-            <div className="text-sm text-muted">{formatLongDate(t)}</div>
+            <div className="text-sm text-muted">{formatLongDate(today)}</div>
           </div>
         </Section>
-        <Section icon={Palette} title="Appearance" description="Saved on this device. System follows your OS setting.">
-          <Segmented<ThemePref>
-            label="Theme"
-            value={pref}
-            onChange={setPref}
-            options={[
-              { value: 'system', label: 'System' },
-              { value: 'dark', label: 'Dark' },
-              { value: 'light', label: 'Light' },
-            ]}
-          />
+        <Section icon={Palette} title={t('settings.appearance')} description={t('settings.appearanceDesc')}>
+          <div className="flex flex-col gap-4">
+            <div>
+              <div className="label mb-2">{t('settings.theme')}</div>
+              <Segmented<ThemePref>
+                label={t('settings.theme')}
+                value={pref}
+                onChange={setPref}
+                options={[
+                  { value: 'system', label: t('theme.system') },
+                  { value: 'dark', label: t('theme.dark') },
+                  { value: 'light', label: t('theme.light') },
+                ]}
+              />
+            </div>
+            <div>
+              <div className="label mb-2">{t('settings.language')}</div>
+              <Segmented<Lang>
+                label={t('settings.language')}
+                value={lang}
+                onChange={setLang}
+                options={[
+                  { value: 'en', label: 'English', testId: 'lang-en' },
+                  { value: 'ar', label: 'العربية', testId: 'lang-ar' },
+                ]}
+              />
+            </div>
+          </div>
         </Section>
       </div>
 
@@ -409,9 +428,9 @@ function SettingsForm({ initial, catalog }: { initial: Settings; catalog: Catalo
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 12 }}
             transition={{ type: 'spring', stiffness: 420, damping: 34 }}
-            className="sticky bottom-[calc(80px+env(safe-area-inset-bottom))] z-20 flex items-center justify-end gap-2 rounded-full border border-line-strong bg-surface/95 p-2 pl-5 shadow-pop backdrop-blur-md md:bottom-4"
+            className="sticky bottom-[calc(80px+env(safe-area-inset-bottom))] z-20 flex items-center justify-end gap-2 rounded-full border border-line-strong bg-surface/95 p-2 ps-5 shadow-pop backdrop-blur-md md:bottom-4"
           >
-            <span className="mr-auto text-sm text-muted">Unsaved changes</span>
+            <span className="me-auto text-sm text-muted">Unsaved changes</span>
             <Button
               variant="ghost"
               onClick={() => {

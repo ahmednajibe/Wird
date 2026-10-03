@@ -2,6 +2,7 @@ import { X } from '@phosphor-icons/react';
 import { AnimatePresence, motion } from 'motion/react';
 import { useEffect, useRef, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
+import { useI18n } from '../../i18n';
 import { cn } from '../../lib/format';
 import { Button, IconButton } from './Button';
 
@@ -26,6 +27,7 @@ export function Dialog({
 }) {
   const panelRef = useRef<HTMLDivElement>(null);
   const lastFocus = useRef<Element | null>(null);
+  const { t } = useI18n();
 
   useEffect(() => {
     if (!open) return;
@@ -100,7 +102,7 @@ export function Dialog({
                 </h2>
                 {description && <p className="mt-1 text-sm text-muted">{description}</p>}
               </div>
-              <IconButton icon={X} label="Close" size="sm" onClick={onClose} className="-mt-1 -mr-2" />
+              <IconButton icon={X} label={t('dialog.close')} size="sm" onClick={onClose} className="-mt-1 -me-2" />
             </div>
             <div className="scrollbar-thin min-h-0 flex-1 overflow-y-auto px-5 py-4">{children}</div>
             {footer && <div className="flex flex-wrap items-center justify-end gap-2 border-t border-line px-5 py-4">{footer}</div>}
@@ -131,6 +133,7 @@ export function ConfirmDialog({
   tone?: 'primary' | 'danger';
   loading?: boolean;
 }) {
+  const { t } = useI18n();
   return (
     <Dialog
       open={open}
@@ -140,7 +143,7 @@ export function ConfirmDialog({
       footer={
         <>
           <Button variant="ghost" onClick={onClose}>
-            Cancel
+            {t('common.cancel')}
           </Button>
           <Button variant={tone === 'danger' ? 'danger' : 'primary'} onClick={onConfirm} loading={loading} data-autofocus>
             {confirmLabel}

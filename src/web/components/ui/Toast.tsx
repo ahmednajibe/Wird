@@ -1,6 +1,7 @@
 import { CheckCircle, Info, SealCheck, WarningCircle, X, type Icon } from '@phosphor-icons/react';
 import { AnimatePresence, motion } from 'motion/react';
 import { createContext, useCallback, useContext, useMemo, useRef, useState, type ReactNode } from 'react';
+import { useI18n } from '../../i18n';
 import { cn } from '../../lib/format';
 
 type Tone = 'success' | 'error' | 'info' | 'celebrate';
@@ -27,6 +28,7 @@ const iconTone: Record<Tone, string> = {
 };
 
 export function ToastProvider({ children }: { children: ReactNode }) {
+  const { t: tt } = useI18n();
   const [items, setItems] = useState<ToastItem[]>([]);
   const seq = useRef(0);
 
@@ -48,7 +50,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       {children}
       <div
         aria-live="polite"
-        className="pointer-events-none fixed inset-x-0 bottom-[84px] z-[60] flex flex-col items-center gap-2 px-4 md:right-6 md:bottom-6 md:left-auto md:items-end"
+        className="pointer-events-none fixed inset-x-0 bottom-[84px] z-[60] flex flex-col items-center gap-2 px-4 md:end-6 md:bottom-6 md:start-auto md:items-end"
       >
         <AnimatePresence initial={false}>
           {items.map((t) => {
@@ -74,7 +76,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
                   <p className="text-sm font-semibold text-ink">{t.title}</p>
                   {t.body && <p className="mt-0.5 text-sm text-muted">{t.body}</p>}
                 </div>
-                <button type="button" onClick={() => dismiss(t.id)} className="rounded-full p-1 text-subtle hover:text-ink" aria-label="Dismiss">
+                <button type="button" onClick={() => dismiss(t.id)} className="rounded-full p-1 text-subtle hover:text-ink" aria-label={tt('toast.dismiss')}>
                   <X size={14} />
                 </button>
               </motion.div>

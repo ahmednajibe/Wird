@@ -75,10 +75,10 @@ function CountsTable({ counts }: { counts: { tracks: ChangeCounts; streams: Chan
     <div className="overflow-x-auto" data-testid="preview-counts">
       <table className="w-full text-sm">
         <thead>
-          <tr className="text-left text-xs text-muted">
-            <th className="py-1.5 pr-3 font-medium" />
+          <tr className="text-start text-xs text-muted">
+            <th className="py-1.5 pe-3 font-medium" />
             {cols.map((c) => (
-              <th key={c} className="py-1.5 pr-3 font-medium">
+              <th key={c} className="py-1.5 pe-3 font-medium">
                 {c}
               </th>
             ))}
@@ -87,9 +87,9 @@ function CountsTable({ counts }: { counts: { tracks: ChangeCounts; streams: Chan
         <tbody>
           {(['tracks', 'streams', 'modules'] as const).map((k) => (
             <tr key={k} className="border-t border-line">
-              <td className="py-1.5 pr-3 font-medium text-ink capitalize">{k}</td>
+              <td className="py-1.5 pe-3 font-medium text-ink capitalize">{k}</td>
               {cols.map((c) => (
-                <td key={c} className={cn('num py-1.5 pr-3', counts[k][c] > 0 ? 'text-ink' : 'text-subtle')}>
+                <td key={c} className={cn('num py-1.5 pe-3', counts[k][c] > 0 ? 'text-ink' : 'text-subtle')}>
                   {counts[k][c]}
                 </td>
               ))}
@@ -202,7 +202,7 @@ export function ImportPlanPage() {
         subtitle="A plan.json file describes your tracks, streams, modules and settings. Preview it before anything changes."
         eyebrow={
           <Link to="/settings" className="inline-flex items-center gap-1 transition-colors hover:text-ink">
-            <CaretLeft size={14} aria-hidden /> Back to Settings
+            <CaretLeft size={14} className="rtl:-scale-x-100" aria-hidden /> Back to Settings
           </Link>
         }
       />
@@ -272,7 +272,7 @@ export function ImportPlanPage() {
             : 'Everything not in the file is archived and the new plan takes over. Completed work, points and streaks are always kept.'}
         </p>
         <div>
-          <Button variant="secondary" icon={ArrowRight} onClick={() => void runPreview()} loading={previewing} disabled={text.trim() === ''} data-testid="preview-button">
+          <Button variant="secondary" icon={ArrowRight} rtlFlipIcon onClick={() => void runPreview()} loading={previewing} disabled={text.trim() === ''} data-testid="preview-button">
             Preview
           </Button>
         </div>
@@ -308,7 +308,7 @@ export function ImportPlanPage() {
                   {okPreview.archived.map((a) => (
                     <li key={`${a.kind}-${a.id}`}>
                       <span className="capitalize">{a.kind}</span> <span className="num text-ink">{a.id}</span>: {a.title}
-                      {a.hasProgress && <Chip tone="warn" className="ml-2">has progress, kept in history</Chip>}
+                      {a.hasProgress && <Chip tone="warn" className="ms-2">has progress, kept in history</Chip>}
                     </li>
                   ))}
                 </ul>

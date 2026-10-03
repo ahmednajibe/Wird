@@ -39,7 +39,7 @@ function Heatmap({ daily }: { daily: Day[] }) {
   return (
     <div className="scrollbar-thin overflow-x-auto pb-2">
       <div className="inline-flex min-w-full flex-col gap-1.5">
-        <div className="flex gap-[3px] pl-8 text-[10px] text-muted">
+        <div className="flex gap-[3px] ps-8 text-[10px] text-muted">
           {weeks.map((w, i) => {
             const firstDay = w.find((d) => d !== null);
             const show = firstDay && Number(firstDay.date.slice(8, 10)) <= 7;
