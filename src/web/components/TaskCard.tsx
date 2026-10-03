@@ -166,21 +166,114 @@ export function TaskCard({
   actions: TaskActions;
   pending?: boolean;
 }) {
-  const [open, setOpen] = useState(isQuranType(task.type));
-  const [popover, setPopover] = useState(false);
-  const checkRef = useRef<HTMLButtonElement>(null);
-  const trackMeta = useTrackMeta();
-  const typeLabel = useTypeLabel();
-  const m = trackMeta(task.track, task.stream);
   const isQuran = isQuranType(task.type);
   const done = task.status === 'completed';
   const skipped = task.status === 'skipped';
   const missed = task.status === 'missed';
   const rolled = task.status === 'rolled';
   const closed = done || skipped || rolled;
+  const [open, setOpen] = useState(isQuran && !closed);
+  const [popover, setPopover] = useState(false);
+  const checkRef = useRef<HTMLButtonElement>(null);
+  const trackMeta = useTrackMeta();
+  const typeLabel = useTypeLabel();
+  const m = trackMeta(task.track, task.stream);
   const points = done ? (task.earnedPoints ?? 0) : task.plannedPoints;
-  const hasDetails = Boolean(task.description) || resources.length > 0 || (isQuran && task.quranPages.length > 0);
+  const detailParts = [
+    typeLabel(task.track, task.type),
+    ...(!isQuran ? [INTENSITY_LABELS[task.intensity].toLowerCase()] : []),
+    ...(task.source === 'manual' ? ['added by you'] : []),
+    ...(task.offCurriculum ? ['off-curriculum'] : []),
+  ];
+  const hasDetails = detailParts.length > 0 || Boolean(task.description) || resources.length > 0 || (isQuran && task.quranPages.length > 0);
   const TrackIcon = m.icon;
+
+  const checkButton = (
+    <motion.button
+      ref={checkRef}
+      type="button"
+      aria-label={done ? `Undo ${task.title}` : `Complete ${task.title}`}
+      data-testid="task-check"
+      disabled={pending || skipped || rolled}
+      onClick={() => (done ? actions.onUndo(task) : actions.onComplete(task, null, checkRef.current))}
+      whileTap={{ scale: 0.9 }}
+      className={cn(
+        'group relative inline-flex size-9 shrink-0 items-center justify-center rounded-full border-2 transition-colors disabled:cursor-not-allowed',
+        done ? 'border-accent bg-accent text-on-accent' : isQuran ? 'border-amber/60 text-amber-ink hover:bg-amber/12' : 'border-line-strong text-muted hover:border-accent hover:text-accent-ink',
+        (skipped || rolled) && 'border-dashed opacity-60',
+      )}
+    >
+      <AnimatePresence initial={false} mode="popLayout">
+        {done ? (
+          <motion.span key="done" initial={{ scale: 0.4, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: 'spring', stiffness: 600, damping: 22 }}>
+            <Check size={18} weight="bold" aria-hidden />
+          </motion.span>
+        ) : rolled ? (
+          <ArrowBendUpRight key="rolled" size={16} aria-hidden />
+        ) : skipped ? (
+          <SkipForward key="skip" size={16} aria-hidden />
+        ) : (
+          <Check key="todo" size={16} weight="bold" aria-hidden className="opacity-0 transition-opacity group-hover:opacity-100" />
+        )}
+      </AnimatePresence>
+    </motion.button>
+  );
+
+  if (closed) {
+    return (
+      <article
+        data-testid="task-card"
+        data-track={task.track}
+        data-status={task.status}
+        className={cn(
+          'card relative overflow-visible opacity-80 transition-colors',
+          isQuran && 'border-amber/35 bg-[linear-gradient(135deg,color-mix(in_oklab,var(--amber)_10%,var(--surface))_0%,var(--surface)_55%)]',
+        )}
+      >
+        {isQuran && <span aria-hidden className="absolute inset-y-3 left-0 w-1 rounded-r-full bg-amber" />}
+        <div className="flex flex-wrap items-center gap-3 px-4 py-3 sm:gap-4 sm:px-5">
+          {checkButton}
+          <div className="flex min-w-0 flex-1 flex-wrap items-baseline gap-x-3 gap-y-0.5">
+            <h3 className="text-[15px] font-semibold tracking-tight text-muted line-through decoration-1">{task.title}</h3>
+            {done && (
+              <span className="inline-flex items-center gap-1 text-xs font-semibold text-accent-ink" data-testid="task-points">
+                <Lightning size={13} weight="fill" aria-hidden />
+                <span className="num">+{points}</span> earned
+              </span>
+            )}
+            {rolled && (
+              <span className="inline-flex items-center gap-1 text-xs text-subtle">
+                <ArrowBendUpRight size={13} aria-hidden />
+                <span data-testid="task-rolled" title="This session moved to the next slot of the same track. No points, not missed.">
+                  Moved forward
+                </span>
+              </span>
+            )}
+            {skipped && (
+              <span className="inline-flex items-center gap-1 text-xs text-muted">
+                <SkipForward size={13} aria-hidden />
+                Skipped
+              </span>
+            )}
+          </div>
+          {(!rolled || task.source === 'manual') && (
+            <div className="flex items-center gap-1.5">
+              {!rolled && (
+                <Button size="sm" variant="secondary" icon={ArrowCounterClockwise} disabled={pending} onClick={() => actions.onUndo(task)} data-testid="task-undo">
+                  Undo
+                </Button>
+              )}
+              {task.source === 'manual' && (
+                <Button size="sm" variant="ghost" icon={Trash} disabled={pending} onClick={() => actions.onDelete(task)} className="hover:text-danger">
+                  Delete
+                </Button>
+              )}
+            </div>
+          )}
+        </div>
+      </article>
+    );
+  }
 
   return (
     <article
@@ -190,75 +283,31 @@ export function TaskCard({
       className={cn(
         'card relative overflow-visible transition-colors',
         isQuran && 'border-amber/35 bg-[linear-gradient(135deg,color-mix(in_oklab,var(--amber)_10%,var(--surface))_0%,var(--surface)_55%)]',
-        closed && 'opacity-80',
       )}
     >
       {isQuran && <span aria-hidden className="absolute inset-y-4 left-0 w-1 rounded-r-full bg-amber" />}
       <div className="flex items-start gap-3 p-4 sm:gap-4 sm:p-5">
-        <motion.button
-          ref={checkRef}
-          type="button"
-          aria-label={done ? `Undo ${task.title}` : `Complete ${task.title}`}
-          data-testid="task-check"
-          disabled={pending || skipped || rolled}
-          onClick={() => (done ? actions.onUndo(task) : actions.onComplete(task, null, checkRef.current))}
-          whileTap={{ scale: 0.9 }}
-          className={cn(
-            'group relative mt-0.5 inline-flex size-9 shrink-0 items-center justify-center rounded-full border-2 transition-colors disabled:cursor-not-allowed',
-            done ? 'border-accent bg-accent text-on-accent' : isQuran ? 'border-amber/60 text-amber-ink hover:bg-amber/12' : 'border-line-strong text-muted hover:border-accent hover:text-accent-ink',
-            (skipped || rolled) && 'border-dashed opacity-60',
-          )}
-        >
-          <AnimatePresence initial={false} mode="popLayout">
-            {done ? (
-              <motion.span key="done" initial={{ scale: 0.4, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: 'spring', stiffness: 600, damping: 22 }}>
-                <Check size={18} weight="bold" aria-hidden />
-              </motion.span>
-            ) : rolled ? (
-              <ArrowBendUpRight key="rolled" size={16} aria-hidden />
-            ) : skipped ? (
-              <SkipForward key="skip" size={16} aria-hidden />
-            ) : (
-              <Check key="todo" size={16} weight="bold" aria-hidden className="opacity-0 transition-opacity group-hover:opacity-100" />
-            )}
-          </AnimatePresence>
-        </motion.button>
+        <div className="mt-0.5">{checkButton}</div>
 
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-1.5">
             <Chip tone={trackTone(m.theme)} icon={TrackIcon}>
               {m.label}
             </Chip>
-            <Chip>{typeLabel(task.track, task.type)}</Chip>
-            {!isQuran && <Chip>{INTENSITY_LABELS[task.intensity]}</Chip>}
-            {task.source === 'manual' && <Chip>Manual</Chip>}
-            {task.offCurriculum && <Chip>Off-curriculum</Chip>}
           </div>
-          <h3 className={cn('mt-2 text-[15px] font-semibold tracking-tight text-ink sm:text-base', closed && 'text-muted line-through decoration-1')}>{task.title}</h3>
+          <h3 className="mt-2 text-[15px] font-semibold tracking-tight text-ink sm:text-base">{task.title}</h3>
           <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1">
-            <Meta icon={Clock}>
-              {done && task.actualMinutes ? `${formatMinutes(task.actualMinutes)} (planned ${formatMinutes(task.plannedMinutes)})` : formatMinutes(task.plannedMinutes)}
-            </Meta>
+            <Meta icon={Clock}>{formatMinutes(task.plannedMinutes)}</Meta>
             {isQuran && task.quranPages.length > 0 && (
               <Meta icon={BookOpenText}>
                 {task.quranPages.length === 1 ? 'Page' : 'Pages'} <span className="num">{formatPages(task.quranPages)}</span>
               </Meta>
             )}
             {isQuran && task.quranPages.length === 0 && task.pagesCount ? <Meta icon={BookOpenText}>{task.pagesCount} pages</Meta> : null}
-            {!rolled && (
-              <span className={cn('inline-flex items-center gap-1 text-xs font-semibold', done ? 'text-accent-ink' : 'text-ink')} data-testid="task-points">
-                <Lightning size={14} weight="fill" aria-hidden className="text-accent-ink" />
-                <span className="num">{done ? `+${points}` : points}</span> {done ? 'earned' : 'pts'}
-              </span>
-            )}
-            {rolled && (
-              <Meta icon={ArrowBendUpRight} className="text-subtle">
-                <span data-testid="task-rolled" title="This session moved to the next slot of the same track. No points, not missed.">
-                  Moved forward
-                </span>
-              </Meta>
-            )}
-            {skipped && <Meta icon={SkipForward}>Skipped</Meta>}
+            <span className="inline-flex items-center gap-1 text-xs font-semibold text-ink" data-testid="task-points">
+              <Lightning size={14} weight="fill" aria-hidden className="text-accent-ink" />
+              <span className="num">{points}</span> points
+            </span>
             {missed && (
               <Meta icon={WarningCircle} className="text-warn">
                 Missed
@@ -275,6 +324,7 @@ export function TaskCard({
                 transition={{ duration: 0.18 }}
                 className="mt-3 flex flex-col gap-3 border-t border-line pt-3"
               >
+                <p className="text-xs text-muted">{detailParts.join(', ')}</p>
                 {isQuran && task.quranPages.length > 0 && <QuranSegments pages={task.quranPages} />}
                 {task.description && (
                   <p className="text-sm leading-relaxed text-muted">
@@ -292,37 +342,31 @@ export function TaskCard({
           </AnimatePresence>
 
           <div className="mt-3 flex flex-wrap items-center gap-2">
-            {rolled ? null : task.status === 'pending' || missed ? (
-              <div className="relative flex items-center gap-1">
-                <Button
-                  variant="primary"
-                  size="sm"
-                  icon={CheckCircle}
-                  disabled={pending}
-                  onClick={(e) => actions.onComplete(task, null, e.currentTarget)}
-                  data-testid="task-complete"
-                >
-                  Complete
-                </Button>
-                <IconButton icon={Timer} size="sm" label="Complete with actual minutes" onClick={() => setPopover((v) => !v)} aria-expanded={popover} />
-                <AnimatePresence>
-                  {popover && (
-                    <ActualMinutesPopover
-                      planned={task.plannedMinutes}
-                      onClose={() => setPopover(false)}
-                      onConfirm={(min) => {
-                        setPopover(false);
-                        actions.onComplete(task, min, checkRef.current);
-                      }}
-                    />
-                  )}
-                </AnimatePresence>
-              </div>
-            ) : (
-              <Button size="sm" variant="secondary" icon={ArrowCounterClockwise} disabled={pending} onClick={() => actions.onUndo(task)} data-testid="task-undo">
-                Undo
+            <div className="relative flex items-center gap-1">
+              <Button
+                variant="primary"
+                size="sm"
+                icon={CheckCircle}
+                disabled={pending}
+                onClick={(e) => actions.onComplete(task, null, e.currentTarget)}
+                data-testid="task-complete"
+              >
+                Complete
               </Button>
-            )}
+              <IconButton icon={Timer} size="sm" label="Complete with actual minutes" onClick={() => setPopover((v) => !v)} aria-expanded={popover} />
+              <AnimatePresence>
+                {popover && (
+                  <ActualMinutesPopover
+                    planned={task.plannedMinutes}
+                    onClose={() => setPopover(false)}
+                    onConfirm={(min) => {
+                      setPopover(false);
+                      actions.onComplete(task, min, checkRef.current);
+                    }}
+                  />
+                )}
+              </AnimatePresence>
+            </div>
             {task.source === 'generated' && task.status === 'pending' && (
               <Button
                 size="sm"

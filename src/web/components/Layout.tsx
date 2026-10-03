@@ -103,7 +103,7 @@ function SidebarStatus() {
       <div className="mt-3 flex items-center justify-between text-[11px] text-muted">
         <span>Level {data.level.level}</span>
         <span className="num">
-          {data.level.pointsIntoLevel}/{data.level.pointsForNextLevel} XP
+          {data.level.pointsIntoLevel}/{data.level.pointsForNextLevel} points
         </span>
       </div>
       <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-surface-3">
@@ -121,6 +121,7 @@ function SidebarStatus() {
 function Sidebar() {
   const { open } = useAddTask();
   const { data: catalog } = useCatalog();
+  const location = useLocation();
   const items = navItems(catalog?.quranEnabled ?? true);
   return (
     <div className="hidden w-[248px] shrink-0 border-r border-line bg-surface/40 md:block">
@@ -162,7 +163,7 @@ function Sidebar() {
         ))}
       </nav>
       <div className="mt-auto flex flex-col gap-3">
-        <SidebarStatus />
+        {location.pathname !== '/' && <SidebarStatus />}
         <div className="flex items-center justify-between px-1">
           <div className="leading-tight">
             <VersionTag />

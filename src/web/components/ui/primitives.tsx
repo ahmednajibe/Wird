@@ -167,7 +167,7 @@ export function EmptyState({ icon: I, title, body, action, className }: { icon: 
   );
 }
 
-/** Animated counter for points and XP. */
+/** Animated counter for points. */
 export function AnimatedNumber({
   value,
   className,
