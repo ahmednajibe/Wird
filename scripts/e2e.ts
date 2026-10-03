@@ -139,6 +139,8 @@ async function run(): Promise<void> {
       assert(await page.locator('[data-testid="goal-card"]').isVisible(), 'goal ring visible');
       assert(await page.locator('[data-testid="streak-card"]').isVisible(), 'streak card visible');
       assert((await page.locator('[data-testid="week-strip"] > *').count()) === 7, 'week strip has 7 days');
+      const capFont = await page.evaluate(`getComputedStyle(document.querySelector('[data-testid="capacity-line"]')).fontSize`);
+      assert(capFont === '14px', `English text-sm computes to ${capFont}, expected 14px`);
       const dash = (await (await fetch(`${base}/api/dashboard`)).json()) as { trackingStartDate: string; today: string; weekSummary: { beforeStart: boolean }[] };
       assert(dash.trackingStartDate === dash.today, `fresh database starts tracking today (${dash.trackingStartDate})`);
       const notStarted = await page.locator('[data-testid="week-day-not-started"]').count();
@@ -338,6 +340,8 @@ async function run(): Promise<void> {
       assert(!firstTitle.includes('Deep study') && !firstTitle.includes('Memorize page'), `first task card title is Arabic (${firstTitle})`);
       const headerText = await page.locator('main header').first().innerText();
       assert(headerText.includes('هـ'), `header shows the Arabic Hijri label (${headerText.split('\n')[0]})`);
+      const arCapFont = await page.evaluate(`getComputedStyle(document.querySelector('[data-testid="capacity-line"]')).fontSize`);
+      assert(arCapFont === '15px', `Arabic text-sm computes to ${arCapFont}, expected 15px`);
       let file = join(shotsDir, 'today-ar-desktop.png');
       await page.screenshot({ path: file, fullPage: true });
       console.log(`  ${file}`);
@@ -398,8 +402,27 @@ async function run(): Promise<void> {
       await c.close();
     }
 
+    // English counterparts of the -ar-1024 shots for the two pages that
+    // overflowed at that width before (bar labels, track tabs).
+    {
+      const c = await browser.newContext({ viewport: { width: 1024, height: 900 }, colorScheme: 'dark', reducedMotion: 'reduce', deviceScaleFactor: 1 });
+      const p = await c.newPage();
+      watch(p);
+      for (const [name, path] of PAGES.filter(([n]) => n === 'stats' || n === 'tracks')) {
+        await p.goto(`${base}${path}`);
+        await settle(p);
+        const w = Number(await p.evaluate('document.documentElement.scrollWidth'));
+        assert(w <= 1024, `${name} 1024 (en) overflows: scrollWidth ${w} > 1024`);
+        const file = join(shotsDir, `${name}-1024.png`);
+        await p.screenshot({ path: file, fullPage: true });
+        console.log(`  ${file}`);
+      }
+      await c.close();
+    }
+
     await check('Arabic screenshots cover every page', async () => {
-      for (const [label, viewport] of sizes) {
+      const arSizes: [string, { width: number; height: number }][] = [...sizes, ['1024', { width: 1024, height: 900 }]];
+      for (const [label, viewport] of arSizes) {
         const arCtx = await browser!.newContext({ viewport, colorScheme: 'dark', reducedMotion: 'reduce', deviceScaleFactor: 1 });
         await arCtx.addInitScript(() => {
           try {
@@ -414,9 +437,9 @@ async function run(): Promise<void> {
           await p.goto(`${base}${path}`);
           await settle(p);
           await p.waitForFunction('document.documentElement.dir === "rtl" && document.documentElement.lang === "ar"', undefined, { timeout: 10_000 });
-          if (viewport.width === 390) {
+          if (viewport.width <= 1024) {
             const w = Number(await p.evaluate('document.documentElement.scrollWidth'));
-            assert(w <= 390, `${name} mobile (ar) overflows: scrollWidth ${w} > 390`);
+            assert(w <= viewport.width, `${name} ${label} (ar) overflows: scrollWidth ${w} > ${viewport.width}`);
           }
           const file = join(shotsDir, `${name}-ar-${label}.png`);
           await p.screenshot({ path: file, fullPage: true });

@@ -12,7 +12,7 @@ import { useCatalog, useSaveSettings, useSettings } from '../client/hooks';
 import type { CatalogResponse, Settings } from '../client/types';
 import { BaselineList } from '../components/BaselineList';
 import { Button } from '../components/ui/Button';
-import { Card, Disclosure, ErrorState, PageHeader, Segmented, Skeleton, Switch } from '../components/ui/primitives';
+import { Card, Disclosure, ErrorState, InfoHint, PageHeader, Segmented, Skeleton, Switch } from '../components/ui/primitives';
 import { useToast } from '../components/ui/Toast';
 import { useI18n, type Lang, type StringKey } from '../i18n';
 import { dayName, hijriLabel } from '../i18n/engineText';
@@ -54,6 +54,7 @@ function NumberField({
   error,
   step = 1,
   hint,
+  info,
 }: {
   id: string;
   label: string;
@@ -63,6 +64,7 @@ function NumberField({
   error?: string | undefined;
   step?: number;
   hint?: string;
+  info?: ReactNode;
 }) {
   const [text, setText] = useState(String(value));
   useEffect(() => {
@@ -74,9 +76,12 @@ function NumberField({
   }, [value]);
   return (
     <div className="min-w-0">
-      <label htmlFor={id} className="mb-1.5 block truncate text-sm font-medium text-ink" title={label}>
-        {label}
-      </label>
+      <div className="mb-1.5 flex items-center gap-1">
+        <label htmlFor={id} className="whitespace-nowrap text-sm font-medium text-ink" title={label}>
+          {label}
+        </label>
+        {info}
+      </div>
       <div className="relative">
         <input
           id={id}
@@ -280,14 +285,27 @@ function SettingsForm({ initial, catalog }: { initial: Settings; catalog: Catalo
             <Switch
               checked={draft.quran.enabled}
               onChange={(v) => setQuran('enabled', v)}
-              label={t('settings.quranSessions')}
+              label={
+                <span className="inline-flex items-center gap-1">
+                  {t('settings.quranSessions')}
+                  <InfoHint label={t('settings.quranSessions')}>{t('settings.quranSessionsHint')}</InfoHint>
+                </span>
+              }
               description={t('settings.quranSessionsDesc')}
               id="quran-enabled"
             />
           </div>
           <div className={cn(!draft.quran.enabled && 'pointer-events-none opacity-45')} aria-disabled={!draft.quran.enabled}>
-            <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
-              <NumberField id="q-mem" label={t('settings.memorizeSession')} value={draft.quran.memorizeMinutes} suffix={t('unit.min')} error={err('quran.memorizeMinutes')} onChange={(n) => setQuran('memorizeMinutes', n)} />
+            <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <NumberField
+                id="q-mem"
+                label={t('settings.memorizeSession')}
+                value={draft.quran.memorizeMinutes}
+                suffix={t('unit.min')}
+                error={err('quran.memorizeMinutes')}
+                info={<InfoHint label={t('settings.memorizeSession')}>{t('settings.memorizeHint')}</InfoHint>}
+                onChange={(n) => setQuran('memorizeMinutes', n)}
+              />
             </div>
             <div className="mt-4">
               <div className="mb-1.5 text-sm font-medium text-ink">{t('quran.order')}</div>
@@ -373,6 +391,7 @@ function SettingsForm({ initial, catalog }: { initial: Settings; catalog: Catalo
                 value={draft.baseline.fastingFactor}
                 error={err('baseline.fastingFactor')}
                 hint={t('settings.range01')}
+                info={<InfoHint label={t('settings.fastingFactor')}>{t('settings.fastingFactorHint')}</InfoHint>}
                 onChange={(n) => setBaseline('fastingFactor', n)}
               />
             </div>

@@ -323,7 +323,7 @@ export function AddTaskModal({ open, onClose }: { open: boolean; onClose: () => 
                 </button>
               )}
             </p>
-            {showFormula && preview.data && input && <p className="num mt-0.5 truncate text-[11px] text-subtle">{preview.data.formula}</p>}
+            {showFormula && preview.data && input && <p className="num mt-0.5 truncate text-2xs text-subtle">{preview.data.formula}</p>}
           </div>
         </div>
 

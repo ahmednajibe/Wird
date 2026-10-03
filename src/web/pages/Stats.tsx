@@ -1,6 +1,6 @@
 import { ChartBar, Fire, Lightning, SealCheck, Trophy } from '@phosphor-icons/react';
 import { motion } from 'motion/react';
-import { useMemo } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { QURAN_TRACK_ID } from '../../shared/catalog.js';
 import { addDays, weekStart } from '../../shared/dates.js';
 import { errorMessage } from '../client/client';
@@ -42,6 +42,14 @@ function Heatmap({ daily }: { daily: Day[] }) {
     return cols;
   }, [daily]);
 
+  // The year grid opens on the newest week: inline-end is right in LTR, left in RTL.
+  const scroller = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = scroller.current;
+    if (!el || el.scrollWidth <= el.clientWidth) return;
+    el.querySelector<HTMLElement>('[data-heatmap-newest]')?.scrollIntoView({ inline: 'end', block: 'nearest' });
+  }, [weeks, lang]);
+
   // Month label per column, skipped when the previous label is less than
   // 3 columns back so a partial first month cannot collide with the next.
   const monthLabels = useMemo(() => {
@@ -58,9 +66,9 @@ function Heatmap({ daily }: { daily: Day[] }) {
   }, [weeks, lang]);
 
   return (
-    <div className="scrollbar-thin overflow-x-auto pb-2">
+    <div ref={scroller} className="scrollbar-thin overflow-x-auto pb-2">
       <div className="inline-flex min-w-full flex-col gap-1.5">
-        <div className="flex gap-[3px] ps-8 text-[10px] text-muted">
+        <div className="flex gap-[3px] ps-8 text-3xs text-muted">
           {monthLabels.map((label, i) => (
             <span key={i} className="w-3 shrink-0 overflow-visible whitespace-nowrap lg:w-[14px]">
               {label}
@@ -68,7 +76,7 @@ function Heatmap({ daily }: { daily: Day[] }) {
           ))}
         </div>
         <div className="flex gap-[3px]">
-          <div className="flex w-7 shrink-0 flex-col gap-[3px] text-[10px] text-muted">
+          <div className="flex w-7 shrink-0 flex-col gap-[3px] text-3xs text-muted">
             {[0, 1, 2, 3, 4, 5, 6].map((i) => (
               <span key={i} className="flex h-3 items-center lg:h-[14px]">
                 {i % 2 === 0 ? dayNameShort(addDays(DOW_EPOCH, i), lang) : ''}
@@ -76,7 +84,7 @@ function Heatmap({ daily }: { daily: Day[] }) {
             ))}
           </div>
           {weeks.map((w, i) => (
-            <div key={i} className="flex flex-col gap-[3px]">
+            <div key={i} data-heatmap-newest={i === weeks.length - 1 ? true : undefined} className="flex flex-col gap-[3px]">
               {w.map((d, j) =>
                 d ? (
                   <span
@@ -131,7 +139,7 @@ function HeatLegend() {
 }
 
 function WeeklyBars({ weekly, today }: { weekly: StatsResponse['weekly']; today: string }) {
-  const { t, tn } = useI18n();
+  const { t, tn, lang } = useI18n();
   const weeks = useMemo(() => {
     const map = new Map(weekly.map((w) => [w.weekStart, w]));
     const end = weekStart(today);
@@ -147,7 +155,7 @@ function WeeklyBars({ weekly, today }: { weekly: StatsResponse['weekly']; today:
         const current = i === weeks.length - 1;
         return (
           <div key={w.weekStart} className="flex h-full min-w-0 flex-1 flex-col items-center justify-end gap-1.5">
-            <span className={cn('num text-[10px] sm:text-xs', current ? 'font-semibold text-accent-ink' : 'text-muted')}>{w.points > 0 ? w.points : ''}</span>
+            <span className={cn('num text-3xs sm:text-xs', current ? 'font-semibold text-accent-ink' : 'text-muted')}>{w.points > 0 ? w.points : ''}</span>
             <div className="relative w-full flex-1">
               <motion.div
                 className={cn('absolute inset-x-0 bottom-0 h-full origin-bottom rounded-t-lg', current ? 'bg-accent-fill' : 'bg-accent-fill/45')}
@@ -157,7 +165,10 @@ function WeeklyBars({ weekly, today }: { weekly: StatsResponse['weekly']; today:
                 title={t('stats.weekOf', { date: formatShortDate(w.weekStart), points: tn('common.points', w.points), minutes: formatHours(w.minutes) })}
               />
             </div>
-            <span className={cn('num text-[10px] whitespace-nowrap text-muted', (weeks.length - 1 - i) % 3 !== 0 && 'hidden sm:block')}>
+            {/* Sparse every-third date labels: twelve nowrap labels cannot fit
+                the columns below xl (Arabic labels are wider, so they stay
+                sparse at every width). */}
+            <span className={cn('num text-3xs whitespace-nowrap text-muted', (weeks.length - 1 - i) % 3 !== 0 && (lang === 'ar' ? 'hidden' : 'hidden xl:block'))}>
               {formatShortDate(w.weekStart).replace(' ', '\u00a0')}
             </span>
           </div>
@@ -270,12 +281,12 @@ export function StatsPage() {
       </Card>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1.3fr_1fr]">
-        <Card className="p-4 sm:p-6">
+        <Card className="min-w-0 p-4 sm:p-6">
           <h2 className="text-lg font-semibold tracking-tight">{t('stats.weekPoints')}</h2>
           <p className="mb-4 text-sm text-muted">{t('stats.weekPointsSub')}</p>
           {hasData ? <WeeklyBars weekly={d.weekly} today={d.today} /> : <EmptyState icon={ChartBar} title={t('stats.noPointsTitle')} body={t('stats.noPointsBody')} />}
         </Card>
-        <Card className="p-4 sm:p-6">
+        <Card className="min-w-0 p-4 sm:p-6">
           <h2 className="text-lg font-semibold tracking-tight">{t('stats.trackTotals')}</h2>
           <p className="mb-4 text-sm text-muted">{t('stats.trackTotalsSub')}</p>
           <TrackTotals perTrack={d.perTrack} catalog={catalog.data} />

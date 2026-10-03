@@ -44,6 +44,16 @@
   --shadow-glow: var(--shadow-glow);
 }
 
+@theme {
+  /* Micro-label sizes used across chips, badges and week strips, plus a card
+     title size. They carry no line-height of their own so English inherits
+     exactly what the arbitrary px values produced; Arabic bumps the sizes
+     below and gives them a leading floor. */
+  --text-3xs: 10px;
+  --text-2xs: 11px;
+  --text-md: 15px;
+}
+
 :root,
 [data-theme='dark'] {
   color-scheme: dark;
@@ -149,6 +159,32 @@
   /* Negative letter-spacing breaks Arabic joining. */
   :root[lang='ar'] * {
     letter-spacing: 0 !important;
+  }
+  /* IBM Plex Sans Arabic has tall ascenders and a small body: at Latin sizes
+     it reads a step smaller and Tailwind's Latin-tuned leading feels cramped.
+     Bump the type scale and open up leading; English keeps the defaults. */
+  :root[lang='ar'] {
+    --text-3xs: 12px;
+    --text-2xs: 12px;
+    --text-md: 16px;
+    --text-xs: 13px;
+    --text-xs--line-height: 1.7;
+    --text-sm: 15px;
+    --text-sm--line-height: 1.75;
+    --text-base: 17px;
+    --text-base--line-height: 1.75;
+    --text-lg--line-height: 1.4;
+    --text-xl--line-height: 1.4;
+    --text-2xl--line-height: 1.4;
+    --text-3xl--line-height: 1.4;
+    --text-4xl--line-height: 1.4;
+  }
+  /* The micro tokens emit font-size only; give Arabic a leading floor. An
+     explicit leading-* still wins because utilities sit in a later layer. */
+  :root[lang='ar'] .text-3xs,
+  :root[lang='ar'] .text-2xs,
+  :root[lang='ar'] .text-md {
+    line-height: 1.5;
   }
   input[type='number'] {
     -moz-appearance: textfield;

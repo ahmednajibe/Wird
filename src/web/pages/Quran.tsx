@@ -97,7 +97,7 @@ function PageGrid({ data }: { data: QuranResponse }) {
           const memorized = pages.filter((p) => p.memorized).length;
           return (
             <div key={j.number} className="grid grid-cols-[34px_1fr_28px] items-center gap-2 sm:grid-cols-[52px_1fr_44px] sm:gap-3">
-              <span className="num text-[11px] text-muted sm:text-xs">
+              <span className="num text-2xs text-muted sm:text-xs">
                 <span className="hidden sm:inline">{t('quran.juzShort')}</span>
                 {j.number}
               </span>
@@ -126,7 +126,7 @@ function PageGrid({ data }: { data: QuranResponse }) {
                   );
                 })}
               </div>
-              <span className="num text-end text-[11px] text-muted sm:text-xs">
+              <span className="num text-end text-2xs text-muted sm:text-xs">
                 {memorized > 0 ? `${memorized}/${pages.length}` : ''}
               </span>
             </div>
