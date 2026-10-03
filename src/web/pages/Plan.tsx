@@ -23,12 +23,13 @@ import { addDays, today as cairoToday, weekStart } from '../../shared/dates.js';
 import { errorMessage } from '../client/client';
 import { useCatalog, useDashboard, useRegenerate, useSaveDay, useSettings, useTracks, useWeek } from '../client/hooks';
 import type { DayView, TaskView } from '../client/types';
+import { BaselineList } from '../components/BaselineList';
 import { Button, IconButton } from '../components/ui/Button';
 import { ConfirmDialog, Dialog } from '../components/ui/Dialog';
 import { Chip, Disclosure, Duration, ErrorState, PageHeader, ProgressBar, Segmented, Skeleton } from '../components/ui/primitives';
 import { useToast } from '../components/ui/Toast';
 import { useI18n } from '../i18n';
-import { baselineExplanation, dayName, dayNameShort, fastingReasons, hijriLabel, localizeTaskTitle } from '../i18n/engineText';
+import { dayName, dayNameShort, fastingReasons, hijriLabel, localizeTaskTitle, taskTitleParts, type BaselineContext } from '../i18n/engineText';
 import { cn, formatMediumDate, formatMinutes, formatShortDate } from '../lib/format';
 import { streamOrderMap, useTrackMeta } from '../lib/tracks';
 
@@ -61,7 +62,7 @@ function NotStartedCard({ day, index }: { day: DayView; index: number }) {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.04, type: 'spring', stiffness: 380, damping: 32 }}
-      className="card flex scroll-mt-20 flex-col border-dashed p-4 opacity-60 sm:p-5"
+      className="card flex min-w-0 scroll-mt-20 flex-col border-dashed p-4 opacity-60 sm:p-5"
     >
       <div className="flex items-center gap-2">
         <h3 className="text-base font-semibold tracking-tight text-muted">{dayName(day.date, lang)}</h3>
@@ -93,7 +94,7 @@ function DayCard({ day, onEdit, index }: { day: DayView; onEdit: (d: DayView) =>
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.04, type: 'spring', stiffness: 380, damping: 32 }}
-      className={cn('card flex scroll-mt-20 flex-col p-4 sm:p-5', day.isToday && 'border-accent/45 ring-1 ring-accent/25')}
+      className={cn('card flex min-w-0 scroll-mt-20 flex-col p-4 sm:p-5', day.isToday && 'border-accent/45 ring-1 ring-accent/25')}
     >
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
@@ -164,20 +165,26 @@ function DayCard({ day, onEdit, index }: { day: DayView; onEdit: (d: DayView) =>
         {day.tasks.length === 0 && <li className="py-3 text-sm text-muted">{cap.isRestDay ? t('plan.restEmpty') : t('plan.noTasks')}</li>}
         {day.tasks.map((t) => {
           const m = trackMeta(t.track, t.stream);
-          const title = t.source === 'generated' ? localizeTaskTitle(t.title, lang) : t.title;
+          const generated = t.source === 'generated';
+          const title = generated ? localizeTaskTitle(t.title, lang) : t.title;
+          const parts = generated ? taskTitleParts(t.title, lang) : { prefix: '', subject: t.title, suffix: '' };
           return (
             <li key={t.id} className="flex items-center gap-2.5 py-2.5">
               <StatusIcon t={t} />
               <div className="min-w-0 flex-1">
                 <p
                   className={cn(
-                    'truncate text-sm font-medium text-ink',
+                    'flex min-w-0 gap-x-1 text-sm font-medium text-ink',
                     (t.status === 'completed' || t.status === 'skipped') && 'text-muted line-through decoration-1',
                     t.status === 'rolled' && 'text-subtle',
                   )}
                   title={title}
                 >
-                  {title}
+                  {parts.prefix !== '' && <span className="shrink-0 whitespace-nowrap">{parts.prefix}</span>}
+                  <span className="min-w-0 truncate" dir="auto">
+                    {parts.subject}
+                  </span>
+                  {parts.suffix !== '' && <span className="shrink-0 whitespace-nowrap">{parts.suffix.trimStart()}</span>}
                 </p>
                 <p className="text-xs">
                   <span className={m.text} dir="auto">
@@ -379,7 +386,7 @@ function WhyPanel() {
   const warmup = warmupSlot
     ? (catalog.data?.data.tracks.find((t) => t.id === warmupSlot.track)?.streams.find((st) => st.id === warmupSlot.stream)?.warmupTitle ?? null)
     : false;
-  const baselineText = baselineExplanation(expl, lang, { quranEnabled: catalog.data?.quranEnabled ?? true, warmup });
+  const baselineCtx: BaselineContext = { quranEnabled: catalog.data?.quranEnabled ?? true, warmup };
   return (
     <Disclosure title={t('plan.whyTitle')} subtitle={t('plan.whySub')} icon={Info} defaultOpen={false} data-testid="why-panel">
       <div className="grid gap-6 lg:grid-cols-3">
@@ -404,7 +411,7 @@ function WhyPanel() {
             })}
           </ul>
           <p className="mt-3 text-xs text-muted">
-            {tRich('plan.fastingLess', { pct: <bdi className="num text-ink">{s.fastingReductionPct}</bdi> })}{' '}
+            {tRich('plan.fastingLess', { pct: <bdi dir="ltr" className="num text-ink">{s.fastingReductionPct}%</bdi> })}{' '}
             {tRich('plan.monThuNote', { min: <Duration minutes={Math.round((s.capacityByDow[1] ?? 0) * (1 - s.fastingReductionPct / 100))} className="text-ink" /> })}
           </p>
         </div>
@@ -417,9 +424,11 @@ function WhyPanel() {
                 <li key={`${w.track}-${w.stream}`} className="text-sm">
                   <div className="mb-1 flex justify-between">
                     <span className={m.text}>{w.track === QURAN_TRACK_ID ? tRich('plan.reserved', { label: <bdi>{m.label}</bdi> }) : <bdi dir="auto">{m.label}</bdi>}</span>
-                    <span className="text-ink">
+                    <span className="inline-flex items-baseline gap-1.5 text-ink">
                       <Duration minutes={w.plannedMinutes} />
-                      <span className="ms-1 text-muted">{totalWeekly > 0 ? Math.round((w.plannedMinutes / totalWeekly) * 100) : 0}%</span>
+                      <bdi dir="ltr" className="text-muted">
+                        {totalWeekly > 0 ? Math.round((w.plannedMinutes / totalWeekly) * 100) : 0}%
+                      </bdi>
                     </span>
                   </div>
                   <ProgressBar value={w.plannedMinutes} max={Math.max(...rows.map((x) => x.plannedMinutes), 1)} height={6} color={m.cssVar} animateOnMount={false} />
@@ -452,9 +461,7 @@ function WhyPanel() {
               <div className="text-[11px] text-muted">{t('plan.goalRest')}</div>
             </div>
           </div>
-          <p className="mt-3 text-sm leading-relaxed text-muted" data-testid="baseline-text">
-            {baselineText}
-          </p>
+          <BaselineList className="mt-3" expl={expl} ctx={baselineCtx} />
         </div>
       </div>
     </Disclosure>
@@ -550,7 +557,7 @@ export function PlanPage() {
       ) : week.isError ? (
         <ErrorState message={errorMessage(week.error)} onRetry={() => void week.refetch()} />
       ) : (
-        <div className={cn('grid gap-4 md:grid-cols-2 xl:grid-cols-3', week.isPlaceholderData && 'opacity-60')}>
+        <div className={cn('grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3', week.isPlaceholderData && 'opacity-60')}>
           {week.data.days.map((d, i) => (
             <DayCard key={d.date} day={d} index={i} onEdit={setEditing} />
           ))}

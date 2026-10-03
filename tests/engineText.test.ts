@@ -9,7 +9,7 @@ import { describe, expect, it } from 'vitest';
 import type { BaselineExplanation } from '../src/shared/streak.js';
 import { makeTestApp } from './helpers.js';
 import {
-  baselineExplanation,
+  baselineItems,
   dayName,
   dayNameShort,
   fastingReasons,
@@ -17,6 +17,7 @@ import {
   isolate,
   localizeTaskDescription,
   localizeTaskTitle,
+  taskTitleParts,
 } from '../src/web/i18n/engineText.js';
 
 type Json = Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
@@ -185,14 +186,63 @@ describe('engineText', () => {
       expect(codes.has(c), c).toBe(true);
     }
 
-    // The baseline paragraph: en is the server string, ar composes the same content.
+    // The baseline list: every engine number appears in both languages, and no
+    // item has nested brackets or Arabic-Indic digits.
     const be = expl as unknown as BaselineExplanation;
-    expect(baselineExplanation(be, 'en')).toBe(be.text);
-    const arText = baselineExplanation(be, 'ar', { quranEnabled: true, warmup: 'Drawing warm-up' });
-    expect(arText).toContain('الهدف اليومي');
-    expect(arText).toContain(String(expl!.normal));
-    expect(arText).toContain(String(expl!.fasting));
-    expect(arText).not.toMatch(AR_INDIC_DIGITS);
+    for (const lang of ['en', 'ar'] as const) {
+      const items = baselineItems(be, lang, { quranEnabled: true, warmup: 'Drawing warm-up' });
+      const flat = items.map((it) => (it.kind === 'formula' ? `${it.label} ${it.formula}` : it.parts.map((p) => p.text).join('')));
+      const all = flat.join('\n');
+      const nums: (string | number)[] = [
+        be.normalWeekPlannedPoints,
+        be.avgDailyPlannedPoints.toFixed(2),
+        be.factor,
+        be.fastingFactor,
+        be.normal,
+        be.fasting,
+        be.quranReserveMinutes,
+        be.effectiveReviewCapMinutes,
+      ];
+      for (const n of nums) expect(all, `${lang} items missing ${n}`).toContain(String(n));
+      expect(all).not.toMatch(AR_INDIC_DIGITS);
+      for (const item of flat) {
+        expect(item, item).not.toContain('((');
+        expect(item, item).not.toContain('))');
+      }
+      expect(all, lang).toContain(lang === 'en' ? 'Daily goal' : 'الهدف اليومي');
+    }
+  });
+
+  it('taskTitleParts splits titles and reassembles to localizeTaskTitle', () => {
+    const join = (p: ReturnType<typeof taskTitleParts>) => (p.prefix === '' ? `${p.subject}${p.suffix}` : `${p.prefix} ${p.subject}${p.suffix}`);
+    const titles = [
+      'Deep study: Module X (session 3)',
+      'Light study: Module X (session 7)',
+      'Consolidate: Module X (session 1)',
+      'Build: Module X (session 2)',
+      'Light practice: Module X (session 4)',
+      'Light practice: open practice (session 4)',
+      'Open practice: Animation (session 5)',
+      'Open practice (light): Animation (session 6)',
+      'Warm-up, 20 min (session 8)',
+      'Drawing warm-up, 15 min (session 9)',
+      'Memorize page 604',
+      'Review 1 page',
+      'Review 5 pages',
+      'user text that matches nothing',
+    ];
+    for (const lang of ['en', 'ar'] as const) {
+      for (const title of titles) {
+        expect(join(taskTitleParts(title, lang)), `${lang}: ${title}`).toBe(localizeTaskTitle(title, lang));
+      }
+    }
+
+    expect(taskTitleParts('Deep study: Module X (session 3)', 'en')).toEqual({ prefix: 'Deep study:', subject: 'Module X', suffix: ' (session 3)' });
+    expect(taskTitleParts('Deep study: Module X (session 3)', 'ar')).toEqual({ prefix: 'دراسة معمقة:', subject: isolate('Module X'), suffix: ' (الجلسة 3)' });
+    expect(taskTitleParts('Warm-up, 20 min (session 8)', 'ar')).toEqual({ prefix: '', subject: 'الإحماء، 20 دقيقة', suffix: ' (الجلسة 8)' });
+    expect(taskTitleParts('Memorize page 604', 'en')).toEqual({ prefix: '', subject: 'Memorize page 604', suffix: '' });
+    expect(taskTitleParts('Review 5 pages', 'ar')).toEqual({ prefix: '', subject: 'مراجعة 5 صفحات', suffix: '' });
+    expect(taskTitleParts('user text that matches nothing', 'ar')).toEqual({ prefix: '', subject: 'user text that matches nothing', suffix: '' });
   });
 
   it('translates each fixed title and description template', () => {

@@ -1,7 +1,7 @@
 /**
  * Client-side Arabic for the human text the engine writes in English: task
  * titles and descriptions (planner.ts shapeTask, quran.ts sessions), fasting
- * reasons, Hijri labels, day names and the baseline explanation. The API
+ * reasons, Hijri labels, day names and the baseline explanation list. The API
  * output is pinned by golden snapshots, so these pure functions translate the
  * fixed engine templates on the client. User data (module titles, phase ids,
  * stream titles, resource names/urls/notes, drills, track labels) always
@@ -16,6 +16,8 @@ import { toUtcNoon } from '../../shared/dates.js';
 import { getSurah, pageContents, QURAN_PAGES, SURAHS } from '../../shared/quranData.js';
 import type { BaselineExplanation } from '../../shared/streak.js';
 import type { HijriDate, IsoDate } from '../../shared/types.js';
+import { ar } from './ar.js';
+import { en, fill, tnFor, type Dict } from './en.js';
 
 export type Lang = 'en' | 'ar';
 
@@ -184,45 +186,68 @@ const TITLE_PREFIX_AR: Record<string, string> = {
   'Open practice (light)': 'تطبيق مفتوح (خفيف)',
 };
 
+export interface TitleParts {
+  /** Translated template prefix including its colon ('' when there is none). */
+  prefix: string;
+  /** The plan-data part (module title, track label, warm-up text) or the whole title. */
+  subject: string;
+  /** ' (session N)' / ' (الجلسة N)' ('' when there is none). */
+  suffix: string;
+}
+
+/**
+ * Splits a generated task title for the one-line truncation layout: the
+ * translated prefix and the session suffix stay fully visible while the
+ * plan-data subject truncates. Quran titles and unrecognized shapes keep the
+ * whole localized title as the subject. Joined as `prefix` + ' ' + `subject` +
+ * `suffix` (without the space when prefix is '') the parts always equal
+ * localizeTaskTitle.
+ */
+export function taskTitleParts(title: string, lang: Lang): TitleParts {
+  if (lang === 'ar') {
+    // quran.ts: "Memorize page N", "Review N page(s)".
+    let m = /^Memorize page (\d+)$/.exec(title);
+    if (m) return { prefix: '', subject: `حفظ الصفحة ${m[1]}`, suffix: '' };
+    m = /^Review (\d+) pages?$/.exec(title);
+    if (m) return { prefix: '', subject: `مراجعة ${m[1]} ${AR_PAGES[arPlural.select(Number(m[1]))]}`, suffix: '' };
+  }
+
+  // planner.ts: every study title ends with " (session N)".
+  const sm = / \(session (\d+)\)$/.exec(title);
+  if (!sm) return { prefix: '', subject: title, suffix: '' };
+  const head = title.slice(0, sm.index);
+  const suffix = lang === 'en' ? ` (session ${sm[1]})` : ` (الجلسة ${sm[1]})`;
+
+  // Warm-up slot: "<warmupTitle>, <chunk> min".
+  const w = /^(.*), (\d+) min$/.exec(head);
+  if (w) {
+    if (lang === 'en') return { prefix: '', subject: head, suffix };
+    const warm = w[1] === 'Warm-up' ? 'الإحماء' : isolate(w[1] ?? '');
+    return { prefix: '', subject: `${warm}، ${w[2]} دقيقة`, suffix };
+  }
+
+  // "<prefix>: <module title>" (module may be the default "open practice").
+  const colon = head.indexOf(': ');
+  if (colon >= 0) {
+    const rawPrefix = head.slice(0, colon);
+    const rawSubject = head.slice(colon + 2);
+    if (lang === 'en') return { prefix: `${rawPrefix}:`, subject: rawSubject, suffix };
+    const subject = rawSubject === 'open practice' ? 'تطبيق مفتوح' : isolate(rawSubject);
+    const arPrefix = TITLE_PREFIX_AR[rawPrefix];
+    return { prefix: arPrefix ? `${arPrefix}:` : isolate(`${rawPrefix}:`), subject, suffix };
+  }
+
+  return { prefix: '', subject: lang === 'en' ? head : isolate(head), suffix };
+}
+
 /**
  * Arabic for a generated task title. Engine template words are translated;
  * plan data (module titles, lightTitle/warmupTitle, track labels) is kept
  * verbatim inside isolates. Unknown shapes pass through unchanged.
  */
 export function localizeTaskTitle(title: string, lang: Lang): string {
-  if (lang === 'en') return title;
-
-  // quran.ts: "Memorize page N", "Review N page(s)".
-  let m = /^Memorize page (\d+)$/.exec(title);
-  if (m) return `حفظ الصفحة ${m[1]}`;
-  m = /^Review (\d+) pages?$/.exec(title);
-  if (m) return `مراجعة ${m[1]} ${AR_PAGES[arPlural.select(Number(m[1]))]}`;
-
-  // planner.ts: every study title ends with " (session N)".
-  const sm = / \(session (\d+)\)$/.exec(title);
-  if (!sm) return title;
-  const head = title.slice(0, sm.index);
-  const suffix = ` (الجلسة ${sm[1]})`;
-
-  // Warm-up slot: "<warmupTitle>, <chunk> min".
-  const w = /^(.*), (\d+) min$/.exec(head);
-  if (w) {
-    const warm = w[1] === 'Warm-up' ? 'الإحماء' : isolate(w[1] ?? '');
-    return `${warm}، ${w[2]} دقيقة${suffix}`;
-  }
-
-  // "<prefix>: <module title>" (module may be the default "open practice").
-  const colon = head.indexOf(': ');
-  if (colon >= 0) {
-    const prefix = head.slice(0, colon);
-    const subject = head.slice(colon + 2);
-    const arSubject = subject === 'open practice' ? 'تطبيق مفتوح' : isolate(subject);
-    const arPrefix = TITLE_PREFIX_AR[prefix];
-    if (arPrefix) return `${arPrefix}: ${arSubject}${suffix}`;
-    return `${isolate(`${prefix}:`)} ${arSubject}${suffix}`;
-  }
-
-  return `${isolate(head)}${suffix}`;
+  const { prefix, subject, suffix } = taskTitleParts(title, lang);
+  return prefix === '' ? `${subject}${suffix}` : `${prefix} ${subject}${suffix}`;
 }
 
 // ------------------------------------------------------------- descriptions
@@ -294,11 +319,10 @@ export function localizeTaskDescription(description: string, lang: Lang, ctx: { 
   return s;
 }
 
-// ---------------------------------------------------------- baseline text
+// ---------------------------------------------------------- baseline list
 
 type BaselineExpl = Pick<
   BaselineExplanation,
-  | 'text'
   | 'normalWeekPlannedPoints'
   | 'avgDailyPlannedPoints'
   | 'factor'
@@ -320,26 +344,65 @@ export interface BaselineContext {
   warmup?: string | null | false;
 }
 
-/** The "How this plan is calculated" paragraph; Arabic composes it from the numbers. */
-export function baselineExplanation(expl: BaselineExpl, lang: Lang, ctx: BaselineContext = {}): string {
-  if (lang === 'en') return expl.text;
+export interface BaselinePart {
+  text: string;
+  /** Plan data shown as "(<bdi dir="auto">text</bdi>)" in a nowrap span: the brackets and the name never break across lines. */
+  paren?: boolean;
+}
+
+/**
+ * One short item of the "How this plan is calculated" list. `line` items are
+ * text segments; `formula` items are a label plus a left-to-right formula
+ * (rendered in a nowrap num bdi so it never scrambles inside RTL text).
+ */
+export type BaselineItem = { kind: 'line'; parts: BaselinePart[] } | { kind: 'formula'; label: string; formula: string };
+
+/** fill() variant that substitutes part lists, for the habits clause. */
+function richParts(template: string, parts: Record<string, BaselinePart[]>): BaselinePart[] {
+  const out: BaselinePart[] = [];
+  let last = 0;
+  const re = /\{(\w+)\}/g;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(template)) !== null) {
+    if (m.index > last) out.push({ text: template.slice(last, m.index) });
+    const sub = parts[m[1] as string];
+    if (sub) out.push(...sub);
+    else out.push({ text: m[0] });
+    last = m.index + m[0].length;
+  }
+  if (last < template.length) out.push({ text: template.slice(last) });
+  return out;
+}
+
+/**
+ * The "How this plan is calculated" list: one short item per engine number,
+ * composed from dictionary keys. Rendered by BaselineList in both languages.
+ */
+export function baselineItems(expl: BaselineExpl, lang: Lang, ctx: BaselineContext = {}): BaselineItem[] {
+  const d: Dict = lang === 'ar' ? (ar as unknown as Dict) : en;
   const avg = expl.avgDailyPlannedPoints.toFixed(2);
-  const habits: string[] = [];
-  if (ctx.quranEnabled) habits.push('جلسة قرآن اليوم');
-  if (ctx.warmup !== undefined && ctx.warmup !== false) habits.push(ctx.warmup ? `الإحماء (${isolate(ctx.warmup)})` : 'الإحماء');
-  const clause =
-    habits.length === 2
-      ? `أداء العادتين اليوميتين الأساسيتين فقط (${habits[0]} و${habits[1]}) يجب أن يحافظ على السلسلة`
-      : habits.length === 1
-        ? `أداء العادة اليومية (${habits[0]}) وحدها يجب أن يحافظ على السلسلة`
-        : 'أداء جزء يسير من خطتك كل يوم يجب أن يحافظ على السلسلة';
-  return (
-    `أسبوع عادي (صيام الاثنين والخميس) يخطط ${lri(String(expl.normalWeekPlannedPoints))} نقطة، أي ${lri(avg)} نقطة في اليوم. ` +
-    `الهدف اليومي = ${lri(`round(${expl.factor} x ${avg}) = ${expl.normal}`)}. ` +
-    `هدف يوم الصيام = ${lri(`round(${expl.normal} x ${expl.fastingFactor}) = ${expl.fasting}`)}. أيام الراحة (الوقت المتاح 0) بلا هدف وتتخطاها السلسلة. ` +
-    `لماذا هذا المعامل: في يوم خامل، ${clause}. ` +
-    `كل يوم يحجز ${lri(String(expl.quranReserveMinutes))} دقيقة للقرآن (طول جلسة الحفظ)، وتتقاسم مسارات الدراسة الباقي، فوقت المسار لا يعتمد أبدًا على جلسة قرآن ذلك اليوم. ` +
-    `جلسات المراجعة محدودة عند ${lri(String(expl.effectiveReviewCapMinutes))} دقيقة (سقف المراجعة، لا يتجاوز الحجز أبدًا)؛ الجزء غير المستخدم من الحجز احتياطي اختياري لا يُخطط ولا يُحتسب. ` +
-    `الأيام الماضية تحتفظ بالهدف الذي كان ساريًا فيها، وتغييرات الإعدادات اللاحقة لا تؤثر فيها أبدًا.`
+  const items: BaselineItem[] = [
+    { kind: 'line', parts: [{ text: fill(d['plan.whyNormalWeek'], { total: expl.normalWeekPlannedPoints, avg }) }] },
+    { kind: 'formula', label: d['plan.whyGoalNormal'], formula: `round(${expl.factor} x ${avg}) = ${expl.normal}` },
+    { kind: 'formula', label: d['plan.whyGoalFasting'], formula: `round(${expl.normal} x ${expl.fastingFactor}) = ${expl.fasting}` },
+    { kind: 'line', parts: [{ text: d['plan.whyRest'] }] },
+  ];
+
+  const habits: BaselinePart[][] = [];
+  if (ctx.quranEnabled) habits.push([{ text: d['plan.whyHabitQuran'] }]);
+  if (ctx.warmup !== undefined && ctx.warmup !== false) {
+    habits.push(ctx.warmup ? [{ text: `${d['plan.whyHabitWarmup']} ` }, { text: ctx.warmup, paren: true }] : [{ text: d['plan.whyHabitWarmup'] }]);
+  }
+  items.push(
+    habits.length === 0
+      ? { kind: 'line', parts: [{ text: d['plan.whyFactorNone'] }] }
+      : { kind: 'line', parts: richParts(d[habits.length === 2 ? 'plan.whyFactorTwo' : 'plan.whyFactorOne'], { a: habits[0] ?? [], b: habits[1] ?? [] }) },
   );
+
+  items.push(
+    { kind: 'line', parts: [{ text: tnFor(lang, 'plan.whyReserve', expl.quranReserveMinutes) }] },
+    { kind: 'line', parts: [{ text: tnFor(lang, 'plan.whyCap', expl.effectiveReviewCapMinutes) }] },
+    { kind: 'line', parts: [{ text: d['plan.whyPast'] }] },
+  );
+  return items;
 }
