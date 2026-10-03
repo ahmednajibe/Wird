@@ -4,7 +4,7 @@
 
 @theme inline {
   --font-sans: 'Plus Jakarta Sans Variable', 'IBM Plex Sans Arabic', ui-sans-serif, system-ui, sans-serif;
-  --font-mono: 'JetBrains Mono Variable', ui-monospace, 'SFMono-Regular', monospace;
+  --font-mono: 'JetBrains Mono Variable', 'IBM Plex Sans Arabic', ui-monospace, 'SFMono-Regular', monospace;
   --font-arabic: 'Amiri', 'Traditional Arabic', serif;
 
   --color-bg: var(--bg);

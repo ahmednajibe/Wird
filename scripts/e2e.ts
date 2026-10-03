@@ -393,6 +393,30 @@ async function run(): Promise<void> {
       console.log(`  ${file}`);
       await c.close();
     }
+
+    await check('Arabic screenshots cover every page', async () => {
+      for (const [label, viewport] of sizes) {
+        const arCtx = await browser!.newContext({ viewport, colorScheme: 'dark', reducedMotion: 'reduce', deviceScaleFactor: 1 });
+        await arCtx.addInitScript(() => {
+          try {
+            localStorage.setItem('wird-lang', 'ar');
+          } catch {
+            /* storage unavailable */
+          }
+        });
+        const p = await arCtx.newPage();
+        watch(p);
+        for (const [name, path] of PAGES) {
+          await p.goto(`${base}${path}`);
+          await settle(p);
+          await p.waitForFunction('document.documentElement.dir === "rtl" && document.documentElement.lang === "ar"', undefined, { timeout: 10_000 });
+          const file = join(shotsDir, `${name}-ar-${label}.png`);
+          await p.screenshot({ path: file, fullPage: true });
+          console.log(`  ${file}`);
+        }
+        await arCtx.close();
+      }
+    });
     for (const [label, viewport] of sizes) {
       const c = await browser.newContext({ viewport, colorScheme: 'light', reducedMotion: 'reduce' });
       const p = await c.newPage();

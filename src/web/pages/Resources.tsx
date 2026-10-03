@@ -6,12 +6,15 @@ import { useCatalog, useResources } from '../client/hooks';
 import type { ResourcesResponse } from '../client/types';
 import { AccessBadge } from '../components/TaskCard';
 import { Card, Chip, EmptyState, ErrorState, Skeleton } from '../components/ui/primitives';
+import { useI18n } from '../i18n';
+import { isolate } from '../i18n/engineText';
 import { cn } from '../lib/format';
 import { useTrackMeta } from '../lib/tracks';
 
 type Stream = ResourcesResponse['streams'][number];
 
 function StreamBlock({ s, index }: { s: Stream; index: number }) {
+  const { t, tn } = useI18n();
   const trackMeta = useTrackMeta();
   const meta = trackMeta(s.track, s.stream);
   const I = meta.icon;
@@ -29,14 +32,16 @@ function StreamBlock({ s, index }: { s: Stream; index: number }) {
             <I size={22} aria-hidden />
           </span>
           <div>
-            <h2 className="text-lg font-semibold tracking-tight text-ink">{meta.label}</h2>
-            <p className="text-xs text-muted">{s.resources.length} resources in the plan</p>
+            <h2 className="text-lg font-semibold tracking-tight text-ink rtl:text-right" dir="auto">
+              {meta.label}
+            </h2>
+            <p className="text-xs text-muted">{tn('res.count', s.resources.length)}</p>
           </div>
         </div>
         <div className="flex flex-wrap gap-1.5">
-          {s.counts.owned > 0 && <Chip tone="accent">{s.counts.owned} owned</Chip>}
-          <Chip>{s.counts.free} free</Chip>
-          {s.counts.paid > 0 && <Chip tone="warn">{s.counts.paid} paid</Chip>}
+          {s.counts.owned > 0 && <Chip tone="accent">{t('res.ownedChip', { count: s.counts.owned })}</Chip>}
+          <Chip>{t('res.freeChip', { count: s.counts.free })}</Chip>
+          {s.counts.paid > 0 && <Chip tone="warn">{t('res.paidChip', { count: s.counts.paid })}</Chip>}
         </div>
       </div>
       <ul className="mt-4 divide-y divide-line">
@@ -46,25 +51,31 @@ function StreamBlock({ s, index }: { s: Stream; index: number }) {
               <div className="flex flex-wrap items-center gap-2">
                 {r.url ? (
                   <a href={r.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 font-medium text-ink hover:text-accent-ink">
-                    {r.name}
+                    <bdi dir="auto">{r.name}</bdi>
                     <ArrowSquareOut size={14} className="text-muted" aria-hidden />
                   </a>
                 ) : (
-                  <span className="font-medium text-ink">{r.name}</span>
+                  <span className="font-medium text-ink" dir="auto">
+                    {r.name}
+                  </span>
                 )}
                 <AccessBadge access={r.access} />
               </div>
-              {r.note && <p className="mt-0.5 text-xs text-muted">{r.note}</p>}
+              {r.note && (
+                <p className="mt-0.5 text-xs text-muted rtl:text-right" dir="auto">
+                  {r.note}
+                </p>
+              )}
             </div>
             <div className="flex shrink-0 flex-wrap gap-1.5 sm:max-w-[50%] sm:justify-end">
               {r.modules.map((m) => (
                 <span
                   key={m.id}
                   className={cn('inline-flex h-6 items-center rounded-full border px-2 text-xs', m.completed ? 'border-accent/25 text-accent-ink' : 'border-line text-muted')}
-                  title={`${m.phaseTitle}${m.estimateUncertain ? '. Estimate uncertain' : ''}`}
+                  title={`${m.phaseTitle}${m.estimateUncertain ? t('res.estimateSuffix') : ''}`}
                 >
-                  {m.title}
-                  {m.estimateUncertain && <Info size={12} className="ms-1 text-warn" aria-label="Estimate uncertain" />}
+                  <bdi dir="auto">{m.title}</bdi>
+                  {m.estimateUncertain && <Info size={12} className="ms-1 text-warn" aria-label={t('res.estimateAria')} />}
                 </span>
               ))}
             </div>
@@ -74,20 +85,22 @@ function StreamBlock({ s, index }: { s: Stream; index: number }) {
       {s.unscheduled.length > 0 && (
         <div className="mt-4 rounded-2xl border border-dashed border-line-strong p-4">
           <h3 className="flex items-center gap-1.5 text-sm font-semibold text-ink">
-            <Tray size={16} aria-hidden /> Owned, not scheduled
+            <Tray size={16} aria-hidden /> {t('res.unscheduled')}
           </h3>
           <ul className="mt-2 flex flex-col gap-2">
             {s.unscheduled.map((r) => (
               <li key={r.url ?? r.name} className="flex flex-wrap items-center gap-2 text-sm">
                 {r.url ? (
-                  <a href={r.url} target="_blank" rel="noopener noreferrer" className="font-medium text-ink hover:text-accent-ink">
+                  <a href={r.url} target="_blank" rel="noopener noreferrer" className="font-medium text-ink hover:text-accent-ink" dir="auto">
                     {r.name}
                   </a>
                 ) : (
-                  <span className="font-medium text-ink">{r.name}</span>
+                  <span className="font-medium text-ink" dir="auto">
+                    {r.name}
+                  </span>
                 )}
                 <AccessBadge access={r.access} />
-                {r.note && <span className="text-xs text-muted">Note: {r.note}</span>}
+                {r.note && <span className="text-xs text-muted">{t('res.note', { note: isolate(r.note) })}</span>}
               </li>
             ))}
           </ul>
@@ -101,6 +114,7 @@ function StreamBlock({ s, index }: { s: Stream; index: number }) {
 export function ResourcesView() {
   const q = useResources();
   const catalog = useCatalog();
+  const { t } = useI18n();
   return (
     <div className="flex flex-col gap-6">
       {q.isPending || catalog.isPending ? (
@@ -115,18 +129,18 @@ export function ResourcesView() {
         <Card>
           <EmptyState
             icon={Books}
-            title="No study plan yet"
-            body="Import a plan to see the resources of its tracks here."
+            title={t('today.noPlanTitle')}
+            body={t('res.noPlanBody')}
             action={
               <Link to="/import" className="text-accent-ink underline underline-offset-2">
-                Import a plan
+                {t('route.import')}
               </Link>
             }
           />
         </Card>
       ) : q.data.streams.length === 0 ? (
         <Card>
-          <EmptyState icon={Books} title="No resources" />
+          <EmptyState icon={Books} title={t('res.none')} />
         </Card>
       ) : (
         <>

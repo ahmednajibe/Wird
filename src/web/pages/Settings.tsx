@@ -4,21 +4,22 @@ import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { Link } from 'react-router';
 import { toHijri } from '../../shared/calendar.js';
 import { buildCatalog } from '../../shared/catalog.js';
-import { today as cairoToday } from '../../shared/dates.js';
+import { addDays, today as cairoToday } from '../../shared/dates.js';
 import { settingsSchema } from '../../shared/settings.js';
-import { computeBaseline } from '../../shared/streak.js';
+import { computeBaseline, type BaselineExplanation } from '../../shared/streak.js';
 import { api, ApiError, errorMessage } from '../client/client';
 import { useCatalog, useSaveSettings, useSettings } from '../client/hooks';
 import type { CatalogResponse, Settings } from '../client/types';
 import { Button } from '../components/ui/Button';
 import { Card, Disclosure, ErrorState, PageHeader, Segmented, Skeleton, Switch } from '../components/ui/primitives';
 import { useToast } from '../components/ui/Toast';
-import { useI18n, type Lang } from '../i18n';
-import { hijriLabel } from '../i18n/engineText';
-import { cn, formatLongDate, formatMediumDate } from '../lib/format';
+import { useI18n, type Lang, type StringKey } from '../i18n';
+import { baselineExplanation, dayName, hijriLabel } from '../i18n/engineText';
+import { cn, formatLongDate, formatMediumDate, formatMinutes } from '../lib/format';
 import { useTheme, type ThemePref } from '../lib/theme';
 
-const DOW = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+/** Fixed Sunday-start week used to render weekday names (dow index -> date). */
+const DOW_EPOCH = '2024-01-07';
 type Errors = Record<string, string>;
 
 /** Error paths whose fields live inside the Advanced disclosure. */
@@ -103,14 +104,23 @@ function NumberField({
   );
 }
 
-function friendly(message: string): string {
-  if (/expected number, received NaN|Invalid input: expected number/i.test(message)) return 'Enter a number.';
-  if (/expected int|integer/i.test(message)) return 'Use a whole number.';
+type Translate = (key: StringKey, vars?: Record<string, string | number>) => string;
+
+function friendly(message: string, t: Translate): string {
+  if (/expected number, received NaN|Invalid input: expected number/i.test(message)) return t('settings.errNumber');
+  if (/expected int|integer/i.test(message)) return t('settings.errInt');
   const big = message.match(/<=\s*([\d.]+)/);
-  if (big) return `Must be at most ${big[1]}.`;
+  if (big) return t('settings.errMax', { max: big[1] ?? '' });
   const small = message.match(/>=\s*([-\d.]+)/);
-  if (small) return `Must be at least ${small[1]}.`;
+  if (small) return t('settings.errMin', { min: small[1] ?? '' });
   return message;
+}
+
+/** Warm-up context for the baseline paragraph, same shape Plan.tsx passes. */
+function warmupCtx(s: Settings, catalog: CatalogResponse): string | null | false {
+  const slot = s.weeklyTemplate.flat().find((x) => x.role === 'warmup');
+  if (!slot) return false;
+  return catalog.data.tracks.find((t) => t.id === slot.track)?.streams.find((st) => st.id === slot.stream)?.warmupTitle ?? null;
 }
 
 function editable(s: Settings) {
@@ -127,6 +137,7 @@ function editable(s: Settings) {
 
 function PlanSection({ catalog }: { catalog: CatalogResponse }) {
   const { toast } = useToast();
+  const { t } = useI18n();
   const [downloading, setDownloading] = useState(false);
   const download = async () => {
     setDownloading(true);
@@ -140,26 +151,28 @@ function PlanSection({ catalog }: { catalog: CatalogResponse }) {
       a.click();
       URL.revokeObjectURL(url);
     } catch (err) {
-      toast({ tone: 'error', title: 'Could not download the plan', body: errorMessage(err) });
+      toast({ tone: 'error', title: t('settings.errDownload'), body: errorMessage(err) });
     } finally {
       setDownloading(false);
     }
   };
   return (
-    <Section icon={FileArrowUp} title="Your plan" description="The tracks, modules and settings this install runs on.">
+    <Section icon={FileArrowUp} title={t('settings.plan')} description={t('settings.planDesc')}>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="text-sm">
-          <p className="font-medium text-ink">{catalog.planName ?? 'No plan imported yet'}</p>
-          {catalog.importedAt && <p className="text-xs text-muted">Imported {formatMediumDate(catalog.importedAt.slice(0, 10))}</p>}
+          <p className="font-medium text-ink" dir="auto">
+            {catalog.planName ?? t('settings.noPlan')}
+          </p>
+          {catalog.importedAt && <p className="text-xs text-muted">{t('settings.imported', { date: formatMediumDate(catalog.importedAt.slice(0, 10)) })}</p>}
         </div>
         <div className="flex flex-wrap gap-2">
           <Link to="/import">
             <Button variant="secondary" size="sm" icon={FileArrowUp}>
-              Import or update plan
+              {t('settings.importUpdate')}
             </Button>
           </Link>
           <Button variant="ghost" size="sm" icon={Download} onClick={() => void download()} loading={downloading}>
-            Download current plan
+            {t('settings.download')}
           </Button>
         </div>
       </div>
@@ -170,7 +183,7 @@ function PlanSection({ catalog }: { catalog: CatalogResponse }) {
 function SettingsForm({ initial, catalog }: { initial: Settings; catalog: CatalogResponse }) {
   const [draft, setDraft] = useState<Settings>(initial);
   const [errors, setErrors] = useState<Errors>({});
-  const [savedText, setSavedText] = useState<string | null>(null);
+  const [savedExpl, setSavedExpl] = useState<{ expl: BaselineExplanation; quranEnabled: boolean; warmup: string | null | false } | null>(null);
   const [advancedOpen, setAdvancedOpen] = useState(false);
   const save = useSaveSettings();
   const { toast } = useToast();
@@ -191,28 +204,28 @@ function SettingsForm({ initial, catalog }: { initial: Settings; catalog: Catalo
   const setRule = (k: keyof Settings['fastingRules'], v: boolean) => setDraft((d) => ({ ...d, fastingRules: { ...d.fastingRules, [k]: v } }));
 
   const submit = async () => {
-    setSavedText(null);
+    setSavedExpl(null);
     if (!parsed.success) {
       const e: Errors = {};
-      for (const i of parsed.error.issues) e[i.path.join('.')] = friendly(i.message);
+      for (const i of parsed.error.issues) e[i.path.join('.')] = friendly(i.message, t);
       setErrors(e);
       if (Object.keys(e).some(inAdvanced)) setAdvancedOpen(true);
-      toast({ tone: 'error', title: 'Check the highlighted fields' });
+      toast({ tone: 'error', title: t('settings.errCheck') });
       return;
     }
     setErrors({});
     try {
       const res = await save.mutateAsync(editable(parsed.data));
-      setSavedText(computeBaseline(res.settings, engineCatalog).text);
-      toast({ title: 'Settings saved', body: res.regenerated ? 'The plan from today was refreshed.' : 'No plan changes were needed.' });
+      setSavedExpl({ expl: computeBaseline(res.settings, engineCatalog), quranEnabled: res.settings.quran.enabled, warmup: warmupCtx(res.settings, catalog) });
+      toast({ title: t('settings.saved'), body: res.regenerated ? t('settings.savedRegen') : t('settings.savedNoChange') });
     } catch (err) {
       if (err instanceof ApiError && err.details.length > 0) {
         const e: Errors = {};
-        for (const d of err.details) e[d.path] = friendly(d.message);
+        for (const d of err.details) e[d.path] = friendly(d.message, t);
         setErrors(e);
         if (Object.keys(e).some(inAdvanced)) setAdvancedOpen(true);
       }
-      toast({ tone: 'error', title: 'Could not save settings', body: errorMessage(err) });
+      toast({ tone: 'error', title: t('settings.errSave'), body: errorMessage(err) });
     }
   };
 
@@ -222,15 +235,15 @@ function SettingsForm({ initial, catalog }: { initial: Settings; catalog: Catalo
     <div className="flex flex-col gap-5">
       <PlanSection catalog={catalog} />
 
-      <Section icon={Clock} title="Capacity per weekday" description="Net focused minutes per day, including the Quran session.">
+      <Section icon={Clock} title={t('settings.capacity')} description={t('settings.capacityDesc')}>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 xl:grid-cols-7">
           {draft.capacityByDow.map((c, i) => (
             <NumberField
               key={i}
               id={`cap-${i}`}
-              label={DOW[i] as string}
+              label={dayName(addDays(DOW_EPOCH, i), lang)}
               value={c}
-              suffix="min"
+              suffix={t('unit.min')}
               error={err(`capacityByDow.${i}`)}
               onChange={(n) => set('capacityByDow', draft.capacityByDow.map((x, j) => (j === i ? n : x)))}
             />
@@ -239,49 +252,49 @@ function SettingsForm({ initial, catalog }: { initial: Settings; catalog: Catalo
       </Section>
 
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
-        <Section icon={Moon} title="Fasting" description="Fasting days get less planned time and a lower daily goal.">
+        <Section icon={Moon} title={t('settings.fasting')} description={t('settings.fastingDesc')}>
           <NumberField
             id="fasting-pct"
-            label="Time reduction on fasting days"
+            label={t('settings.fastingReduction')}
             value={draft.fastingReductionPct}
-            suffix="%"
+            suffix={t('unit.pct')}
             error={err('fastingReductionPct')}
-            hint={`A 120 min day becomes ${Math.round(120 * (1 - (Number.isFinite(draft.fastingReductionPct) ? draft.fastingReductionPct : 0) / 100))} min.`}
+            hint={t('settings.fastingHint', { base: formatMinutes(120), result: formatMinutes(Math.round(120 * (1 - (Number.isFinite(draft.fastingReductionPct) ? draft.fastingReductionPct : 0) / 100))) })}
             onChange={(n) => set('fastingReductionPct', n)}
           />
           <div className="mt-4 divide-y divide-line rounded-[10px] border border-line px-3">
-            <Switch checked={draft.fastingRules.monday} onChange={(v) => setRule('monday', v)} label="Mondays" />
-            <Switch checked={draft.fastingRules.thursday} onChange={(v) => setRule('thursday', v)} label="Thursdays" />
-            <Switch checked={draft.fastingRules.whiteDays} onChange={(v) => setRule('whiteDays', v)} label="White Days" description="13th, 14th and 15th of each Hijri month" />
-            <Switch checked={draft.fastingRules.ramadan} onChange={(v) => setRule('ramadan', v)} label="Ramadan" />
-            <Switch checked={draft.fastingRules.dhulHijjahFirstNine} onChange={(v) => setRule('dhulHijjahFirstNine', v)} label="First 9 days of Dhu al-Hijjah" />
+            <Switch checked={draft.fastingRules.monday} onChange={(v) => setRule('monday', v)} label={t('settings.mon')} />
+            <Switch checked={draft.fastingRules.thursday} onChange={(v) => setRule('thursday', v)} label={t('settings.thu')} />
+            <Switch checked={draft.fastingRules.whiteDays} onChange={(v) => setRule('whiteDays', v)} label={t('settings.whiteDays')} description={t('settings.whiteDaysDesc')} />
+            <Switch checked={draft.fastingRules.ramadan} onChange={(v) => setRule('ramadan', v)} label={t('settings.ramadan')} />
+            <Switch checked={draft.fastingRules.dhulHijjahFirstNine} onChange={(v) => setRule('dhulHijjahFirstNine', v)} label={t('settings.dhulHijjah')} />
           </div>
-          <p className="mt-3 text-xs text-muted">Eid days and the days of Tashreeq are never fasting days.</p>
+          <p className="mt-3 text-xs text-muted">{t('settings.eidNote')}</p>
         </Section>
 
-        <Section icon={BookOpen} title="Quran" description="How long sessions take. Memorize minutes adapt to your real average after a few sessions.">
+        <Section icon={BookOpen} title={t('nav.quran')} description={t('settings.quranDesc')}>
           <div className="rounded-[10px] border border-line px-3">
             <Switch
               checked={draft.quran.enabled}
               onChange={(v) => setQuran('enabled', v)}
-              label="Quran sessions"
-              description="When off, no Quran sessions are planned and all study time goes to your tracks. Your Quran history is kept."
+              label={t('settings.quranSessions')}
+              description={t('settings.quranSessionsDesc')}
               id="quran-enabled"
             />
           </div>
           <div className={cn(!draft.quran.enabled && 'pointer-events-none opacity-45')} aria-disabled={!draft.quran.enabled}>
             <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
-              <NumberField id="q-mem" label="Memorize session" value={draft.quran.memorizeMinutes} suffix="min" error={err('quran.memorizeMinutes')} onChange={(n) => setQuran('memorizeMinutes', n)} />
+              <NumberField id="q-mem" label={t('settings.memorizeSession')} value={draft.quran.memorizeMinutes} suffix={t('unit.min')} error={err('quran.memorizeMinutes')} onChange={(n) => setQuran('memorizeMinutes', n)} />
             </div>
             <div className="mt-4">
-              <div className="mb-1.5 text-sm font-medium text-ink">Memorization order</div>
+              <div className="mb-1.5 text-sm font-medium text-ink">{t('quran.order')}</div>
               <Segmented<Settings['quran']['memorizationOrder']>
-                label="Memorization order"
+                label={t('quran.order')}
                 value={draft.quran.memorizationOrder}
                 onChange={(v) => setQuran('memorizationOrder', v)}
                 options={[
-                  { value: 'juz30-29-then-forward', label: 'Juz 30, 29, then from the start' },
-                  { value: 'forward', label: 'From the start' },
+                  { value: 'juz30-29-then-forward', label: t('settings.orderJuz') },
+                  { value: 'forward', label: t('settings.orderFwd') },
                 ]}
               />
             </div>
@@ -290,15 +303,15 @@ function SettingsForm({ initial, catalog }: { initial: Settings; catalog: Catalo
       </div>
 
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
-        <Section icon={CalendarBlank} title="Hijri date" description="Shift the calculated Hijri date to match the local moon sighting.">
+        <Section icon={CalendarBlank} title={t('settings.hijri')} description={t('settings.hijriDesc')}>
           <Segmented<number>
-            label="Hijri offset in days"
+            label={t('settings.hijriOffset')}
             value={draft.hijriOffsetDays}
             onChange={(v) => set('hijriOffsetDays', v)}
-            options={[-2, -1, 0, 1, 2].map((v) => ({ value: v, label: <span className="num">{v > 0 ? `+${v}` : v}</span> }))}
+            options={[-2, -1, 0, 1, 2].map((v) => ({ value: v, label: <bdi dir="ltr" className="num">{v > 0 ? `+${v}` : v}</bdi> }))}
           />
           <div className="mt-4 rounded-2xl bg-surface-2 p-4">
-            <div className="text-xs text-muted">Today with this offset</div>
+            <div className="text-xs text-muted">{t('settings.hijriToday')}</div>
             <div className="mt-1 text-lg font-semibold text-ink" data-testid="hijri-preview">
               {hijriLabel(toHijri(today, draft.hijriOffsetDays), lang)}
             </div>
@@ -337,57 +350,57 @@ function SettingsForm({ initial, catalog }: { initial: Settings; catalog: Catalo
       </div>
 
       <Disclosure
-        title="Advanced"
-        subtitle="Fine-tuning for the daily goal, Quran review timing and the timezone. The defaults work for most people."
+        title={t('settings.advanced')}
+        subtitle={t('settings.advancedDesc')}
         icon={SlidersHorizontal}
         open={advancedOpen}
         onOpenChange={setAdvancedOpen}
       >
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           <div>
-            <h3 className="label">Daily goal</h3>
-            <p className="mt-1.5 text-sm text-muted">The goal is a share of an average planned day. Fasting days use a smaller share.</p>
+            <h3 className="label">{t('settings.dailyGoal')}</h3>
+            <p className="mt-1.5 text-sm text-muted">{t('settings.dailyGoalDesc')}</p>
             <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <NumberField id="b-factor" label="Baseline factor" step={0.01} value={draft.baseline.factor} error={err('baseline.factor')} hint="0 to 2" onChange={(n) => setBaseline('factor', n)} />
+              <NumberField id="b-factor" label={t('settings.baselineFactor')} step={0.01} value={draft.baseline.factor} error={err('baseline.factor')} hint={t('settings.range02')} onChange={(n) => setBaseline('factor', n)} />
               <NumberField
                 id="b-fasting"
-                label="Fasting factor"
+                label={t('settings.fastingFactor')}
                 step={0.05}
                 value={draft.baseline.fastingFactor}
                 error={err('baseline.fastingFactor')}
-                hint="0 to 1"
+                hint={t('settings.range01')}
                 onChange={(n) => setBaseline('fastingFactor', n)}
               />
             </div>
             <div className="mt-4 grid grid-cols-2 gap-2">
               <div className="rounded-xl bg-surface-2 p-3">
-                <div className="text-xs text-muted">Normal day goal</div>
+                <div className="text-xs text-muted">{t('settings.normalGoal')}</div>
                 <div className="num text-2xl font-semibold text-ink" data-testid="preview-normal">
                   {preview ? preview.normal : '-'}
                 </div>
               </div>
               <div className="rounded-xl bg-surface-2 p-3">
-                <div className="text-xs text-muted">Fasting day goal</div>
+                <div className="text-xs text-muted">{t('settings.fastingGoal')}</div>
                 <div className="num text-2xl font-semibold text-ink">{preview ? preview.fasting : '-'}</div>
               </div>
             </div>
-            <p className="mt-2 text-xs text-muted">Past days keep the goal they had. Changes only apply from today.</p>
+            <p className="mt-2 text-xs text-muted">{t('settings.pastKeep')}</p>
           </div>
 
           <div className={cn(!draft.quran.enabled && 'pointer-events-none opacity-45')} aria-disabled={!draft.quran.enabled}>
-            <h3 className="label">Quran review</h3>
-            <p className="mt-1.5 text-sm text-muted">How long a review page takes and the most review minutes a day can plan.</p>
+            <h3 className="label">{t('settings.quranReview')}</h3>
+            <p className="mt-1.5 text-sm text-muted">{t('settings.quranReviewDesc')}</p>
             <div className="mt-4 grid grid-cols-2 gap-3">
-              <NumberField id="q-page" label="Review per page" value={draft.quran.minutesPerReviewPage} suffix="min" error={err('quran.minutesPerReviewPage')} onChange={(n) => setQuran('minutesPerReviewPage', n)} />
-              <NumberField id="q-cap" label="Review cap" value={draft.quran.reviewCapMinutes} suffix="min" error={err('quran.reviewCapMinutes')} onChange={(n) => setQuran('reviewCapMinutes', n)} />
+              <NumberField id="q-page" label={t('settings.reviewPerPage')} value={draft.quran.minutesPerReviewPage} suffix={t('unit.min')} error={err('quran.minutesPerReviewPage')} onChange={(n) => setQuran('minutesPerReviewPage', n)} />
+              <NumberField id="q-cap" label={t('settings.reviewCap')} value={draft.quran.reviewCapMinutes} suffix={t('unit.min')} error={err('quran.reviewCapMinutes')} onChange={(n) => setQuran('reviewCapMinutes', n)} />
             </div>
           </div>
 
           <div>
             <label htmlFor="timezone" className="label block">
-              Timezone
+              {t('settings.timezone')}
             </label>
-            <p className="mt-1.5 text-sm text-muted">IANA name used for &apos;today&apos;, greetings and week boundaries.</p>
+            <p className="mt-1.5 text-sm text-muted">{t('settings.timezoneDesc')}</p>
             <input
               id="timezone"
               data-testid="field-timezone"
@@ -403,19 +416,21 @@ function SettingsForm({ initial, catalog }: { initial: Settings; catalog: Catalo
                 {err('timezone')}
               </p>
             ) : (
-              <p className="mt-1 text-xs text-muted">For example Africa/Cairo or Europe/Berlin.</p>
+              <p className="mt-1 text-xs text-muted">{t('settings.tzHint')}</p>
             )}
           </div>
         </div>
       </Disclosure>
 
       <AnimatePresence>
-        {savedText && (
+        {savedExpl && (
           <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="card flex items-start gap-3 border-accent/30 p-5" data-testid="saved-explanation">
             <CheckCircle size={22} weight="fill" className="mt-0.5 shrink-0 text-accent-ink" aria-hidden />
             <div>
-              <p className="font-semibold text-ink">Saved. Here is how your daily goal works now</p>
-              <p className="mt-1 text-sm leading-relaxed text-muted">{savedText}</p>
+              <p className="font-semibold text-ink">{t('settings.savedTitle')}</p>
+              <p className="mt-1 text-sm leading-relaxed text-muted">
+                {baselineExplanation(savedExpl.expl, lang, { quranEnabled: savedExpl.quranEnabled, warmup: savedExpl.warmup })}
+              </p>
             </div>
           </motion.div>
         )}
@@ -431,7 +446,7 @@ function SettingsForm({ initial, catalog }: { initial: Settings; catalog: Catalo
             transition={{ type: 'spring', stiffness: 420, damping: 34 }}
             className="sticky bottom-[calc(80px+env(safe-area-inset-bottom))] z-20 flex items-center justify-end gap-2 rounded-full border border-line-strong bg-surface/95 p-2 ps-5 shadow-pop backdrop-blur-md md:bottom-4"
           >
-            <span className="me-auto text-sm text-muted">Unsaved changes</span>
+            <span className="me-auto text-sm text-muted">{t('settings.unsaved')}</span>
             <Button
               variant="ghost"
               onClick={() => {
@@ -439,15 +454,15 @@ function SettingsForm({ initial, catalog }: { initial: Settings; catalog: Catalo
                 setErrors({});
               }}
             >
-              Discard
+              {t('settings.discard')}
             </Button>
             <Button variant="primary" icon={FloppyDisk} onClick={() => void submit()} loading={save.isPending} data-testid="settings-save">
-              Save changes
+              {t('settings.save')}
             </Button>
           </motion.div>
         ) : (
           <motion.p key="saved" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-center gap-1.5 px-1 text-sm text-muted">
-            <CheckCircle size={16} className="text-accent-ink" aria-hidden /> All changes saved
+            <CheckCircle size={16} className="text-accent-ink" aria-hidden /> {t('settings.allSaved')}
           </motion.p>
         )}
       </AnimatePresence>
@@ -458,9 +473,10 @@ function SettingsForm({ initial, catalog }: { initial: Settings; catalog: Catalo
 export function SettingsPage() {
   const q = useSettings();
   const catalog = useCatalog();
+  const { t } = useI18n();
   return (
     <div className="flex flex-col gap-6">
-      <PageHeader title="Settings" subtitle="Saving refreshes the plan from today. Past days and their streak status never change." />
+      <PageHeader title={t('nav.settings')} subtitle={t('settings.subtitle')} />
       {q.isPending || catalog.isPending ? (
         <div className="flex flex-col gap-4">
           <Skeleton className="h-40 rounded-2xl" />
