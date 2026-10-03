@@ -1,5 +1,4 @@
 import {
-  Books,
   BookOpen,
   CalendarDots,
   ChartBar,
@@ -10,7 +9,6 @@ import {
   Plus,
   Sun,
   SunHorizon,
-  Upload,
   type Icon,
 } from '@phosphor-icons/react';
 import { motion } from 'motion/react';
@@ -37,10 +35,13 @@ const NAV: NavItem[] = [
   { to: '/tracks', label: 'Tracks', icon: Path, mobile: true },
   { to: '/quran', label: 'Quran', icon: BookOpen, mobile: true, quran: true },
   { to: '/stats', label: 'Stats', icon: ChartBar, mobile: true },
-  { to: '/resources', label: 'Resources', icon: Books, mobile: false },
-  { to: '/import', label: 'Import', icon: Upload, mobile: false },
   { to: '/settings', label: 'Settings', icon: GearSix, mobile: false },
 ];
+
+/** Titles for routed pages that are not in NAV (mobile top bar). */
+const ROUTE_TITLES: Record<string, string> = {
+  '/import': 'Import a plan',
+};
 
 function navItems(quranEnabled: boolean): NavItem[] {
   return NAV.filter((n) => !n.quran || quranEnabled);
@@ -134,33 +135,40 @@ function Sidebar() {
         <kbd className="num rounded-md bg-on-accent/15 px-1.5 text-[11px] font-semibold">N</kbd>
       </Button>
       <nav aria-label="Main" className="flex flex-col gap-1">
-        {items.map((item) => (
-          <NavLink
-            key={item.to}
-            to={item.to}
-            end={item.to === '/'}
-            className={({ isActive }) =>
-              cn(
-                'relative flex h-10 items-center gap-3 rounded-full px-3.5 text-sm font-medium transition-colors',
-                isActive ? 'text-ink' : 'text-muted hover:bg-surface-2/70 hover:text-ink',
-              )
-            }
-          >
-            {({ isActive }) => (
-              <>
-                {isActive && (
-                  <motion.span
-                    layoutId="nav-active"
-                    className="absolute inset-0 rounded-full border border-line-strong bg-surface-2"
-                    transition={{ type: 'spring', stiffness: 500, damping: 38 }}
-                  />
-                )}
-                <item.icon size={19} weight={isActive ? 'fill' : 'regular'} className={cn('relative', isActive && 'text-accent-ink')} aria-hidden />
-                <span className="relative">{item.label}</span>
-              </>
-            )}
-          </NavLink>
-        ))}
+        {items.map((item) => {
+          // Import lives under Settings; visiting it marks Settings active.
+          const viaSettings = item.to === '/settings' && location.pathname === '/import';
+          return (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              end={item.to === '/'}
+              className={({ isActive }) =>
+                cn(
+                  'relative flex h-10 items-center gap-3 rounded-full px-3.5 text-sm font-medium transition-colors',
+                  isActive || viaSettings ? 'text-ink' : 'text-muted hover:bg-surface-2/70 hover:text-ink',
+                )
+              }
+            >
+              {({ isActive: navActive }) => {
+                const isActive = navActive || viaSettings;
+                return (
+                  <>
+                    {isActive && (
+                      <motion.span
+                        layoutId="nav-active"
+                        className="absolute inset-0 rounded-full border border-line-strong bg-surface-2"
+                        transition={{ type: 'spring', stiffness: 500, damping: 38 }}
+                      />
+                    )}
+                    <item.icon size={19} weight={isActive ? 'fill' : 'regular'} className={cn('relative', isActive && 'text-accent-ink')} aria-hidden />
+                    <span className="relative">{item.label}</span>
+                  </>
+                );
+              }}
+            </NavLink>
+          );
+        })}
       </nav>
       <div className="mt-auto flex flex-col gap-3">
         {location.pathname !== '/' && <SidebarStatus />}
@@ -180,17 +188,14 @@ function Sidebar() {
 function MobileTopBar() {
   const location = useLocation();
   const current = NAV.find((n) => (n.to === '/' ? location.pathname === '/' : location.pathname.startsWith(n.to)));
-  // NB: NAV here only labels the top bar; hidden nav entries still get a title.
+  const title = current?.label ?? ROUTE_TITLES[location.pathname] ?? 'Wird';
   return (
     <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-line bg-bg/85 px-4 backdrop-blur-md md:hidden">
       <div className="flex items-center gap-2">
         <img src="/favicon.svg" width={26} height={26} alt="" aria-hidden />
-        <span className="text-[15px] font-bold tracking-tight">{current?.label ?? 'Wird'}</span>
+        <span className="text-[15px] font-bold tracking-tight">{title}</span>
       </div>
       <div className="flex items-center">
-        <NavLink to="/resources" aria-label="Resources" className={({ isActive }) => cn('inline-flex size-10 items-center justify-center rounded-full', isActive ? 'text-accent-ink' : 'text-muted')}>
-          <Books size={20} aria-hidden />
-        </NavLink>
         <NavLink to="/settings" aria-label="Settings" className={({ isActive }) => cn('inline-flex size-10 items-center justify-center rounded-full', isActive ? 'text-accent-ink' : 'text-muted')}>
           <GearSix size={20} aria-hidden />
         </NavLink>

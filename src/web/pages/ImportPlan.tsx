@@ -1,7 +1,7 @@
-import { ArrowRight, CheckCircle, ClipboardText, FileArrowUp, Info, WarningCircle } from '@phosphor-icons/react';
+import { ArrowRight, CaretLeft, CheckCircle, ClipboardText, FileArrowUp, Info, WarningCircle } from '@phosphor-icons/react';
 import { motion } from 'motion/react';
 import { useState } from 'react';
-import { useNavigate } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 import { api, ApiError, errorMessage } from '../client/client';
 import { useCatalog, useCommitImport } from '../client/hooks';
 import type { ChangeCounts, IdReuse, ImportMode, ImportPreview, PackIssue } from '../client/types';
@@ -197,7 +197,15 @@ export function ImportPlanPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <PageHeader title="Import a plan" subtitle="A plan.json file describes your tracks, streams, modules and settings. Preview it before anything changes." />
+      <PageHeader
+        title="Import a plan"
+        subtitle="A plan.json file describes your tracks, streams, modules and settings. Preview it before anything changes."
+        eyebrow={
+          <Link to="/settings" className="inline-flex items-center gap-1 transition-colors hover:text-ink">
+            <CaretLeft size={14} aria-hidden /> Back to Settings
+          </Link>
+        }
+      />
 
       <Card className="flex flex-col gap-3 p-5 sm:p-6">
         <h2 className="text-base font-semibold tracking-tight text-ink">1. Write plan.json with an AI assistant</h2>

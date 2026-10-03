@@ -153,7 +153,7 @@ function PlanSection({ catalog }: { catalog: CatalogResponse }) {
         <div className="flex flex-wrap gap-2">
           <Link to="/import">
             <Button variant="secondary" size="sm" icon={FileArrowUp}>
-              Import a plan
+              Import or update plan
             </Button>
           </Link>
           <Button variant="ghost" size="sm" icon={Download} onClick={() => void download()} loading={downloading}>
@@ -217,6 +217,8 @@ function SettingsForm({ initial, catalog }: { initial: Settings; catalog: Catalo
 
   return (
     <div className="flex flex-col gap-5">
+      <PlanSection catalog={catalog} />
+
       <Section icon={Clock} title="Capacity per weekday" description="Net focused minutes per day, including the Quran session.">
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 xl:grid-cols-7">
           {draft.capacityByDow.map((c, i) => (
@@ -386,9 +388,6 @@ function SettingsForm({ initial, catalog }: { initial: Settings; catalog: Catalo
           </div>
         </div>
       </Disclosure>
-
-      <PlanSection catalog={catalog} />
-
 
       <AnimatePresence>
         {savedText && (

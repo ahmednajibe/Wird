@@ -1,4 +1,4 @@
-import { ArrowCounterClockwise, CalendarCheck, CheckCircle, Flag, Info, Path, Target } from '@phosphor-icons/react';
+import { ArrowCounterClockwise, CalendarCheck, CaretDown, CheckCircle, Flag, Path, Target } from '@phosphor-icons/react';
 import { motion } from 'motion/react';
 import { useState } from 'react';
 import { Link, useSearchParams } from 'react-router';
@@ -8,12 +8,13 @@ import type { StreamProjection, TrackModule, TrackStreamGroup } from '../client/
 import { ResourceLinks } from '../components/TaskCard';
 import { Button } from '../components/ui/Button';
 import { ConfirmDialog } from '../components/ui/Dialog';
-import { Card, Chip, EmptyState, ErrorState, PageHeader, ProgressBar, Skeleton } from '../components/ui/primitives';
+import { Card, Chip, EmptyState, ErrorState, PageHeader, ProgressBar, Segmented, Skeleton } from '../components/ui/primitives';
 import { useToast } from '../components/ui/Toast';
 import { cn, formatHours, formatMediumDate } from '../lib/format';
 import { useTrackMeta } from '../lib/tracks';
+import { ResourcesView } from './Resources';
 
-function PhaseTimeline({ group, projection, color }: { group: TrackStreamGroup; projection: StreamProjection | null; color: string }) {
+function PhaseTimeline({ group, projection, color, onSelect }: { group: TrackStreamGroup; projection: StreamProjection | null; color: string; onSelect: (phaseId: string) => void }) {
   const currentPhase = group.phases.find((p) => p.modules.some((m) => m.isCurrent))?.id;
   return (
     <ol className="scrollbar-thin -mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
@@ -24,29 +25,32 @@ function PhaseTimeline({ group, projection, color }: { group: TrackStreamGroup; 
         const credited = p.modules.reduce((a, m) => a + (m.progress.completed ? m.estMinutes : Math.min(m.progress.creditedMinutes, m.estMinutes)), 0);
         const est = p.modules.reduce((a, m) => a + m.estMinutes, 0);
         return (
-          <li
-            key={p.id}
-            className={cn(
-              'relative flex min-w-[180px] flex-1 flex-col gap-2 rounded-2xl border p-3',
-              current ? 'border-line-strong bg-surface-2' : 'border-line bg-surface-2/40',
-            )}
-          >
-            <div className="flex items-center gap-2">
-              <span
-                className={cn('num inline-flex size-6 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold', done ? 'text-on-accent' : 'text-ink')}
-                style={{ background: done ? color : 'var(--surface-3)' }}
-              >
-                {done ? <CheckCircle size={14} weight="fill" aria-hidden /> : i + 1}
-              </span>
-              <span className="truncate text-sm font-semibold text-ink" title={p.title}>
-                {p.title}
-              </span>
-            </div>
-            <ProgressBar value={credited} max={est} height={5} color={color} label={`${p.title} progress`} />
-            <div className="flex justify-between text-[11px] text-muted">
-              <span>{done ? 'Done' : current ? 'In progress' : 'Up next'}</span>
-              <span className="num">{done ? '' : pp?.projectedCompletionDate ? formatMediumDate(pp.projectedCompletionDate) : 'No date yet'}</span>
-            </div>
+          <li key={p.id} className="relative flex min-w-[180px] flex-1">
+            <button
+              type="button"
+              onClick={() => onSelect(p.id)}
+              className={cn(
+                'flex w-full flex-col gap-2 rounded-2xl border p-3 text-left transition-colors',
+                current ? 'border-line-strong bg-surface-2' : 'border-line bg-surface-2/40 hover:bg-surface-2/80',
+              )}
+            >
+              <div className="flex items-center gap-2">
+                <span
+                  className={cn('num inline-flex size-6 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold', done ? 'text-on-accent' : 'text-ink')}
+                  style={{ background: done ? color : 'var(--surface-3)' }}
+                >
+                  {done ? <CheckCircle size={14} weight="fill" aria-hidden /> : i + 1}
+                </span>
+                <span className="truncate text-sm font-semibold text-ink" title={p.title}>
+                  {p.title}
+                </span>
+              </div>
+              <ProgressBar value={credited} max={est} height={5} color={color} label={`${p.title} progress`} />
+              <div className="flex justify-between text-[11px] text-muted">
+                <span>{done ? 'Done' : current ? 'In progress' : 'Up next'}</span>
+                <span className="num">{done ? '' : pp?.projectedCompletionDate ? formatMediumDate(pp.projectedCompletionDate) : 'No date yet'}</span>
+              </div>
+            </button>
           </li>
         );
       })}
@@ -87,12 +91,7 @@ function ModuleCard({
                 Complete
               </Chip>
             )}
-            <Chip>{m.kind === 'project' ? 'Project' : 'Study'}</Chip>
-            {m.estimateUncertain && (
-              <Chip tone="warn" icon={Info} title="The hours for this module are a rough guess. The projection may move.">
-                Estimate uncertain
-              </Chip>
-            )}
+            {m.kind === 'project' && <Chip>Project</Chip>}
           </div>
           <h4 className="text-[15px] font-semibold tracking-tight text-ink">{m.title}</h4>
         </div>
@@ -101,7 +100,15 @@ function ModuleCard({
         <ProgressBar value={p.completed ? p.estMinutes : Math.min(p.creditedMinutes, p.estMinutes)} max={p.estMinutes} height={8} color={color} label={`${m.title} progress`} />
         <div className="mt-1.5 flex justify-between text-xs text-muted">
           <span>
-            <span className="num text-ink">{formatHours(p.creditedMinutes)}</span> of <span className="num">{formatHours(p.estMinutes)}</span>
+            <span className="num text-ink">{formatHours(p.creditedMinutes)}</span> of{' '}
+            <span
+              className="num"
+              title={m.estimateUncertain ? 'Rough estimate: the hours for this module are a guess, so its projection may move.' : undefined}
+            >
+              {m.estimateUncertain && '~'}
+              {formatHours(p.estMinutes)}
+              {m.estimateUncertain && <span className="sr-only"> (rough estimate)</span>}
+            </span>
           </span>
           <span className="num">{Math.round(p.percent)}%</span>
         </div>
@@ -125,7 +132,7 @@ function ModuleCard({
             Reset
           </Button>
         ) : (
-          <Button size="sm" variant="secondary" icon={CheckCircle} onClick={() => onAction(m, 'complete')}>
+          <Button size="sm" variant={m.isCurrent ? 'secondary' : 'ghost'} icon={CheckCircle} onClick={() => onAction(m, 'complete')}>
             Mark complete
           </Button>
         )}
@@ -141,6 +148,21 @@ function StreamSection({ group, onAction, index }: { group: TrackStreamGroup; on
   const pr = group.projection;
   const all = group.phases.flatMap((p) => p.modules);
   const doneCount = all.filter((m) => m.progress.completed).length;
+  // The phase with the current module stays open; otherwise the first unfinished one.
+  const firstOpen =
+    group.phases.find((p) => p.modules.some((m) => m.isCurrent))?.id ?? group.phases.find((p) => !p.modules.every((m) => m.progress.completed))?.id;
+  const [openPhases, setOpenPhases] = useState<ReadonlySet<string>>(() => new Set(firstOpen ? [firstOpen] : []));
+  const togglePhase = (id: string) =>
+    setOpenPhases((s) => {
+      const next = new Set(s);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  const showPhase = (id: string) => {
+    setOpenPhases((s) => new Set(s).add(id));
+    requestAnimationFrame(() => document.getElementById(`phase-${id}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+  };
   const total = pr?.totalMinutes ?? all.reduce((a, m) => a + m.estMinutes, 0);
   const remaining = pr?.remainingMinutes ?? 0;
   const key = `${group.track}/${group.stream}`;
@@ -208,22 +230,57 @@ function StreamSection({ group, onAction, index }: { group: TrackStreamGroup; on
         <h3 className="label mb-2 flex items-center gap-1.5">
           <Flag size={13} aria-hidden /> Phases
         </h3>
-        <PhaseTimeline group={group} projection={pr} color={meta.cssVar} />
+        <PhaseTimeline group={group} projection={pr} color={meta.cssVar} onSelect={showPhase} />
+        {all.some((m) => m.estimateUncertain) && <p className="mt-2 text-xs text-muted">~ marks a rough estimate.</p>}
       </div>
       <div className="mt-6 flex flex-col gap-6">
-        {group.phases.map((p) => (
-          <div key={p.id}>
-            <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold text-ink">
-              <span className="num text-xs text-muted">{p.id}</span>
-              {p.title}
-            </h3>
-            <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
-              {p.modules.map((m) => (
-                <ModuleCard key={m.id} m={m} color={meta.cssVar} onAction={onAction} />
-              ))}
+        {group.phases.map((p) => {
+          const open = openPhases.has(p.id);
+          const done = p.modules.filter((m) => m.progress.completed).length;
+          const credited = p.modules.reduce((a, m) => a + (m.progress.completed ? m.estMinutes : Math.min(m.progress.creditedMinutes, m.estMinutes)), 0);
+          const est = p.modules.reduce((a, m) => a + m.estMinutes, 0);
+          return (
+            <div key={p.id} id={`phase-${p.id}`} className="scroll-mt-24">
+              <h3>
+                <button
+                  type="button"
+                  aria-expanded={open}
+                  onClick={() => togglePhase(p.id)}
+                  className="flex w-full items-center gap-2 text-left text-sm font-semibold text-ink"
+                >
+                  <span className="num shrink-0 text-xs text-muted">{p.id}</span>
+                  <span className="min-w-0 break-words sm:truncate">{p.title}</span>
+                  <span className="ml-auto flex shrink-0 items-center gap-3">
+                    {!open && (
+                      <>
+                        <span className="num text-xs font-normal text-muted">
+                          {done}/{p.modules.length} modules
+                        </span>
+                        <span className="hidden w-20 sm:block sm:w-36">
+                          <ProgressBar value={credited} max={est} height={4} color={meta.cssVar} label={`${p.title} progress`} />
+                        </span>
+                      </>
+                    )}
+                    <motion.span
+                      animate={{ rotate: open ? 180 : 0 }}
+                      transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                      className="inline-flex text-muted"
+                    >
+                      <CaretDown size={15} aria-hidden />
+                    </motion.span>
+                  </span>
+                </button>
+              </h3>
+              {open && (
+                <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
+                  {p.modules.map((m) => (
+                    <ModuleCard key={m.id} m={m} color={meta.cssVar} onAction={onAction} />
+                  ))}
+                </div>
+              )}
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </motion.section>
   );
@@ -291,21 +348,44 @@ export function TracksPage() {
   const selectedParam = params.get('s');
   const streams = q.data?.streams ?? [];
   const selected = streams.find((g) => `${g.track}.${g.stream}` === selectedParam) ?? streams[0];
+  const view = params.get('view') === 'resources' ? 'resources' : 'modules';
+  const setView = (v: 'modules' | 'resources') =>
+    setParams(
+      { ...(selectedParam ? { s: selectedParam } : {}), ...(v === 'resources' ? { view: 'resources' } : {}) },
+      { replace: true },
+    );
 
   return (
     <div className="flex flex-col gap-6">
       <PageHeader
         title="Tracks"
-        subtitle="Your curriculum, phase by phase. Progress comes from the minutes you complete; projections use your normal week."
+        subtitle={
+          view === 'resources'
+            ? 'Everything the plan uses, grouped by track, with the modules that use each one.'
+            : 'Your curriculum, phase by phase. Progress comes from the minutes you complete; projections use your normal week.'
+        }
         actions={
-          q.data && (
-            <Chip tone="accent" icon={CalendarCheck}>
-              {q.data.totals.completedModules} of {q.data.totals.modules} modules done
-            </Chip>
-          )
+          <>
+            <Segmented<'modules' | 'resources'>
+              label="Tracks view"
+              value={view}
+              onChange={setView}
+              options={[
+                { value: 'modules', label: 'Modules' },
+                { value: 'resources', label: 'Resources' },
+              ]}
+            />
+            {q.data && (
+              <Chip tone="accent" icon={CalendarCheck}>
+                {q.data.totals.completedModules} of {q.data.totals.modules} modules done
+              </Chip>
+            )}
+          </>
         }
       />
-      {q.isPending ? (
+      {view === 'resources' ? (
+        <ResourcesView />
+      ) : q.isPending ? (
         <div className="flex flex-col gap-4">
           <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
             {[0, 1, 2, 3].map((i) => (
