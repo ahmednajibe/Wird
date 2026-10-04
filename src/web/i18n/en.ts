@@ -33,6 +33,7 @@ export const en = {
   'settings.language': 'Language',
 
   'common.days': { one: 'day', other: 'days' },
+  'common.dayCount': { one: '{count} day', other: '{count} days' },
   'common.cancel': 'Cancel',
   'common.streakDays': { one: '{count} day streak', other: '{count} days streak' },
   'common.points': { one: '{count} point', other: '{count} points' },
@@ -202,7 +203,7 @@ export const en = {
   'addTask.toastSecuredBody': 'Today counts: {points} of {goal} points.',
 
   'toast.streakSecured': 'Streak secured',
-  'toast.streakSecuredBody': '{points} of {goal} points. Today counts, streak is now {days} {daysWord}.',
+  'toast.streakSecuredBody': '{points} of {goal} points. Today counts, streak is now {streak}.',
   'toast.errComplete': 'Could not complete the task',
   'toast.errUndo': 'Could not undo',
   'toast.errSkip': 'Could not skip',

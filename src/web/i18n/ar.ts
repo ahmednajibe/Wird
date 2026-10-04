@@ -36,12 +36,14 @@ export const ar: ArDict = {
   'settings.theme': 'السمة',
   'settings.language': 'اللغة',
 
-  'common.days': { zero: 'يوم', one: 'يوم', two: 'يومان', few: 'أيام', many: 'يومًا', other: 'يوم' },
+  // The number is rendered outside this string (stat tiles show it as the value).
+  'common.days': { zero: 'يوم', one: 'يوم', two: 'يوم', few: 'أيام', many: 'يومًا', other: 'يوم' },
+  'common.dayCount': { zero: '{count} يوم', one: '{count} يوم', two: 'يومان', few: '{count} أيام', many: '{count} يومًا', other: '{count} يوم' },
   'common.cancel': 'إلغاء',
   'common.streakDays': {
     zero: 'سلسلة {count} يوم',
     one: 'سلسلة {count} يوم',
-    two: 'سلسلة {count} يومين',
+    two: 'سلسلة يومين',
     few: 'سلسلة {count} أيام',
     many: 'سلسلة {count} يومًا',
     other: 'سلسلة {count} يوم',
@@ -49,12 +51,13 @@ export const ar: ArDict = {
   'common.points': {
     zero: '{count} نقطة',
     one: '{count} نقطة',
-    two: '{count} نقطتان',
+    two: 'نقطتان',
     few: '{count} نقاط',
     many: '{count} نقطة',
     other: '{count} نقطة',
   },
-  'common.pointsWord': { zero: 'نقطة', one: 'نقطة', two: 'نقطتان', few: 'نقاط', many: 'نقطة', other: 'نقطة' },
+  // The number is rendered outside this string (the points preview shows it).
+  'common.pointsWord': { zero: 'نقطة', one: 'نقطة', two: 'نقطة', few: 'نقاط', many: 'نقطة', other: 'نقطة' },
 
   'sidebar.secured': 'اليوم محسوب',
   'sidebar.open': 'اليوم ما زال مفتوحًا',
@@ -72,7 +75,7 @@ export const ar: ArDict = {
   'today.doneCount': {
     zero: 'أُنجزت {done} من {count} مهمة',
     one: 'أُنجزت {done} من {count} مهمة',
-    two: 'أُنجزت {done} من {count} مهمتين',
+    two: 'أُنجزت {done} من مهمتين',
     few: 'أُنجزت {done} من {count} مهام',
     many: 'أُنجزت {done} من {count} مهمة',
     other: 'أُنجزت {done} من {count} مهمة',
@@ -99,7 +102,7 @@ export const ar: ArDict = {
   'hero.toGo': {
     zero: '{count} نقطة متبقية{hint}',
     one: '{count} نقطة متبقية{hint}',
-    two: '{count} نقطتان متبقيتان{hint}',
+    two: 'نقطتان متبقيتان{hint}',
     few: '{count} نقاط متبقية{hint}',
     many: '{count} نقطة متبقية{hint}',
     other: '{count} نقطة متبقية{hint}',
@@ -107,7 +110,7 @@ export const ar: ArDict = {
   'hero.reach': {
     zero: 'اجمع {count} نقطة لتحافظ على سلسلتك.',
     one: 'اجمع {count} نقطة لتحافظ على سلسلتك.',
-    two: 'اجمع {count} نقطتين لتحافظ على سلسلتك.',
+    two: 'اجمع نقطتين لتحافظ على سلسلتك.',
     few: 'اجمع {count} نقاط لتحافظ على سلسلتك.',
     many: 'اجمع {count} نقطة لتحافظ على سلسلتك.',
     other: 'اجمع {count} نقطة لتحافظ على سلسلتك.',
@@ -121,7 +124,7 @@ export const ar: ArDict = {
   'hero.toLevel': {
     zero: '{count} نقطة للمستوى {level}{hint}',
     one: '{count} نقطة للمستوى {level}{hint}',
-    two: '{count} نقطتان للمستوى {level}{hint}',
+    two: 'نقطتان للمستوى {level}{hint}',
     few: '{count} نقاط للمستوى {level}{hint}',
     many: '{count} نقطة للمستوى {level}{hint}',
     other: '{count} نقطة للمستوى {level}{hint}',
@@ -197,7 +200,7 @@ export const ar: ArDict = {
   'task.pageCount': {
     zero: '{count} صفحة',
     one: '{count} صفحة',
-    two: '{count} صفحتان',
+    two: 'صفحتان',
     few: '{count} صفحات',
     many: '{count} صفحة',
     other: '{count} صفحة',
@@ -229,7 +232,7 @@ export const ar: ArDict = {
   'quran.more': {
     zero: 'و{count} أخرى',
     one: 'و{count} أخرى',
-    two: 'و{count} أخرى',
+    two: 'وأخريان',
     few: 'و{count} أخرى',
     many: 'و{count} أخرى',
     other: 'و{count} أخرى',
@@ -264,7 +267,7 @@ export const ar: ArDict = {
   'addTask.toastLogged': {
     zero: 'سُجّلت: ⁦+{count}⁩ نقطة',
     one: 'سُجّلت: ⁦+{count}⁩ نقطة',
-    two: 'سُجّلت: ⁦+{count}⁩ نقطتان',
+    two: 'سُجّلت: ⁦+{count}⁩ نقطة',
     few: 'سُجّلت: ⁦+{count}⁩ نقاط',
     many: 'سُجّلت: ⁦+{count}⁩ نقطة',
     other: 'سُجّلت: ⁦+{count}⁩ نقطة',
@@ -274,7 +277,7 @@ export const ar: ArDict = {
   'addTask.toastSecuredBody': 'اليوم محسوب: {points} من {goal} نقطة.',
 
   'toast.streakSecured': 'السلسلة مضمونة',
-  'toast.streakSecuredBody': '{points} من {goal} نقطة. اليوم محسوب، والسلسلة الآن {days} {daysWord}.',
+  'toast.streakSecuredBody': '{points} من {goal} نقطة. اليوم محسوب، والسلسلة الآن {streak}.',
   'toast.errComplete': 'تعذّر إنجاز المهمة',
   'toast.errUndo': 'تعذّر التراجع',
   'toast.errSkip': 'تعذّر التخطي',
@@ -312,7 +315,7 @@ export const ar: ArDict = {
   'plan.regenDoneBody': {
     zero: '{count} مهمة مخططة من {from} إلى {to}.',
     one: '{count} مهمة مخططة من {from} إلى {to}.',
-    two: '{count} مهمتان مخططتان من {from} إلى {to}.',
+    two: 'مهمتان مخططتان من {from} إلى {to}.',
     few: '{count} مهام مخططة من {from} إلى {to}.',
     many: '{count} مهمة مخططة من {from} إلى {to}.',
     other: '{count} مهمة مخططة من {from} إلى {to}.',
@@ -382,7 +385,7 @@ export const ar: ArDict = {
   'plan.whyReserve': {
     zero: 'كل يوم يحجز {count} دقيقة للقرآن (طول جلسة الحفظ)، وتتقاسم مسارات الدراسة الباقي.',
     one: 'كل يوم يحجز {count} دقيقة للقرآن (طول جلسة الحفظ)، وتتقاسم مسارات الدراسة الباقي.',
-    two: 'كل يوم يحجز {count} دقيقتين للقرآن (طول جلسة الحفظ)، وتتقاسم مسارات الدراسة الباقي.',
+    two: 'كل يوم يحجز دقيقتين للقرآن (طول جلسة الحفظ)، وتتقاسم مسارات الدراسة الباقي.',
     few: 'كل يوم يحجز {count} دقائق للقرآن (طول جلسة الحفظ)، وتتقاسم مسارات الدراسة الباقي.',
     many: 'كل يوم يحجز {count} دقيقة للقرآن (طول جلسة الحفظ)، وتتقاسم مسارات الدراسة الباقي.',
     other: 'كل يوم يحجز {count} دقيقة للقرآن (طول جلسة الحفظ)، وتتقاسم مسارات الدراسة الباقي.',
@@ -390,7 +393,7 @@ export const ar: ArDict = {
   'plan.whyCap': {
     zero: 'جلسات المراجعة محدودة عند {count} دقيقة؛ الجزء غير المستخدم من الحجز احتياطي اختياري لا يُخطط ولا يُحتسب.',
     one: 'جلسات المراجعة محدودة عند {count} دقيقة؛ الجزء غير المستخدم من الحجز احتياطي اختياري لا يُخطط ولا يُحتسب.',
-    two: 'جلسات المراجعة محدودة عند {count} دقيقتين؛ الجزء غير المستخدم من الحجز احتياطي اختياري لا يُخطط ولا يُحتسب.',
+    two: 'جلسات المراجعة محدودة عند دقيقتين؛ الجزء غير المستخدم من الحجز احتياطي اختياري لا يُخطط ولا يُحتسب.',
     few: 'جلسات المراجعة محدودة عند {count} دقائق؛ الجزء غير المستخدم من الحجز احتياطي اختياري لا يُخطط ولا يُحتسب.',
     many: 'جلسات المراجعة محدودة عند {count} دقيقة؛ الجزء غير المستخدم من الحجز احتياطي اختياري لا يُخطط ولا يُحتسب.',
     other: 'جلسات المراجعة محدودة عند {count} دقيقة؛ الجزء غير المستخدم من الحجز احتياطي اختياري لا يُخطط ولا يُحتسب.',
@@ -427,7 +430,7 @@ export const ar: ArDict = {
   'tracks.aboutWeeks': {
     zero: '، نحو {count} أسبوع',
     one: '، نحو {count} أسبوع',
-    two: '، نحو {count} أسبوعين',
+    two: '، نحو أسبوعين',
     few: '، نحو {count} أسابيع',
     many: '، نحو {count} أسبوعًا',
     other: '، نحو {count} أسبوع',
@@ -450,7 +453,7 @@ export const ar: ArDict = {
   'res.count': {
     zero: '{count} مورد في الخطة',
     one: '{count} مورد في الخطة',
-    two: '{count} موردان في الخطة',
+    two: 'موردان في الخطة',
     few: '{count} موارد في الخطة',
     many: '{count} موردًا في الخطة',
     other: '{count} مورد في الخطة',
@@ -477,7 +480,7 @@ export const ar: ArDict = {
   'quran.legendRecent': {
     zero: 'رُوجعت في آخر {count} يوم',
     one: 'رُوجعت في آخر {count} يوم',
-    two: 'رُوجعت في آخر {count} يومين',
+    two: 'رُوجعت في آخر يومين',
     few: 'رُوجعت في آخر {count} أيام',
     many: 'رُوجعت في آخر {count} يومًا',
     other: 'رُوجعت في آخر {count} يوم',
@@ -491,7 +494,7 @@ export const ar: ArDict = {
   'quran.pagesToGo': {
     zero: 'تبقّى {count} صفحة',
     one: 'تبقّى {count} صفحة',
-    two: 'تبقّى {count} صفحتان',
+    two: 'تبقّت صفحتان',
     few: 'تبقّى {count} صفحات',
     many: 'تبقّى {count} صفحة',
     other: 'تبقّى {count} صفحة',
@@ -505,7 +508,7 @@ export const ar: ArDict = {
   'quran.fullCycle': {
     zero: 'دورة كاملة كل {count} مراجعة',
     one: 'دورة كاملة كل {count} مراجعة',
-    two: 'دورة كاملة كل {count} مراجعتين',
+    two: 'دورة كاملة كل مراجعتين',
     few: 'دورة كاملة كل {count} مراجعات',
     many: 'دورة كاملة كل {count} مراجعة',
     other: 'دورة كاملة كل {count} مراجعة',
@@ -519,7 +522,7 @@ export const ar: ArDict = {
   'quran.actualPaceBody': {
     zero: '{pages} صفحة في الأسبوع على مدى {count} يوم. بهذه الوتيرة تنتهي في {date}.',
     one: '{pages} صفحة في الأسبوع على مدى {count} يوم. بهذه الوتيرة تنتهي في {date}.',
-    two: '{pages} صفحة في الأسبوع على مدى {count} يومين. بهذه الوتيرة تنتهي في {date}.',
+    two: '{pages} صفحة في الأسبوع على مدى يومين. بهذه الوتيرة تنتهي في {date}.',
     few: '{pages} صفحة في الأسبوع على مدى {count} أيام. بهذه الوتيرة تنتهي في {date}.',
     many: '{pages} صفحة في الأسبوع على مدى {count} يومًا. بهذه الوتيرة تنتهي في {date}.',
     other: '{pages} صفحة في الأسبوع على مدى {count} يوم. بهذه الوتيرة تنتهي في {date}.',
@@ -528,7 +531,7 @@ export const ar: ArDict = {
   'quran.totalPages': {
     zero: '{count} صفحة',
     one: '{count} صفحة',
-    two: '{count} صفحتان',
+    two: 'صفحتان',
     few: '{count} صفحات',
     many: '{count} صفحة',
     other: '{count} صفحة',
@@ -565,7 +568,7 @@ export const ar: ArDict = {
   'stats.tasks': {
     zero: '{count} مهمة',
     one: '{count} مهمة',
-    two: '{count} مهمتان',
+    two: 'مهمتان',
     few: '{count} مهام',
     many: '{count} مهمة',
     other: '{count} مهمة',

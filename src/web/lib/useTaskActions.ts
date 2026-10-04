@@ -90,8 +90,7 @@ export function useTaskActions() {
             body: t('toast.streakSecuredBody', {
               points: next.pointsToday,
               goal: prev.baseline.value,
-              days: next.streak.current,
-              daysWord: tn('common.days', next.streak.current),
+              streak: tn('common.dayCount', next.streak.current),
             }),
           });
         }, 350);

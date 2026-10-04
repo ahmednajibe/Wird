@@ -35,7 +35,12 @@ describe('i18n dictionaries', () => {
       } else {
         const arForms = a as Record<string, string>;
         for (const form of AR_PLURAL_FORMS) {
-          expect(placeholders(arForms[form] as string), `${k}.${form}`).toEqual(placeholders(v.other));
+          const want = placeholders(v.other);
+          const got = placeholders(arForms[form] as string);
+          // The dual noun already means "two", so an ar `two` form may drop
+          // {count} (only {count}; every other placeholder must still match).
+          const expected = form === 'two' && !got.includes('count') ? want.filter((p) => p !== 'count') : want;
+          expect(got, `${k}.${form}`).toEqual(expected);
         }
       }
     }
@@ -50,6 +55,19 @@ describe('i18n dictionaries', () => {
   it('no Arabic-Indic digits in ar', () => {
     for (const s of values(ar)) {
       expect(s).not.toMatch(/[٠-٩]/);
+    }
+  });
+
+  it('no ar two form puts a numeral before a dual noun', () => {
+    // Keys allowed to keep '{count} <dual>' would go here. None today: the
+    // only `two` form still showing {count} is addTask.toastLogged, where the
+    // signed delta '+{count}' is followed by the singular 'نقطة', not a dual.
+    const ALLOWED_DUAL_NUMERAL = new Set<string>([]);
+    const dualAfterCount = /\{count\}\s*[ء-ي]*?(?:ان|ين)(?![ء-ي])/;
+    for (const [k, v] of Object.entries(ar)) {
+      if (typeof v === 'string' || ALLOWED_DUAL_NUMERAL.has(k)) continue;
+      const two = (v as Record<string, string>)['two'];
+      expect(two, `${k}.two`).not.toMatch(dualAfterCount);
     }
   });
 });
@@ -87,11 +105,11 @@ describe('locale-aware formatting', () => {
   it('ar minutes are plural aware', () => {
     setFormatLang('ar');
     expect(formatMinutes(1)).toBe('1 دقيقة');
-    expect(formatMinutes(2)).toBe('2 دقيقتان');
+    expect(formatMinutes(2)).toBe('دقيقتان');
     expect(formatMinutes(3)).toBe('3 دقائق');
     expect(formatMinutes(20)).toBe('20 دقيقة');
     expect(formatMinutes(60)).toBe('1 ساعة');
-    expect(formatMinutes(120)).toBe('2 ساعتان');
+    expect(formatMinutes(120)).toBe('ساعتان');
     expect(formatMinutes(180)).toBe('3 ساعات');
     expect(formatMinutes(100)).toBe('1 س 40 د');
     expect(formatHours(750)).toBe('12.5 س');

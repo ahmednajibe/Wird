@@ -472,7 +472,13 @@ export function Duration({ minutes, className }: { minutes: number; className?: 
       {parts.map((p, i) => (
         <Fragment key={i}>
           {i > 0 && ' '}
-          <span className="num">{p.n}</span> {p.unit}
+          {p.n === null ? (
+            p.unit
+          ) : (
+            <>
+              <span className="num">{p.n}</span> {p.unit}
+            </>
+          )}
         </Fragment>
       ))}
     </span>
