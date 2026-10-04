@@ -8,3 +8,6 @@ scripts/.cache/
 screenshots/
 graphify-out/
 PROMPT-for-claude.md
+.agents/
+skills-lock.json
+.devin/
