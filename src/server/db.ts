@@ -6,11 +6,11 @@ import { dirname } from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
 import { snapshotDb } from './backup.js';
 import { backupDirFor } from './config.js';
-import { assertSchemaNotNewer, pendingVersions, runMigrations } from './migrations.js';
+import { assertSchemaNotNewer, MIGRATIONS, pendingVersions, runMigrations } from './migrations.js';
 
 export type Db = DatabaseSync;
 
-export function openDb(path: string): Db {
+export function openDb(path: string, opts: { initialTimezone?: string } = {}): Db {
   if (path !== ':memory:') mkdirSync(dirname(path), { recursive: true });
   const existed = path !== ':memory:' && existsSync(path);
   const db = new DatabaseSync(path);
@@ -25,10 +25,23 @@ export function openDb(path: string): Db {
     throw err;
   }
   const pending = pendingVersions(db);
+  const brandNew = pending.length === MIGRATIONS.length;
   if (existed && pending.length > 0) {
     snapshotDb(db, backupDirFor(path), `pre-migrate-v${Math.max(...pending)}`);
   }
   runMigrations(db);
+  // A brand-new database stores the detected zone as its only settings key
+  // (everything else resolves from defaults). Existing databases, even ones
+  // without a settings row, are never given a timezone here.
+  if (brandNew && opts.initialTimezone !== undefined) {
+    const hasSettings = db.prepare('SELECT 1 AS x FROM settings WHERE id = 1').get() !== undefined;
+    if (!hasSettings) {
+      db.prepare('INSERT INTO settings (id, json, updated_at) VALUES (1, ?, ?)').run(
+        JSON.stringify({ timezone: opts.initialTimezone }),
+        new Date().toISOString(),
+      );
+    }
+  }
   return db;
 }
 

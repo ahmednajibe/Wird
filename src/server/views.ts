@@ -387,5 +387,10 @@ export function catalogView(service: LearningService) {
 /** The current plan as a plan pack (active entities only), for re-importing. */
 export function planPack(service: LearningService): PlanPack {
   const latest = new CatalogRepo(service.db).latestImport();
-  return catalogToPack(service.catalog.data, service.settings(), latest?.packName ?? 'My plan');
+  const pack = catalogToPack(service.catalog.data, service.settings(), latest?.packName ?? 'My plan');
+  // The timezone belongs to the install, not the plan: exporting without it
+  // keeps re-imports on the local zone (see importer.importedSettings).
+  const settings = { ...pack.settings };
+  delete settings.timezone;
+  return { ...pack, settings };
 }

@@ -4,6 +4,7 @@
 import { extname, join, resolve } from 'node:path';
 import { Hono } from 'hono';
 import { diskAssets, type AssetSource } from './assets.js';
+import { detectSystemTimezone } from './config.js';
 import { openDb, type Db } from './db.js';
 import { ApiError } from './errors.js';
 import { apiRoutes } from './routes.js';
@@ -20,6 +21,11 @@ export interface AppOptions {
   assets?: AssetSource;
   /** Reported by /api/health (defaults to the npm package version). */
   version?: string;
+  /**
+   * Zone stored when createApp creates a brand-new database (defaults to
+   * detectSystemTimezone()).
+   */
+  initialTimezone?: string;
 }
 
 const MIME: Record<string, string> = {
@@ -44,7 +50,7 @@ const MIME: Record<string, string> = {
 
 export function createApp(options: AppOptions = {}): { app: Hono; service: LearningService; db: Db } {
   const dbPath = options.dbPath ?? (options.db ? null : join(process.cwd(), 'data', 'learning.db'));
-  const db = options.db ?? openDb(dbPath as string);
+  const db = options.db ?? openDb(dbPath as string, { initialTimezone: options.initialTimezone ?? detectSystemTimezone() });
   const service = new LearningService(db, options.clock ?? systemClock, dbPath);
   const app = new Hono();
 

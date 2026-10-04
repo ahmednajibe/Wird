@@ -116,9 +116,23 @@ function makeProgressProbe(service: LearningService, current: CatalogData): Prog
   };
 }
 
+/**
+ * The settings an import applies. A pack whose `settings` object has no own
+ * `timezone` keeps the install's current zone: the timezone belongs to the
+ * install, not the plan.
+ */
+function importedSettings(service: LearningService, pack: unknown, validated: Settings): Settings {
+  const raw = typeof pack === 'object' && pack !== null ? (pack as { settings?: unknown }).settings : undefined;
+  if (typeof raw === 'object' && raw !== null && Object.prototype.hasOwnProperty.call(raw, 'timezone')) {
+    return validated;
+  }
+  return { ...validated, timezone: service.settings().timezone };
+}
+
 export function previewImport(service: LearningService, input: unknown, mode: ImportMode): ImportPreview {
   const v = validatePack(input);
   if (!v.ok) return { ok: false, errors: v.errors, warnings: v.warnings };
+  const nextSettings = importedSettings(service, input, v.settings);
   const incoming = v.catalog;
   const current = new CatalogRepo(service.db).load();
   const probe = makeProgressProbe(service, current);
@@ -207,10 +221,10 @@ export function previewImport(service: LearningService, input: unknown, mode: Im
 
   const currentSettings = service.settings();
   const settingsChanged: string[] = [];
-  for (const k of Object.keys(v.settings) as (keyof Settings)[]) {
-    if (JSON.stringify(currentSettings[k]) !== JSON.stringify(v.settings[k])) settingsChanged.push(String(k));
+  for (const k of Object.keys(nextSettings) as (keyof Settings)[]) {
+    if (JSON.stringify(currentSettings[k]) !== JSON.stringify(nextSettings[k])) settingsChanged.push(String(k));
   }
-  if (currentSettings.quran.enabled !== v.settings.quran.enabled && !settingsChanged.includes('quran.enabled')) {
+  if (currentSettings.quran.enabled !== nextSettings.quran.enabled && !settingsChanged.includes('quran.enabled')) {
     settingsChanged.push('quran.enabled');
   }
 
@@ -219,7 +233,7 @@ export function previewImport(service: LearningService, input: unknown, mode: Im
       counts.streams.added + counts.streams.updated + counts.streams.revived + counts.streams.archived +
       counts.modules.added + counts.modules.updated + counts.modules.revived + counts.modules.archived >
     0;
-  const planningChanged = PLANNING_KEYS.some((k) => JSON.stringify(currentSettings[k]) !== JSON.stringify(v.settings[k]));
+  const planningChanged = PLANNING_KEYS.some((k) => JSON.stringify(currentSettings[k]) !== JSON.stringify(nextSettings[k]));
 
   // planFloor() would write tracking_start_date on a never-touched DB; preview must not write.
   const stored = service.meta.get(TRACKING_START_KEY);
@@ -250,6 +264,7 @@ export function commitImport(service: LearningService, body: ImportBody): Import
   if (!preview.ok) throw unprocessable('Invalid plan', { errors: preview.errors, warnings: preview.warnings });
   const v = validatePack(body.pack);
   if (!v.ok) throw unprocessable('Invalid plan', { errors: v.errors, warnings: v.warnings });
+  const nextSettings = importedSettings(service, body.pack, v.settings);
   const pack: PlanPack = v.pack;
   const incoming = v.catalog;
   const repo = new CatalogRepo(service.db);
@@ -294,7 +309,7 @@ export function commitImport(service: LearningService, body: ImportBody): Import
     // Catalog reload happens before settings so regeneration plans with the
     // imported data.
     service.reloadCatalog();
-    service.applyImportedSettings(v.settings, preview.regenerates);
+    service.applyImportedSettings(nextSettings, preview.regenerates);
 
     repo.recordImport(body.mode, pack.name, JSON.stringify(body.pack), JSON.stringify(preview), nowIso);
     });

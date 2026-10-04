@@ -392,6 +392,43 @@ describe('catalog and export read models', () => {
   });
 });
 
+describe('import timezone handling', () => {
+  it('a pack without settings.timezone keeps the install zone', async () => {
+    ctx = makeTestApp('2026-10-04');
+    const put = await call('PUT', '/api/settings', { timezone: 'Asia/Tokyo' });
+    expect(put.status).toBe(200);
+
+    const preview = await call('POST', '/api/import/preview', { pack: medicinePack('tz-med'), mode: 'update' });
+    expect(preview.json.ok).toBe(true);
+    expect(preview.json.settingsChanged).not.toContain('timezone');
+
+    const commit = await call('POST', '/api/import', { pack: medicinePack('tz-med'), mode: 'update' });
+    expect(commit.status).toBe(200);
+    expect((await call('GET', '/api/settings')).json.timezone).toBe('Asia/Tokyo');
+  });
+
+  it('a pack that names a timezone still applies it', async () => {
+    ctx = makeTestApp('2026-10-04');
+    const pack = medicinePack('tz-mad') as Json;
+    (pack.settings as Json).timezone = 'Europe/Madrid';
+    const commit = await call('POST', '/api/import', { pack, mode: 'update' });
+    expect(commit.status).toBe(200);
+    expect((await call('GET', '/api/settings')).json.timezone).toBe('Europe/Madrid');
+  });
+
+  it('GET /api/plan-pack omits the timezone and re-importing it keeps the zone', async () => {
+    ctx = makeTestApp('2026-10-04');
+    expect((await call('PUT', '/api/settings', { timezone: 'Asia/Tokyo' })).status).toBe(200);
+
+    const pack = (await call('GET', '/api/plan-pack')).json;
+    expect('timezone' in (pack.settings as Json)).toBe(false);
+
+    const commit = await call('POST', '/api/import', { pack, mode: 'update' });
+    expect(commit.status).toBe(200);
+    expect((await call('GET', '/api/settings')).json.timezone).toBe('Asia/Tokyo');
+  });
+});
+
 describe('empty plan with Quran disabled', () => {
   it('empty days are rest days and the streak stays at 0', async () => {
     ctx = makeTestApp('2026-10-04', { plan: 'empty' });

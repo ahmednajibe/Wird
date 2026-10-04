@@ -73,7 +73,10 @@ full gate run (typecheck, test, build, e2e) on the new version.
   `{ plan: 'empty' }`.
 - `settings.quran.enabled` (default true): when false, reserve 0 and no Quran
   tasks for today onward; Quran history is never modified.
-  `settings.timezone` (default Africa/Cairo) drives `today()`.
+  `settings.timezone` (default Africa/Cairo) drives `today()`; a brand-new
+  database stores the detected system timezone (fallback Africa/Cairo);
+  imports keep the current timezone unless the pack names one, and
+  /api/plan-pack omits it.
 - Web: track colors and icons come only from the fixed palettes (`THEMES`,
   `ICONS` in pack.ts, mapped in `src/web/lib/themes.ts` / `icons.ts`); never
   accept CSS, hex or SVG from a pack. Use `useTrackMeta()` for track display.
