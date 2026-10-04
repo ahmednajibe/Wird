@@ -3,6 +3,7 @@
   "productName": "Wird",
   "version": "0.2.0",
   "private": true,
+  "license": "MIT",
   "description": "Wird: a local-first daily learning and Quran tracker.",
   "type": "module",
   "engines": {

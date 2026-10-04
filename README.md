@@ -262,3 +262,8 @@ streak retroactively.
 `GET /api/quran`, `GET /api/stats`, `GET|PUT /api/settings`,
 `GET|PUT /api/days/:date`, `GET /api/calendar?from&to`,
 `GET /api/plan-prompt`, `POST /api/import/preview`, `POST /api/import`.
+
+## License
+
+MIT, see [LICENSE](LICENSE). Quran metadata comes from Tanzil.net
+(CC BY 3.0); the bundled fonts are under the SIL Open Font License 1.1.
