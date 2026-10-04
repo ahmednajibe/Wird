@@ -26,7 +26,7 @@ const TZ_EXAMPLES = ['Africa/Cairo', 'Europe/Berlin'] as const;
 type Errors = Record<string, string>;
 
 /** Error paths whose fields live inside the Advanced disclosure. */
-const inAdvanced = (path: string) => path.startsWith('baseline.') || path.startsWith('timezone') || path === 'quran.minutesPerReviewPage' || path === 'quran.reviewCapMinutes';
+const inAdvanced = (path: string) => path.startsWith('baseline.') || path === 'quran.minutesPerReviewPage' || path === 'quran.reviewCapMinutes';
 
 function Section({ icon: I, title, description, children }: { icon: typeof Clock; title: string; description?: string; children: ReactNode }) {
   return (
@@ -199,6 +199,16 @@ function SettingsForm({ initial, catalog }: { initial: Settings; catalog: Catalo
   const { lang, setLang, t, tRich } = useI18n();
   const today = cairoToday(new Date(), catalog.timezone);
   const engineCatalog = useMemo(() => buildCatalog(catalog.data), [catalog.data]);
+  // The preview follows the draft zone when it is a valid IANA name; a
+  // half-typed or invalid id must never throw during render.
+  const previewToday = useMemo(() => {
+    try {
+      new Intl.DateTimeFormat('en-US', { timeZone: draft.timezone });
+      return cairoToday(new Date(), draft.timezone);
+    } catch {
+      return today;
+    }
+  }, [draft.timezone, today]);
 
   useEffect(() => setDraft(initial), [initial]);
 
@@ -325,18 +335,62 @@ function SettingsForm({ initial, catalog }: { initial: Settings; catalog: Catalo
 
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
         <Section icon={CalendarBlank} title={t('settings.hijri')} description={t('settings.hijriDesc')}>
-          <Segmented<number>
-            label={t('settings.hijriOffset')}
-            value={draft.hijriOffsetDays}
-            onChange={(v) => set('hijriOffsetDays', v)}
-            options={[-2, -1, 0, 1, 2].map((v) => ({ value: v, label: <bdi dir="ltr" className="num">{v > 0 ? `+${v}` : v}</bdi> }))}
-          />
-          <div className="mt-4 rounded-2xl bg-surface-2 p-4">
-            <div className="text-xs text-muted">{t('settings.hijriToday')}</div>
-            <div className="mt-1 text-lg font-semibold text-ink" data-testid="hijri-preview">
-              {hijriLabel(toHijri(today, draft.hijriOffsetDays), lang)}
+          <div className="flex flex-col gap-4">
+            <div>
+              <label htmlFor="timezone" className="mb-1.5 block text-sm font-medium text-ink">
+                {t('settings.timezone')}
+              </label>
+              <p className="text-sm text-muted">{t('settings.timezoneDesc')}</p>
+              <input
+                id="timezone"
+                data-testid="field-timezone"
+                dir="ltr"
+                className={cn('field mt-2 max-w-xs', err('timezone') && 'border-danger')}
+                value={draft.timezone}
+                placeholder="Africa/Cairo"
+                aria-invalid={Boolean(err('timezone'))}
+                aria-describedby={err('timezone') ? 'timezone-err' : undefined}
+                onChange={(e) => set('timezone', e.target.value)}
+              />
+              {err('timezone') ? (
+                <p id="timezone-err" className="mt-1 text-xs text-danger">
+                  {err('timezone')}
+                </p>
+              ) : (
+                <p className="mt-1 text-xs text-muted">
+                  {tRich('settings.tzHint', {
+                    tz1: (
+                      <bdi dir="ltr" className="whitespace-nowrap">
+                        {TZ_EXAMPLES[0]}
+                      </bdi>
+                    ),
+                    tz2: (
+                      <bdi dir="ltr" className="whitespace-nowrap">
+                        {TZ_EXAMPLES[1]}
+                      </bdi>
+                    ),
+                  })}
+                </p>
+              )}
             </div>
-            <div className="text-sm text-muted">{formatLongDate(today)}</div>
+            <div>
+              <div className="mb-1.5 text-sm font-medium text-ink">{t('settings.hijriOffset')}</div>
+              <Segmented<number>
+                label={t('settings.hijriOffset')}
+                value={draft.hijriOffsetDays}
+                onChange={(v) => set('hijriOffsetDays', v)}
+                options={[-2, -1, 0, 1, 2].map((v) => ({ value: v, label: <bdi dir="ltr" className="num">{v > 0 ? `+${v}` : v}</bdi> }))}
+              />
+            </div>
+            <div className="rounded-2xl bg-surface-2 p-4">
+              <div className="text-xs text-muted">{t('settings.hijriToday')}</div>
+              <div className="mt-1 text-lg font-semibold text-ink" data-testid="hijri-preview">
+                {hijriLabel(toHijri(previewToday, draft.hijriOffsetDays), lang)}
+              </div>
+              <div className="text-sm text-muted" data-testid="calendar-preview-date">
+                {formatLongDate(previewToday)}
+              </div>
+            </div>
           </div>
         </Section>
         <Section icon={Palette} title={t('settings.appearance')} description={t('settings.appearanceDesc')}>
@@ -378,7 +432,7 @@ function SettingsForm({ initial, catalog }: { initial: Settings; catalog: Catalo
         onOpenChange={setAdvancedOpen}
         data-testid="settings-advanced"
       >
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 2xl:grid-cols-3">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
           <div>
             <h3 className="label">{t('settings.dailyGoal')}</h3>
             <p className="mt-1.5 text-sm text-muted">{t('settings.dailyGoalDesc')}</p>
@@ -414,52 +468,12 @@ function SettingsForm({ initial, catalog }: { initial: Settings; catalog: Catalo
             <p className="mt-2 text-xs text-muted">{t('settings.pastKeep')}</p>
           </div>
 
-          <div className="flex flex-col gap-6 2xl:contents">
-            <div className={cn(!draft.quran.enabled && 'pointer-events-none opacity-45')} aria-disabled={!draft.quran.enabled}>
-              <h3 className="label">{t('settings.quranReview')}</h3>
-              <p className="mt-1.5 text-sm text-muted">{t('settings.quranReviewDesc')}</p>
-              <div className="mt-4 grid grid-cols-2 gap-3">
-                <NumberField id="q-page" label={t('settings.reviewPerPage')} value={draft.quran.minutesPerReviewPage} suffix={t('unit.min')} error={err('quran.minutesPerReviewPage')} onChange={(n) => setQuran('minutesPerReviewPage', n)} />
-                <NumberField id="q-cap" label={t('settings.reviewCap')} value={draft.quran.reviewCapMinutes} suffix={t('unit.min')} error={err('quran.reviewCapMinutes')} onChange={(n) => setQuran('reviewCapMinutes', n)} />
-              </div>
-            </div>
-
-            <div>
-              <label htmlFor="timezone" className="label block">
-                {t('settings.timezone')}
-              </label>
-              <p className="mt-1.5 text-sm text-muted">{t('settings.timezoneDesc')}</p>
-              <input
-                id="timezone"
-                data-testid="field-timezone"
-                dir="ltr"
-                className={cn('field mt-4 max-w-xs', err('timezone') && 'border-danger')}
-                value={draft.timezone}
-                placeholder="Africa/Cairo"
-                aria-invalid={Boolean(err('timezone'))}
-                aria-describedby={err('timezone') ? 'timezone-err' : undefined}
-                onChange={(e) => set('timezone', e.target.value)}
-              />
-              {err('timezone') ? (
-                <p id="timezone-err" className="mt-1 text-xs text-danger">
-                  {err('timezone')}
-                </p>
-              ) : (
-                <p className="mt-1 text-xs text-muted">
-                  {tRich('settings.tzHint', {
-                    tz1: (
-                      <bdi dir="ltr" className="whitespace-nowrap">
-                        {TZ_EXAMPLES[0]}
-                      </bdi>
-                    ),
-                    tz2: (
-                      <bdi dir="ltr" className="whitespace-nowrap">
-                        {TZ_EXAMPLES[1]}
-                      </bdi>
-                    ),
-                  })}
-                </p>
-              )}
+          <div className={cn(!draft.quran.enabled && 'pointer-events-none opacity-45')} aria-disabled={!draft.quran.enabled}>
+            <h3 className="label">{t('settings.quranReview')}</h3>
+            <p className="mt-1.5 text-sm text-muted">{t('settings.quranReviewDesc')}</p>
+            <div className="mt-4 grid grid-cols-2 gap-3">
+              <NumberField id="q-page" label={t('settings.reviewPerPage')} value={draft.quran.minutesPerReviewPage} suffix={t('unit.min')} error={err('quran.minutesPerReviewPage')} onChange={(n) => setQuran('minutesPerReviewPage', n)} />
+              <NumberField id="q-cap" label={t('settings.reviewCap')} value={draft.quran.reviewCapMinutes} suffix={t('unit.min')} error={err('quran.reviewCapMinutes')} onChange={(n) => setQuran('reviewCapMinutes', n)} />
             </div>
           </div>
         </div>
