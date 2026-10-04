@@ -8,6 +8,7 @@ import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 import { createApp } from '../src/server/app.js';
 import { openDb } from '../src/server/db.js';
+import { DEFAULT_TIMEZONE } from '../src/shared/dates.js';
 import { TestClock, makeTestApp } from './helpers.js';
 
 type Json = Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
@@ -22,7 +23,7 @@ describe('GET /api/health', () => {
   it('reports the app id, version and data dir', async () => {
     const dir = mkdtempSync(join(tmpdir(), 'health-test-'));
     const dbPath = join(dir, 'test.db');
-    const { app, db } = createApp({ dbPath, clock: new TestClock(new Date('2026-09-27T04:00:00Z')), version: '9.9.9-test', webDir: join(dir, 'no-web') });
+    const { app, db } = createApp({ dbPath, clock: new TestClock(new Date('2026-09-27T04:00:00Z')), version: '9.9.9-test', webDir: join(dir, 'no-web'), initialTimezone: DEFAULT_TIMEZONE });
     cleanup = () => {
       db.close();
       rmSync(dir, { recursive: true, force: true });

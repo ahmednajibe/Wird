@@ -45,8 +45,6 @@ Ask about these topics, in roughly this order. Adapt to the answers.
    Ramadan, the first nine days of Dhul Hijjah)? On fasting days the app reduces
    study time (default 40% less) and plans lighter sessions. If they don't fast,
    turn every fasting rule off.
-8. **Timezone.** Their IANA timezone name, for example `Europe/Berlin`,
-   `Africa/Cairo`, `America/New_York`. The day starts and ends in this timezone.
 
 Then briefly tell them the plan: weekly minutes per stream and a rough finish
 estimate per track (total `estMinutes` of the stream divided by its weekly
@@ -202,11 +200,11 @@ Don't add separate review time. The app already plans review sessions.
 
 All fields are optional except that `weeklyTemplate` is required when the plan
 has study tracks. Missing fields take the default shown. Only include the fields
-you need to change, plus `weeklyTemplate` and `timezone`.
+you need to change, plus `weeklyTemplate`.
 
 | Field | Default | Meaning |
 |---|---|---|
-| `timezone` | `"Africa/Cairo"` | IANA timezone name. |
+| `timezone` | the user's timezone | Leave it out. Wird uses the timezone of the user's computer and keeps it on import. Include an IANA name (for example `Europe/Berlin`) only if the user explicitly asks to change it. |
 | `capacityByDow` | `[120,120,120,120,120,180,180]` | Focused minutes per day, index 0 = **Sunday**, 6 = Saturday. 0 to 960. 0 = rest day. |
 | `fastingReductionPct` | `40` | Percent less time on fasting days, 0 to 100. |
 | `fastingRules` | all `true` | `{ "monday", "thursday", "whiteDays", "ramadan", "dhulHijjahFirstNine" }`, each `true`/`false`. Set all to `false` for people who don't fast. |
@@ -327,7 +325,6 @@ Example day, 120 minutes, Quran on with 40 minutes: 80 minutes for study. Slots
     }
   ],
   "settings": {
-    "timezone": "Europe/Madrid",
     "capacityByDow": [60, 60, 60, 60, 60, 90, 0],
     "fastingRules": { "monday": false, "thursday": false, "whiteDays": false, "ramadan": false, "dhulHijjahFirstNine": false },
     "weeklyTemplate": [
@@ -451,7 +448,6 @@ A Quran-only plan is just `{ "version": 1, "name": "Quran", "tracks": [] }`.
     { "track": "german", "stream": "core", "name": "A German grammar reference book", "owned": true, "note": "for lookups" }
   ],
   "settings": {
-    "timezone": "Africa/Cairo",
     "capacityByDow": [120, 90, 120, 90, 120, 180, 180],
     "fastingReductionPct": 40,
     "fastingRules": { "monday": true, "thursday": true, "whiteDays": true, "ramadan": true, "dhulHijjahFirstNine": true },

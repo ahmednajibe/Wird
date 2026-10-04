@@ -2,6 +2,7 @@
  * Runtime configuration from the environment.
  */
 import { dirname, join, posix, resolve, win32 } from 'node:path';
+import { DEFAULT_TIMEZONE } from '../shared/dates.js';
 
 /**
  * SQLite file location. `LEARNING_DB_PATH` (absolute, or relative to `cwd`)
@@ -76,4 +77,24 @@ export function resolveDesktopDbPath(i: DataDirInput): string {
 /** Log files live under <data dir>/logs. */
 export function logDirFor(dataDir: string): string {
   return join(dataDir, 'logs');
+}
+
+/**
+ * The machine's IANA timezone for a brand-new install. Returns the `read`
+ * value when it is a non-empty string the runtime accepts, else
+ * DEFAULT_TIMEZONE. Never throws (a throwing `read` falls back too).
+ */
+export function detectSystemTimezone(
+  read: () => string | undefined = () => Intl.DateTimeFormat().resolvedOptions().timeZone,
+): string {
+  try {
+    const tz = read();
+    if (typeof tz === 'string' && tz.length > 0) {
+      new Intl.DateTimeFormat('en-US', { timeZone: tz });
+      return tz;
+    }
+  } catch {
+    // fall through to the default
+  }
+  return DEFAULT_TIMEZONE;
 }

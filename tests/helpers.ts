@@ -4,6 +4,7 @@ import { join } from 'node:path';
 import { createApp } from '../src/server/app.js';
 import { seedOwnerPlan } from '../src/server/seed/seed.js';
 import type { Clock } from '../src/server/service.js';
+import { DEFAULT_TIMEZONE } from '../src/shared/dates.js';
 
 export class TestClock implements Clock {
   constructor(private current: Date) {}
@@ -31,7 +32,13 @@ export interface TestAppOptions {
 export function makeTestApp(startDate: string, opts: TestAppOptions = {}) {
   const dir = mkdtempSync(join(tmpdir(), 'learning-test-'));
   const clock = new TestClock(new Date(`${startDate}T04:00:00Z`));
-  const { app, service, db } = createApp({ dbPath: join(dir, 'test.db'), clock, webDir: join(dir, 'no-web') });
+  const { app, service, db } = createApp({
+    dbPath: join(dir, 'test.db'),
+    clock,
+    webDir: join(dir, 'no-web'),
+    // Pin the zone so tests never depend on the machine's timezone.
+    initialTimezone: DEFAULT_TIMEZONE,
+  });
   if ((opts.plan ?? 'owner') === 'owner') {
     // createApp plans lazily on first request, so seeding before any request
     // is identical to a migrated database.

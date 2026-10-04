@@ -13,6 +13,7 @@ import { backupDirFor } from '../src/server/config.js';
 import { MIGRATIONS } from '../src/server/migrations.js';
 import { CatalogRepo } from '../src/server/repoCatalog.js';
 import { OWNER_CATALOG_DATA, OWNER_WEEKLY_TEMPLATE } from '../src/server/seed/ownerCatalog.js';
+import { DEFAULT_TIMEZONE } from '../src/shared/dates.js';
 import { makeTestApp, TestClock } from './helpers.js';
 
 type Json = Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
@@ -74,7 +75,7 @@ describe('migration 4 on an existing database', () => {
       peek.close();
 
       const clock = new TestClock(new Date('2026-09-28T04:00:00Z'));
-      const { app, service, db } = createApp({ dbPath, clock, webDir: join(dir, 'no-web') });
+      const { app, service, db } = createApp({ dbPath, clock, webDir: join(dir, 'no-web'), initialTimezone: DEFAULT_TIMEZONE });
       try {
         // Catalog in the DB deep-equals the owner seed.
         expect(new CatalogRepo(db).load()).toEqual(OWNER_CATALOG_DATA);
@@ -110,7 +111,7 @@ describe('migration 4 on an existing database', () => {
       }
 
       // Re-opening an already-migrated database runs nothing: no new backup.
-      const second = createApp({ dbPath, clock, webDir: join(dir, 'no-web') });
+      const second = createApp({ dbPath, clock, webDir: join(dir, 'no-web'), initialTimezone: DEFAULT_TIMEZONE });
       try {
         expect(second.service.catalog.data.tracks.map((t) => t.id)).toEqual(['quran', 'ai', 'fsd', 'animation']);
       } finally {

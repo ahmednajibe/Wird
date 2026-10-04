@@ -6,6 +6,7 @@ import { createApp } from '../src/server/app.js';
 import { backupIfDue } from '../src/server/backup.js';
 import { openDb } from '../src/server/db.js';
 import { buildCatalog } from '../src/shared/catalog.js';
+import { DEFAULT_TIMEZONE } from '../src/shared/dates.js';
 import { OWNER_CATALOG_DATA } from '../src/server/seed/ownerCatalog.js';
 
 const CATALOG = buildCatalog(OWNER_CATALOG_DATA);
@@ -47,7 +48,7 @@ describe('static web serving', () => {
     mkdirSync(join(web, 'assets'), { recursive: true });
     writeFileSync(join(web, 'index.html'), '<!doctype html><title>app</title>');
     writeFileSync(join(web, 'assets', 'app.js'), 'console.log(1)');
-    const { app, db } = createApp({ dbPath: join(dir, 'w.db'), webDir: web });
+    const { app, db } = createApp({ dbPath: join(dir, 'w.db'), webDir: web, initialTimezone: DEFAULT_TIMEZONE });
     const js = await app.request('/assets/app.js');
     expect(js.status).toBe(200);
     expect(js.headers.get('content-type')).toMatch(/javascript/);
