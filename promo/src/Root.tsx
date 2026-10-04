@@ -1,10 +1,11 @@
 import React from 'react';
-import { AbsoluteFill, Composition } from 'remotion';
+import { AbsoluteFill, Composition, Still } from 'remotion';
 import { Background } from './components/Background';
 import { FontGate } from './components/Fonts';
 import { Promo } from './Promo';
 import { Sound } from './Sound';
 import { FPS, H, W } from './theme';
+import { Thumbnail } from './Thumbnail';
 import { SceneDef, SCENES, TOTAL } from './timeline';
 
 /** One scene with the shared background, for tweaking it alone in the Studio. */
@@ -24,6 +25,7 @@ const solo = (s: SceneDef): React.FC => {
 export const Root: React.FC = () => (
   <>
     <Composition id="WirdPromo" component={Promo} durationInFrames={TOTAL} fps={FPS} width={W} height={H} />
+    <Still id="Thumbnail" component={Thumbnail} width={W} height={H} />
     {SCENES.map((s) => (
       <Composition key={s.id} id={`scene-${s.id}`} component={solo(s)} durationInFrames={s.dur} fps={FPS} width={W} height={H} />
     ))}

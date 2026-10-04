@@ -16,6 +16,7 @@ cd promo
 npm install
 npm run render        # -> out/wird-promo.mp4
 npm run studio        # live preview with a timeline scrubber
+npm run thumbnail     # -> out/wird-thumbnail.png and .jpg (cover image)
 ```
 
 Both commands first synthesize the sound effects into `public/sfx/` (see
@@ -63,6 +64,9 @@ is git-ignored.
 - **Hadith in the outro**: set `SHOW_QUOTE = false` in `Outro.tsx` to go
   straight to the logo (then shorten the outro's duration in `timeline.ts`
   by about 90 frames).
+- **Thumbnail**: `src/Thumbnail.tsx`, a still (`Thumbnail` in the Studio)
+  built from the film's logo, colors and fonts. The JPEG is for sites with
+  an upload size limit (YouTube allows 2 MB).
 - **Sound**: see below.
 
 ## Sound
