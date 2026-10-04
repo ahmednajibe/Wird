@@ -19,7 +19,7 @@ const ROW_Y = 520;
 const PILL_H = 104;
 const GAP = 26;
 
-const GOALS = [
+export const GOALS = [
   { label: 'German', color: C.blue, w: 270, slot: 1 },
   { label: 'Python', color: C.violet, w: 270, slot: 2 },
   { label: 'Drawing', color: C.coral, w: 296, slot: 3 },
@@ -30,8 +30,8 @@ const SLOT_MIN = [40, 20, 40, 20];
 const ROW_W = GOALS.reduce((s, g) => s + g.w, 0) + GAP * (GOALS.length - 1);
 const ROW_X = (1920 - ROW_W) / 2;
 
-const DROP = 112; // first pill leaves the row
-const FIT = 172; // "Wird makes it fit."
+export const DROP = 112; // first pill leaves the row
+export const FIT = 172; // "Wird makes it fit."
 
 export const Goals: React.FC = () => {
   const f = useCurrentFrame();

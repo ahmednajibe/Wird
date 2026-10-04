@@ -6,7 +6,7 @@ import { alpha, AMIRI, C, FONT, MONO } from '../theme';
 
 // The idea behind the name, then the sign-off. The last frame holds.
 
-const SIGN = 92;
+export const SIGN = 92;
 
 /** Set to false to skip the hadith and open straight on the logo. */
 export const SHOW_QUOTE = true;

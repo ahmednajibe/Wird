@@ -9,12 +9,22 @@ import { alpha, C, FONT, MONO } from '../theme';
 // reached and the streak is secured.
 
 const GOAL = 42;
-const TASKS = [
+export const TASKS = [
   { track: 'German', color: C.blue, title: 'Deep study: German A1', min: 20, pts: 24, at: 30 },
   { track: 'Python', color: C.violet, title: 'Python for Data Science', min: 40, pts: 48, at: 60 },
   { track: 'Quran', color: C.amber, title: 'Memorize page 582', min: 40, pts: 75, at: 90 },
 ];
-const FLY = 18;
+export const FLY = 18;
+
+/** The frame the task that crosses the goal lands: "Streak secured". */
+export const SECURED = (() => {
+  let before = 0;
+  for (const t of TASKS) {
+    if (before < GOAL && before + t.pts >= GOAL) return t.at + FLY;
+    before += t.pts;
+  }
+  return Infinity;
+})();
 
 const CARD_X = 200;
 const CARD_W = 840;
@@ -30,16 +40,10 @@ export const Today: React.FC = () => {
   const f = useCurrentFrame();
 
   let pts = 0;
-  let securedAt = Infinity;
-  for (const t of TASKS) {
-    const arrive = prog(f, t.at + FLY - 4, 10, easeInOut);
-    pts += t.pts * arrive;
-    const before = TASKS.slice(0, TASKS.indexOf(t)).reduce((s, x) => s + x.pts, 0);
-    if (before < GOAL && before + t.pts >= GOAL) securedAt = t.at + FLY;
-  }
+  for (const t of TASKS) pts += t.pts * prog(f, t.at + FLY - 4, 10, easeInOut);
   const shown = Math.round(pts);
   const fill = Math.min(1, pts / GOAL);
-  const secured = prog(f, securedAt, 16);
+  const secured = prog(f, SECURED, 16);
   const C_LEN = 2 * Math.PI * R;
 
   return (
@@ -129,7 +133,7 @@ export const Today: React.FC = () => {
           <div style={{ fontSize: 120, fontWeight: 800, color: C.ink, letterSpacing: '-0.04em', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>{shown}</div>
           <div style={{ fontSize: 28, color: C.muted, marginTop: 8 }}>goal {GOAL}</div>
         </div>
-        <Confetti start={securedAt} cx={R + 40} cy={R + 40} />
+        <Confetti start={SECURED} cx={R + 40} cy={R + 40} />
       </div>
 
       {/* points flying to the ring */}
@@ -164,12 +168,12 @@ export const Today: React.FC = () => {
 
       {/* secured */}
       <div style={{ position: 'absolute', left: RING_X - 300, width: 600, top: RING_Y + R + 50, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
-        <div style={{ ...enter(f, securedAt + 2, 16, 18), display: 'flex', alignItems: 'center', gap: 12, fontSize: 38, fontWeight: 800, color: C.greenInk, letterSpacing: '-0.02em' }}>
+        <div style={{ ...enter(f, SECURED + 2, 16, 18), display: 'flex', alignItems: 'center', gap: 12, fontSize: 38, fontWeight: 800, color: C.greenInk, letterSpacing: '-0.02em' }}>
           <Icon name="shield" size={40} color={C.greenInk} stroke={2.4} /> Streak secured
         </div>
-        <div style={{ ...enter(f, securedAt + 10, 16, 18), display: 'flex', alignItems: 'center', gap: 10, fontSize: 28, color: C.muted }}>
+        <div style={{ ...enter(f, SECURED + 10, 16, 18), display: 'flex', alignItems: 'center', gap: 10, fontSize: 28, color: C.muted }}>
           <Icon name="flame" size={28} color={C.green} fill={C.green} />
-          <b style={{ color: C.ink }}>{f < securedAt + 18 ? 11 : 12} day</b> streak
+          <b style={{ color: C.ink }}>{f < SECURED + 18 ? 11 : 12} day</b> streak
         </div>
       </div>
 

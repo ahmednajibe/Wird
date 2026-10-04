@@ -3,6 +3,7 @@ import { AbsoluteFill, Composition } from 'remotion';
 import { Background } from './components/Background';
 import { FontGate } from './components/Fonts';
 import { Promo } from './Promo';
+import { Sound } from './Sound';
 import { FPS, H, W } from './theme';
 import { SceneDef, SCENES, TOTAL } from './timeline';
 
@@ -13,6 +14,7 @@ const solo = (s: SceneDef): React.FC => {
       <AbsoluteFill>
         <Background keys={[0, 1]} glowA={[s.glow[0], s.glow[0]]} glowB={[s.glow[1], s.glow[1]]} />
         <s.component />
+        <Sound scene={s.id} />
       </AbsoluteFill>
     </FontGate>
   );

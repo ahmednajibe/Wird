@@ -3,6 +3,7 @@ import { AbsoluteFill, Sequence, useCurrentFrame } from 'remotion';
 import { easeInOut, prog } from './anim';
 import { Background } from './components/Background';
 import { FontGate } from './components/Fonts';
+import { Sound } from './Sound';
 import { OVERLAP, SCENES, STARTS } from './timeline';
 
 /** Fades a scene out over the overlap with the next one. */
@@ -36,6 +37,7 @@ export const Promo: React.FC = () => {
             </Exit>
           </Sequence>
         ))}
+        <Sound />
       </AbsoluteFill>
     </FontGate>
   );

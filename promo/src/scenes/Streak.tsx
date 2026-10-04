@@ -25,9 +25,14 @@ function kindOf(w: number, d: number): Kind {
   return 'goal';
 }
 
+// The grid fills over SWEEP_DUR frames from SWEEP_AT. scripts/sfx.mjs times
+// the rain texture to the same eased sweep: re-run it if this changes.
+export const SWEEP_AT = 14;
+export const SWEEP_DUR = 80;
+
 export const Streak: React.FC = () => {
   const f = useCurrentFrame();
-  const sweep = prog(f, 14, 80) * (WEEKS + 2);
+  const sweep = prog(f, SWEEP_AT, SWEEP_DUR) * (WEEKS + 2);
 
   return (
     <AbsoluteFill style={{ fontFamily: FONT }}>

@@ -5,10 +5,13 @@ import { Logo } from '../components/Logo';
 import { alpha, AMIRI, C, FONT } from '../theme';
 
 // The ribbon-W writes itself, the name lands, and the word gets its meaning.
+
+export const DRAW = 6; // the logo starts writing itself
+
 export const Title: React.FC = () => {
   const f = useCurrentFrame();
   const tile = pop(f, 0, 14, 120);
-  const draw = prog(f, 6, 34, easeInOut);
+  const draw = prog(f, DRAW, 34, easeInOut);
   const word = prog(f, 30, 22);
   return (
     <AbsoluteFill style={{ fontFamily: FONT, alignItems: 'center' }}>

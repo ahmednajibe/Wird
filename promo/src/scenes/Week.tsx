@@ -32,9 +32,9 @@ const DAYS: { name: string; cap: number; fasting?: boolean; blocks: Block[] }[] 
 ];
 
 const RESIZE = 26;
-const FILL = 50;
-const MISS = 118;
-const ROLL = 132;
+export const FILL = 50;
+export const MISS = 118;
+export const ROLL = 132;
 
 export const Week: React.FC = () => {
   const f = useCurrentFrame();

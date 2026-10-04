@@ -12,11 +12,11 @@ const ASK = 'I want German A1, Python for data science and drawing. About 2 hour
 const TYPE_AT = 16;
 const TYPE_CPF = 1.6; // characters per frame
 const TYPE_END = TYPE_AT + Math.ceil(ASK.length / TYPE_CPF);
-const ARROW1 = TYPE_END + 2;
+export const ARROW1 = TYPE_END + 2;
 const JSON_AT = ARROW1 + 10;
-const ARROW2 = JSON_AT + 34;
+export const ARROW2 = JSON_AT + 34;
 const WIRD_AT = ARROW2 + 8;
-const PRESS = WIRD_AT + 30;
+export const PRESS = WIRD_AT + 30;
 
 const CARD_Y = 330;
 const CARD_H = 470;

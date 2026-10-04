@@ -5,7 +5,10 @@
   "description": "Motion-graphics promo video for Wird (Remotion).",
   "type": "module",
   "scripts": {
+    "sfx": "node scripts/sfx.mjs",
+    "prestudio": "node scripts/sfx.mjs",
     "studio": "remotion studio src/index.ts",
+    "prerender": "node scripts/sfx.mjs",
     "render": "remotion render src/index.ts WirdPromo out/wird-promo.mp4 --codec=h264 --crf=16 --pixel-format=yuv420p --color-space=bt709",
     "still": "remotion still src/index.ts WirdPromo out/still.png",
     "typecheck": "tsc --noEmit"

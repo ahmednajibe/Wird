@@ -7,7 +7,7 @@ import { alpha, ARABIC, C, FONT, MONO } from '../theme';
 // The real app (screenshots/today-*.png), in a browser window pointed at
 // 127.0.0.1. It flips from English to Arabic halfway through.
 
-const FLIP = 84;
+export const FLIP = 84;
 const WIN_X = 120;
 const WIN_Y = 170;
 const WIN_W = 1000;
