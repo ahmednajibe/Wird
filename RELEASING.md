@@ -5,6 +5,11 @@ pushed. The workflow verifies, packages for Windows and Linux, smoke-tests
 every artifact, and creates a **draft** GitHub release. The maintainer
 reviews the draft and publishes it manually.
 
+Every artifact carries `LICENSE.txt` (the MIT license) and
+`THIRD_PARTY_NOTICES.txt`, which `scripts/gen-notices.mjs` generates during
+packaging; check the warning list at the end of the run for packages that
+shipped without a license file.
+
 ## Checklist
 
 1. Bump the version: `npm version <x.y.z> --no-git-tag-version` (updates

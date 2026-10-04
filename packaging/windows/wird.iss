@@ -7,6 +7,12 @@
 #ifndef SourceExe
   #define SourceExe "..\..\build\sea\wird.exe"
 #endif
+#ifndef SourceLicense
+  #define SourceLicense "..\..\LICENSE"
+#endif
+#ifndef SourceNotices
+  #define SourceNotices "..\..\build\notices\THIRD_PARTY_NOTICES.txt"
+#endif
 
 [Setup]
 AppId={{7C3E9A52-4B1D-4F8E-9A6B-2D5C8E1F0A37}
@@ -46,6 +52,8 @@ Name: "desktopicon"; Description: "Create a &desktop shortcut"; Flags: checkedon
 
 [Files]
 Source: "{#SourceExe}"; DestDir: "{app}"; DestName: "wird.exe"; Flags: ignoreversion
+Source: "{#SourceLicense}"; DestDir: "{app}"; DestName: "LICENSE.txt"
+Source: "{#SourceNotices}"; DestDir: "{app}"; DestName: "THIRD_PARTY_NOTICES.txt"
 
 [Icons]
 Name: "{autoprograms}\Wird"; Filename: "{app}\wird.exe"; WorkingDir: "{app}"
