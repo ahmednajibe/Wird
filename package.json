@@ -1,7 +1,7 @@
 {
   "name": "learning-tracker",
   "productName": "Wird",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "description": "Wird: a local-first daily learning and Quran tracker.",
   "type": "module",
