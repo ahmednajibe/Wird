@@ -4,9 +4,10 @@
  *   - Wird-<ver>-linux-x64.tar.gz
  */
 import { execFileSync } from 'node:child_process';
-import { chmodSync, copyFileSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { chmodSync, copyFileSync, existsSync, mkdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { generateNotices } from './gen-notices.mjs';
 
 if (process.platform !== 'linux') {
   console.error('package:linux must run on Linux (it packages the Linux SEA binary at build/sea/wird).');
@@ -29,8 +30,18 @@ const stageApp = join(stageDir, `Wird-${version}-linux-x64`);
 rmSync(stageDir, { recursive: true, force: true });
 mkdirSync(stageApp, { recursive: true });
 
+generateNotices({ root });
 copyFileSync(binFile, join(stageApp, 'wird'));
 chmodSync(join(stageApp, 'wird'), 0o755);
+copyFileSync(join(root, 'LICENSE'), join(stageApp, 'LICENSE.txt'));
+copyFileSync(join(root, 'build', 'notices', 'THIRD_PARTY_NOTICES.txt'), join(stageApp, 'THIRD_PARTY_NOTICES.txt'));
+for (const f of ['LICENSE.txt', 'THIRD_PARTY_NOTICES.txt']) {
+  const p = join(stageApp, f);
+  if (!existsSync(p) || statSync(p).size === 0) {
+    console.error(`${f} is missing or empty in the staged folder.`);
+    process.exit(1);
+  }
+}
 copyFileSync(join(root, 'assets', 'brand', 'png', 'wird-256.png'), join(stageApp, 'wird.png'));
 copyFileSync(join(root, 'packaging', 'linux', 'wird.desktop'), join(stageApp, 'wird.desktop'));
 copyFileSync(
@@ -53,6 +64,8 @@ writeFileSync(
     'Menu entry (optional):',
     '  Run ./install-desktop-entry.sh to add Wird to your app menu.',
     '  ./install-desktop-entry.sh --uninstall removes it again.',
+    '',
+    'License: MIT, see LICENSE.txt. Third-party notices: THIRD_PARTY_NOTICES.txt.',
     '',
     'Releases: https://github.com/ahmednajibe/Wird/releases',
     '',

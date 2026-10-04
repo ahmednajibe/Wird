@@ -5,9 +5,10 @@
  *   - Wird-<ver>-win-x64-setup.exe   (Inno Setup, per-user, no admin)
  */
 import { execFileSync } from 'node:child_process';
-import { copyFileSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { generateNotices } from './gen-notices.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const releaseDir = join(root, 'build', 'release');
@@ -22,11 +23,25 @@ if (!existsSync(exeFile)) {
 }
 mkdirSync(releaseDir, { recursive: true });
 
+// License texts shipped in every artifact.
+const licenseFile = join(root, 'LICENSE');
+const noticesFile = join(root, 'build', 'notices', 'THIRD_PARTY_NOTICES.txt');
+generateNotices({ root, outFile: noticesFile });
+
 // 1. Portable zip: Wird\wird.exe + `portable` marker + README.txt.
 const stageApp = join(stageDir, 'Wird');
 rmSync(stageDir, { recursive: true, force: true });
 mkdirSync(stageApp, { recursive: true });
 copyFileSync(exeFile, join(stageApp, 'wird.exe'));
+copyFileSync(licenseFile, join(stageApp, 'LICENSE.txt'));
+copyFileSync(noticesFile, join(stageApp, 'THIRD_PARTY_NOTICES.txt'));
+for (const f of ['LICENSE.txt', 'THIRD_PARTY_NOTICES.txt']) {
+  const p = join(stageApp, f);
+  if (!existsSync(p) || statSync(p).size === 0) {
+    console.error(`${f} is missing or empty in the staged folder.`);
+    process.exit(1);
+  }
+}
 writeFileSync(join(stageApp, 'portable'), '');
 writeFileSync(
   join(stageApp, 'README.txt'),
@@ -44,6 +59,8 @@ writeFileSync(
     '',
     'Windows SmartScreen may warn about an unrecognized app. Click',
     '"More info", then "Run anyway".',
+    '',
+    'License: MIT, see LICENSE.txt. Third-party notices: THIRD_PARTY_NOTICES.txt.',
     '',
     'Releases: https://github.com/ahmednajibe/Wird/releases',
     '',
@@ -70,7 +87,16 @@ if (!iscc) {
   console.error('Inno Setup 6 (ISCC.exe) not found. Install it (winget install JRSoftware.InnoSetup) or set ISCC.');
   process.exit(1);
 }
-execFileSync(iscc, [`/DAppVersion=${version}`, `/DSourceExe=${resolve(exeFile)}`, `/O${resolve(releaseDir)}`, issFile], {
-  stdio: 'inherit',
-});
+execFileSync(
+  iscc,
+  [
+    `/DAppVersion=${version}`,
+    `/DSourceExe=${resolve(exeFile)}`,
+    `/DSourceLicense=${resolve(licenseFile)}`,
+    `/DSourceNotices=${resolve(noticesFile)}`,
+    `/O${resolve(releaseDir)}`,
+    issFile,
+  ],
+  { stdio: 'inherit' },
+);
 console.log('Packaging done.');
