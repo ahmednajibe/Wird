@@ -28,17 +28,20 @@ type Errors = Record<string, string>;
 /** Error paths whose fields live inside the Advanced disclosure. */
 const inAdvanced = (path: string) => path.startsWith('baseline.') || path === 'quran.minutesPerReviewPage' || path === 'quran.reviewCapMinutes';
 
-function Section({ icon: I, title, description, children }: { icon: typeof Clock; title: string; description?: string; children: ReactNode }) {
+function Section({ icon: I, title, description, aside, children }: { icon: typeof Clock; title: string; description?: string; aside?: ReactNode; children?: ReactNode }) {
   return (
     <Card className="p-5 sm:p-6">
-      <div className="mb-5 flex items-start gap-3">
-        <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-xl bg-surface-2 text-muted">
-          <I size={19} aria-hidden />
-        </span>
-        <div>
-          <h2 className="text-base font-semibold tracking-tight text-ink">{title}</h2>
-          {description && <p className="text-sm text-muted">{description}</p>}
+      <div className={cn(aside ? 'flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between lg:gap-8' : 'mb-5')}>
+        <div className="flex items-start gap-3">
+          <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-xl bg-surface-2 text-muted">
+            <I size={19} aria-hidden />
+          </span>
+          <div>
+            <h2 className="text-base font-semibold tracking-tight text-ink">{title}</h2>
+            {description && <p className="text-sm text-muted">{description}</p>}
+          </div>
         </div>
+        {aside}
       </div>
       {children}
     </Card>
@@ -333,46 +336,46 @@ function SettingsForm({ initial, catalog }: { initial: Settings; catalog: Catalo
         </Section>
       </div>
 
-      <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
-        <Section icon={CalendarBlank} title={t('settings.hijri')} description={t('settings.hijriDesc')}>
+      <Section icon={CalendarBlank} title={t('settings.hijri')} description={t('settings.hijriDesc')}>
+        <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-2 lg:gap-6">
+          <div>
+            <label htmlFor="timezone" className="mb-1.5 block text-sm font-medium text-ink">
+              {t('settings.timezone')}
+            </label>
+            <p className="text-sm text-muted">{t('settings.timezoneDesc')}</p>
+            <input
+              id="timezone"
+              data-testid="field-timezone"
+              dir="ltr"
+              className={cn('field mt-2 max-w-xs', err('timezone') && 'border-danger')}
+              value={draft.timezone}
+              placeholder="Africa/Cairo"
+              aria-invalid={Boolean(err('timezone'))}
+              aria-describedby={err('timezone') ? 'timezone-err' : undefined}
+              onChange={(e) => set('timezone', e.target.value)}
+            />
+            {err('timezone') ? (
+              <p id="timezone-err" className="mt-1 text-xs text-danger">
+                {err('timezone')}
+              </p>
+            ) : (
+              <p className="mt-1 text-xs text-muted">
+                {tRich('settings.tzHint', {
+                  tz1: (
+                    <bdi dir="ltr" className="whitespace-nowrap">
+                      {TZ_EXAMPLES[0]}
+                    </bdi>
+                  ),
+                  tz2: (
+                    <bdi dir="ltr" className="whitespace-nowrap">
+                      {TZ_EXAMPLES[1]}
+                    </bdi>
+                  ),
+                })}
+              </p>
+            )}
+          </div>
           <div className="flex flex-col gap-4">
-            <div>
-              <label htmlFor="timezone" className="mb-1.5 block text-sm font-medium text-ink">
-                {t('settings.timezone')}
-              </label>
-              <p className="text-sm text-muted">{t('settings.timezoneDesc')}</p>
-              <input
-                id="timezone"
-                data-testid="field-timezone"
-                dir="ltr"
-                className={cn('field mt-2 max-w-xs', err('timezone') && 'border-danger')}
-                value={draft.timezone}
-                placeholder="Africa/Cairo"
-                aria-invalid={Boolean(err('timezone'))}
-                aria-describedby={err('timezone') ? 'timezone-err' : undefined}
-                onChange={(e) => set('timezone', e.target.value)}
-              />
-              {err('timezone') ? (
-                <p id="timezone-err" className="mt-1 text-xs text-danger">
-                  {err('timezone')}
-                </p>
-              ) : (
-                <p className="mt-1 text-xs text-muted">
-                  {tRich('settings.tzHint', {
-                    tz1: (
-                      <bdi dir="ltr" className="whitespace-nowrap">
-                        {TZ_EXAMPLES[0]}
-                      </bdi>
-                    ),
-                    tz2: (
-                      <bdi dir="ltr" className="whitespace-nowrap">
-                        {TZ_EXAMPLES[1]}
-                      </bdi>
-                    ),
-                  })}
-                </p>
-              )}
-            </div>
             <div>
               <div className="mb-1.5 text-sm font-medium text-ink">{t('settings.hijriOffset')}</div>
               <Segmented<number>
@@ -392,9 +395,15 @@ function SettingsForm({ initial, catalog }: { initial: Settings; catalog: Catalo
               </div>
             </div>
           </div>
-        </Section>
-        <Section icon={Palette} title={t('settings.appearance')} description={t('settings.appearanceDesc')}>
-          <div className="flex flex-col gap-4">
+        </div>
+      </Section>
+
+      <Section
+        icon={Palette}
+        title={t('settings.appearance')}
+        description={t('settings.appearanceDesc')}
+        aside={
+          <div className="flex flex-col gap-4 lg:flex-row lg:gap-8">
             <div>
               <div className="label mb-2">{t('settings.theme')}</div>
               <Segmented<ThemePref>
@@ -421,8 +430,8 @@ function SettingsForm({ initial, catalog }: { initial: Settings; catalog: Catalo
               />
             </div>
           </div>
-        </Section>
-      </div>
+        }
+      />
 
       <Disclosure
         title={t('settings.advanced')}
