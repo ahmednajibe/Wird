@@ -183,8 +183,54 @@ jobs:
       - run: npm run build:sea
       - run: node scripts/smoke.mjs build/sea/wird
 
-  release:
+  # macOS has no packaged binary; verify the install.sh Darwin branch
+  # (official Node runtime + app bundle) end to end on Apple Silicon.
+  macos-install-smoke:
     needs: package
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - name: Download release-linux artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: release-linux
+          path: build/release
+      - name: Write SHA256SUMS.txt
+        run: node scripts/checksums.mjs
+      - name: install.sh smoke (macOS)
+        run: |
+          WIRD_ASSET_DIR="$PWD/build/release" \
+          WIRD_INSTALL_DIR="$RUNNER_TEMP/wird-mac" \
+          WIRD_NO_LAUNCH=1 \
+          WIRD_NO_SHORTCUT=1 \
+            sh install/install.sh
+      - name: Assert install layout
+        run: |
+          dest="$RUNNER_TEMP/wird-mac"
+          if [ ! -x "$dest/Wird.command" ]; then
+            echo "$dest/Wird.command is missing or not executable" >&2
+            exit 1
+          fi
+          want="v$(cat .nvmrc)"
+          got="$("$dest/node/bin/node" --version)"
+          if [ "$got" != "$want" ]; then
+            echo "bundled node --version printed '$got', want '$want'" >&2
+            exit 1
+          fi
+          for f in wird.cjs LICENSE.txt THIRD_PARTY_NOTICES.txt; do
+            if [ ! -f "$dest/app/$f" ]; then
+              echo "$dest/app/$f is missing" >&2
+              exit 1
+            fi
+          done
+      - name: Smoke installed launcher
+        run: node scripts/smoke.mjs "$RUNNER_TEMP/wird-mac/Wird.command"
+
+  release:
+    needs: [package, macos-install-smoke]
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     permissions:
