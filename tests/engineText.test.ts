@@ -293,6 +293,26 @@ describe('engineText', () => {
     expect(nearFar).toContain('جلسات مراجعة');
   });
 
+  it('drops the numeral on Arabic dual durations and session counts', () => {
+    // The dual noun already means "two": no numeral before دقيقتان/ساعتان/جلستين.
+    expect(localizeTaskDescription('Module X. Remaining before this session: about 2 min.', 'ar')).toBe(
+      'Module X. المتبقي قبل هذه الجلسة: نحو ⁦دقيقتان⁩.',
+    );
+    expect(localizeTaskDescription('Module X. Remaining before this session: about 2 h.', 'ar')).toBe(
+      'Module X. المتبقي قبل هذه الجلسة: نحو ⁦ساعتان⁩.',
+    );
+    // Mixed hours+minutes is not a single-part dual: the numerals stay.
+    expect(localizeTaskDescription('Module X. Remaining before this session: about 2 h 5 min.', 'ar')).toBe(
+      'Module X. المتبقي قبل هذه الجلسة: نحو ⁦2 س 5 د⁩.',
+    );
+    const cycle = (n: number) =>
+      localizeTaskDescription(`Near (most recent): 600-604. Far (oldest reviewed): 582. Full cycle every ${n} review sessions.`, 'ar');
+    expect(cycle(2)).toContain('دورة كاملة كل جلستين.');
+    // Other counts keep the numeral and their كل + plural agreement.
+    expect(cycle(3)).toContain('كل 3 جلسات مراجعة');
+    expect(cycle(11)).toContain('كل 11 جلسة مراجعة');
+  });
+
   it('localizes hijri labels, day names and fasting reasons', () => {
     expect(hijriLabel({ day: 1, month: 9, year: 1448, monthName: 'Ramadan', label: '1 Ramadan 1448 AH' }, 'en')).toBe('1 Ramadan 1448 AH');
     expect(hijriLabel({ day: 1, month: 9, year: 1448, monthName: 'Ramadan', label: '1 Ramadan 1448 AH' }, 'ar')).toBe('1 رمضان 1448 هـ');

@@ -131,8 +131,9 @@ function arDuration(minutes: number): string {
   const m = Math.max(0, Math.round(minutes));
   const h = Math.floor(m / 60);
   const r = m % 60;
-  if (m < 60) return `${m} ${AR_MINUTES[arPlural.select(m)]}`;
-  if (r === 0) return `${h} ${AR_HOURS[arPlural.select(h)]}`;
+  // The dual already means "two": 2 minutes/2 hours carry no numeral.
+  if (m < 60) return m === 2 ? 'دقيقتان' : `${m} ${AR_MINUTES[arPlural.select(m)]}`;
+  if (r === 0) return h === 2 ? 'ساعتان' : `${h} ${AR_HOURS[arPlural.select(h)]}`;
   return `${h} س ${r} د`;
 }
 
@@ -289,7 +290,10 @@ export function localizeTaskDescription(description: string, lang: Lang, ctx: { 
   if (m) return `راجع كل الصفحات المحفوظة: ${m[1] === 'none' ? 'لا شيء' : lri(m[1] ?? '')}.`;
   m = /^Near \(most recent\): (.+)\. Far \(oldest reviewed\): (.+)\. Full cycle every (\d+) review sessions\.$/.exec(s);
   if (m) {
-    return `القريبة (المحفوظة أخيرًا): ${lri(m[1] ?? '')}. البعيدة (الأقدم مراجعة): ${lri(m[2] ?? '')}. دورة كاملة كل ${m[3]} ${AR_SESSIONS[arPlural.select(Number(m[3]))]} مراجعة.`;
+    const cycle = Number(m[3]);
+    // After كل the dual is the genitive جلستين with no numeral and no trailing مراجعة.
+    const every = cycle === 2 ? 'كل جلستين' : `كل ${m[3]} ${AR_SESSIONS[arPlural.select(cycle)]} مراجعة`;
+    return `القريبة (المحفوظة أخيرًا): ${lri(m[1] ?? '')}. البعيدة (الأقدم مراجعة): ${lri(m[2] ?? '')}. دورة كاملة ${every}.`;
   }
 
   // planner.ts shapeTask: fixed leading sentences.

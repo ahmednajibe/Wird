@@ -62,7 +62,8 @@ const AR_MINUTES: Record<Intl.LDMLPluralRule, string> = { zero: 'دقيقة', on
 const AR_HOURS: Record<Intl.LDMLPluralRule, string> = { zero: 'ساعة', one: 'ساعة', two: 'ساعتان', few: 'ساعات', many: 'ساعة', other: 'ساعة' };
 
 export interface DurationPart {
-  n: number;
+  /** Null for the Arabic dual: 'ساعتان'/'دقيقتان' already carry the 2, no numeral renders. */
+  n: number | null;
   unit: string;
 }
 
@@ -72,8 +73,8 @@ export function durationParts(minutes: number): DurationPart[] {
   const h = Math.floor(m / 60);
   const r = m % 60;
   if (currentLang === 'ar') {
-    if (m < 60) return [{ n: m, unit: AR_MINUTES[arRules.select(m)] }];
-    if (r === 0) return [{ n: h, unit: AR_HOURS[arRules.select(h)] }];
+    if (m < 60) return [{ n: m === 2 ? null : m, unit: AR_MINUTES[arRules.select(m)] }];
+    if (r === 0) return [{ n: h === 2 ? null : h, unit: AR_HOURS[arRules.select(h)] }];
     return [
       { n: h, unit: 'س' },
       { n: r, unit: 'د' },
@@ -89,7 +90,7 @@ export function durationParts(minutes: number): DurationPart[] {
 
 export function formatMinutes(min: number): string {
   return durationParts(min)
-    .map((p) => `${p.n} ${p.unit}`)
+    .map((p) => (p.n === null ? p.unit : `${p.n} ${p.unit}`))
     .join(' ');
 }
 
