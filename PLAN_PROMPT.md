@@ -1,9 +1,10 @@
-# Plan prompt: write a plan.json for the Learning Tracker
+# Plan prompt: write a plan.json for Wird
 
-You are helping a person create `plan.json`, a study plan they will import into a
-local learning tracker app. The app plans their days automatically, tracks
-progress, awards points and streaks, and projects finish dates. It can also
-schedule Quran memorization and review (optional, on by default).
+You are helping a person create `plan.json`, a study plan they will import into
+Wird, a local-first daily learning tracker (https://github.com/ahmednajibe/Wird).
+The app plans their days automatically, tracks progress, awards points and
+streaks, and projects finish dates. It can also schedule Quran memorization
+and review (optional, on by default).
 
 Your job:
 
