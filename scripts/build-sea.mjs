@@ -54,7 +54,7 @@ function stampWindowsMetadata(exeFile, icoFile, version) {
       ProductName: 'Wird',
       FileDescription: 'Wird',
       CompanyName: 'Wird',
-      LegalCopyright: 'Wird contributors',
+      LegalCopyright: 'Ahmed Najibe',
       OriginalFilename: 'wird.exe',
       InternalName: 'wird',
       FileVersion: `${version}.0`,
