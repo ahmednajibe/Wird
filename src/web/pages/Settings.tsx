@@ -66,7 +66,7 @@ function NumberField({
   suffix?: string;
   error?: string | undefined;
   step?: number;
-  hint?: string;
+  hint?: ReactNode;
   info?: ReactNode;
 }) {
   const [text, setText] = useState(String(value));
@@ -272,69 +272,80 @@ function SettingsForm({ initial, catalog }: { initial: Settings; catalog: Catalo
         </div>
       </Section>
 
-      <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
-        <Section icon={Moon} title={t('settings.fasting')} description={t('settings.fastingDesc')}>
-          <NumberField
-            id="fasting-pct"
-            label={t('settings.fastingReduction')}
-            value={draft.fastingReductionPct}
-            suffix={t('unit.pct')}
-            error={err('fastingReductionPct')}
-            hint={t('settings.fastingHint', { base: formatMinutes(120), result: formatMinutes(Math.round(120 * (1 - (Number.isFinite(draft.fastingReductionPct) ? draft.fastingReductionPct : 0) / 100))) })}
-            onChange={(n) => set('fastingReductionPct', n)}
-          />
-          <div className="mt-4 divide-y divide-line rounded-[10px] border border-line px-3">
+      <Section icon={Moon} title={t('settings.fasting')} description={t('settings.fastingDesc')}>
+        <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-2 lg:gap-6">
+          <div className="contents lg:flex lg:flex-col lg:gap-4">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <NumberField
+                id="fasting-pct"
+                label={t('settings.fastingReduction')}
+                value={draft.fastingReductionPct}
+                suffix={t('unit.pct')}
+                error={err('fastingReductionPct')}
+                hint={tRich('settings.fastingHint', {
+                  base: <span className="whitespace-nowrap">{formatMinutes(120)}</span>,
+                  result: <span className="whitespace-nowrap">{formatMinutes(Math.round(120 * (1 - (Number.isFinite(draft.fastingReductionPct) ? draft.fastingReductionPct : 0) / 100)))}</span>,
+                })}
+                onChange={(n) => set('fastingReductionPct', n)}
+              />
+            </div>
+            <p className="order-last text-xs text-muted">{t('settings.eidNote')}</p>
+          </div>
+          <div className="divide-y divide-line rounded-[10px] border border-line px-3">
             <Switch checked={draft.fastingRules.monday} onChange={(v) => setRule('monday', v)} label={t('settings.mon')} />
             <Switch checked={draft.fastingRules.thursday} onChange={(v) => setRule('thursday', v)} label={t('settings.thu')} />
             <Switch checked={draft.fastingRules.whiteDays} onChange={(v) => setRule('whiteDays', v)} label={t('settings.whiteDays')} description={t('settings.whiteDaysDesc')} />
             <Switch checked={draft.fastingRules.ramadan} onChange={(v) => setRule('ramadan', v)} label={t('settings.ramadan')} />
             <Switch checked={draft.fastingRules.dhulHijjahFirstNine} onChange={(v) => setRule('dhulHijjahFirstNine', v)} label={t('settings.dhulHijjah')} />
           </div>
-          <p className="mt-3 text-xs text-muted">{t('settings.eidNote')}</p>
-        </Section>
+        </div>
+      </Section>
 
-        <Section icon={BookOpen} title={t('nav.quran')} description={t('settings.quranDesc')}>
-          <div className="rounded-[10px] border border-line px-3">
-            <Switch
-              checked={draft.quran.enabled}
-              onChange={(v) => setQuran('enabled', v)}
-              label={
-                <span className="inline-flex items-center gap-1">
-                  {t('settings.quranSessions')}
-                  <InfoHint label={t('settings.quranSessions')}>{t('settings.quranSessionsHint')}</InfoHint>
-                </span>
-              }
-              description={t('settings.quranSessionsDesc')}
-              id="quran-enabled"
-            />
+      <Section icon={BookOpen} title={t('nav.quran')} description={t('settings.quranDesc')}>
+        <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-2 lg:gap-6">
+          <div className="flex flex-col gap-4">
+            <div className="rounded-[10px] border border-line px-3">
+              <Switch
+                checked={draft.quran.enabled}
+                onChange={(v) => setQuran('enabled', v)}
+                label={
+                  <span className="inline-flex items-center gap-1">
+                    {t('settings.quranSessions')}
+                    <InfoHint label={t('settings.quranSessions')}>{t('settings.quranSessionsHint')}</InfoHint>
+                  </span>
+                }
+                description={t('settings.quranSessionsDesc')}
+                id="quran-enabled"
+              />
+            </div>
+            <div className={cn(!draft.quran.enabled && 'pointer-events-none opacity-45')} aria-disabled={!draft.quran.enabled}>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <NumberField
+                  id="q-mem"
+                  label={t('settings.memorizeSession')}
+                  value={draft.quran.memorizeMinutes}
+                  suffix={t('unit.min')}
+                  error={err('quran.memorizeMinutes')}
+                  info={<InfoHint label={t('settings.memorizeSession')}>{t('settings.memorizeHint')}</InfoHint>}
+                  onChange={(n) => setQuran('memorizeMinutes', n)}
+                />
+              </div>
+            </div>
           </div>
           <div className={cn(!draft.quran.enabled && 'pointer-events-none opacity-45')} aria-disabled={!draft.quran.enabled}>
-            <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <NumberField
-                id="q-mem"
-                label={t('settings.memorizeSession')}
-                value={draft.quran.memorizeMinutes}
-                suffix={t('unit.min')}
-                error={err('quran.memorizeMinutes')}
-                info={<InfoHint label={t('settings.memorizeSession')}>{t('settings.memorizeHint')}</InfoHint>}
-                onChange={(n) => setQuran('memorizeMinutes', n)}
-              />
-            </div>
-            <div className="mt-4">
-              <div className="mb-1.5 text-sm font-medium text-ink">{t('quran.order')}</div>
-              <Segmented<Settings['quran']['memorizationOrder']>
-                label={t('quran.order')}
-                value={draft.quran.memorizationOrder}
-                onChange={(v) => setQuran('memorizationOrder', v)}
-                options={[
-                  { value: 'juz30-29-then-forward', label: t('settings.orderJuz') },
-                  { value: 'forward', label: t('settings.orderFwd') },
-                ]}
-              />
-            </div>
+            <div className="mb-1.5 text-sm font-medium text-ink">{t('quran.order')}</div>
+            <Segmented<Settings['quran']['memorizationOrder']>
+              label={t('quran.order')}
+              value={draft.quran.memorizationOrder}
+              onChange={(v) => setQuran('memorizationOrder', v)}
+              options={[
+                { value: 'juz30-29-then-forward', label: t('settings.orderJuz') },
+                { value: 'forward', label: t('settings.orderFwd') },
+              ]}
+            />
           </div>
-        </Section>
-      </div>
+        </div>
+      </Section>
 
       <Section icon={CalendarBlank} title={t('settings.hijri')} description={t('settings.hijriDesc')}>
         <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-2 lg:gap-6">
@@ -542,12 +553,11 @@ export function SettingsPage() {
     <div className="flex flex-col gap-6">
       <PageHeader title={t('nav.settings')} subtitle={t('settings.subtitle')} />
       {q.isPending || catalog.isPending ? (
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-5">
           <Skeleton className="h-40 rounded-2xl" />
-          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-            <Skeleton className="h-80 rounded-2xl" />
-            <Skeleton className="h-80 rounded-2xl" />
-          </div>
+          <Skeleton className="h-40 rounded-2xl" />
+          <Skeleton className="h-64 rounded-2xl" />
+          <Skeleton className="h-56 rounded-2xl" />
         </div>
       ) : q.isError ? (
         <ErrorState message={errorMessage(q.error)} onRetry={() => void q.refetch()} />
