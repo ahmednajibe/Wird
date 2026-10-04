@@ -243,6 +243,27 @@ async function run(): Promise<void> {
       await page.locator('[data-testid="saved-explanation"]').waitFor();
     });
 
+    await check('Calendar preview follows the draft timezone and survives an invalid one', async () => {
+      await page.goto(`${base}/settings`);
+      const tzField = page.locator('[data-testid="field-timezone"]');
+      await tzField.waitFor();
+      const preview = page.locator('[data-testid="calendar-preview-date"]');
+      await preview.waitFor();
+      // UTC+14 and UTC-11 are always 25 hours apart, so the dates always differ.
+      await tzField.fill('Pacific/Kiritimati');
+      await page.waitForTimeout(300);
+      const plus14 = await preview.innerText();
+      await tzField.fill('Pacific/Pago_Pago');
+      await page.waitForTimeout(300);
+      const minus11 = await preview.innerText();
+      assert(plus14 !== minus11, `preview shows "${plus14}" for both +14 and -11`);
+      await tzField.fill('Not/AZone');
+      await page.waitForTimeout(300);
+      assert(await page.locator('[data-testid="hijri-preview"]').isVisible(), 'hijri preview still visible with an invalid zone');
+      // Discard the draft so later checks see the seeded timezone.
+      await page.reload();
+    });
+
     await check('Other pages render without errors', async () => {
       for (const path of ['/tracks', '/stats', '/tracks?view=resources']) {
         await page.goto(`${base}${path}`);
